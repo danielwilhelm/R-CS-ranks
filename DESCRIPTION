@@ -1,7 +1,7 @@
 Package: csranks
 Type: Package
 Title: Confidence Sets for Ranks
-Version: 0.1.0.
+Version: 0.1.0
 Author: Daniel Wilhelm
 Maintainer: Daniel Wilhelm <d.wilhelm@ucl.ac.uk>
 Description: This package implements methods for computing confidence sets for ranks
