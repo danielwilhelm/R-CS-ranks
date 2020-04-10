@@ -84,11 +84,11 @@ Consider ranking countries according to their students' achievement in mathemati
 math_rank <- xrank(math_score)
 ```
 
-These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets.
+These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets. Explanations and details about the differences of these two confidence sets can be found in Mogstad, Romano, Shaikh, and Wilhelm (2020). The complete R script containing this example, as well as R scripts for PISA rankings by reading and science scores, can be found in the subdirectory `examples/`.
 
 ### Marginal Confidence Sets
 
-The marginal confidence sets for the ranks is computed as follows:
+The marginal confidence sets for the ranks are computed as follows:
 
 ```R
 CS_marg <- csranks(math_score, math_se, coverage=0.95, simul=FALSE, R=1000, seed=101)
@@ -100,12 +100,52 @@ where `math_rankL_marg` and `math_rankL_marg` contain the lower and upper bounds
 
 ```R
 grid::current.viewport()
-plotsimul <- plotranking(ranks=math_rank, L=math_rankL_simul, U=math_rankU_simul, popnames=jurisdiction, 
-title="Ranking of OECD Countries by 2018 PISA Math Score", subtitle="(with 95% simultaneous confidence sets)")
-print(plotsimul)
+
+plotmarg <- plotranking(ranks=math_rank, L=math_rankL_marg, U=math_rankU_marg, 
+	popnames=jurisdiction, title="Ranking of OECD Countries by 2018 PISA Math Score", 
+	subtitle="(with 95% marginal confidence sets)")
+
+print(plotmarg)
 ```
 
 ![Ranking of OECD Countries by 2018 PISA Math Score](examples/mathmarg.jpg)
+
+You can then save the graph by
+
+```R
+ggsave("mathmarg.pdf", plot=plotmarg)
+```
+
+### Simultaneous Confidence Sets
+
+The simultaneous confidence sets for the ranks are computed as follows:
+
+```R
+CS_simul <- csranks(math_score, math_se, coverage=0.95, simul=TRUE, R=1000, seed=101)
+math_rankL_simul <- CS_simul$L
+math_rankU_simul <- CS_simul$U
+```
+
+where `math_rankL_simul` and `math_rankL_simul` contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by
+
+```R
+grid::current.viewport()
+
+plotsimul <- plotranking(ranks=math_rank, L=math_rankL_simul, U=math_rankU_simul, 
+	popnames=jurisdiction, title="Ranking of OECD Countries by 2018 PISA Math Score", 
+	subtitle="(with 95% simultaneous confidence sets)")
+
+print(plotsimul)
+```
+
+![Ranking of OECD Countries by 2018 PISA Math Score](examples/mathsimul.jpg)
+
+You can then save the graph by
+
+```R
+ggsave("mathsimul.pdf", plot=plotsimul)
+```
+
 
 # Reference
 [Mogstad, Romano, Shaikh, and Wilhelm (2020), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", CeMMAP Working Paper CWP10/20](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf)
