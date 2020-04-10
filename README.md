@@ -105,7 +105,7 @@ title="Ranking of OECD Countries by 2018 PISA Math Score", subtitle="(with 95% s
 print(plotsimul)
 ```
 
-![PISA Ranking](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples/mathmarg.jpg "Ranking of OECD Countries by 2018 PISA Math Score")
+![Ranking of OECD Countries by 2018 PISA Math Score](examples/mathmarg.jpg)
 
 # Reference
 [Mogstad, Romano, Shaikh, and Wilhelm (2020), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", CeMMAP Working Paper CWP10/20](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf)
