@@ -16,6 +16,7 @@ Depends:
     R (>= 2.10)
 Imports: stats, 
 	ggplot2,
-	scales
+	scales,
+	grid
 Suggests: 
     testthat (>= 2.1.0)

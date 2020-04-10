@@ -115,7 +115,7 @@ print(plotmarg)
 You can then save the graph by
 
 ```R
-ggsave("mathmarg.pdf", plot=plotmarg)
+ggplot2::ggsave("mathmarg.pdf", plot=plotmarg)
 ```
 
 ### Simultaneous Confidence Sets
@@ -145,7 +145,7 @@ print(plotsimul)
 You can then save the graph by
 
 ```R
-ggsave("mathsimul.pdf", plot=plotsimul)
+ggplot2::ggsave("mathsimul.pdf", plot=plotsimul)
 ```
 
 
