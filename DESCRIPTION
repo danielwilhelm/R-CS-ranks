@@ -1,0 +1,19 @@
+Package: csranks
+Type: Package
+Title: Confidence Sets for Ranks
+Version: 0.0.0.9000
+Author: Daniel Wilhelm
+Maintainer: Daniel Wilhelm <d.wilhelm@ucl.ac.uk>
+Description: This package implements methods for computing confidence sets for ranks
+	 from Mogstad, Romano, Shaikh, and Wilhelm (2020).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Depends:
+    R (>= 2.10)
+Imports: stats, 
+	ggplot2,
+	scales
+Suggests: 
+    testthat (>= 2.1.0)
