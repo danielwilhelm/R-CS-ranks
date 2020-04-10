@@ -78,7 +78,34 @@ print(pisa)
 37   United States      502.3800   3.317920      505.3528   3.568673   478.2447 3.235444
 ```
 
+Consider ranking countries according to their students' achievement in mathematics. The scores in `math_score` are estimates of these achievements. The countries' ranks can be estimated using the function `xrank()`:
 
+```R
+math_rank <- xrank(math_score)
+```
+
+These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets.
+
+### Marginal Confidence Sets
+
+The marginal confidence sets for the ranks is computed as follows:
+
+```R
+CS_marg <- csranks(math_score, math_se, coverage=0.95, simul=FALSE, R=1000, seed=101)
+math_rankL_marg <- CS_marg$L
+math_rankU_marg <- CS_marg$U
+```
+
+where `math_rankL_marg` and `math_rankL_marg` contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by
+
+```R
+grid::current.viewport()
+plotsimul <- plotranking(ranks=math_rank, L=math_rankL_simul, U=math_rankU_simul, popnames=jurisdiction, 
+title="Ranking of OECD Countries by 2018 PISA Math Score", subtitle="(with 95% simultaneous confidence sets)")
+print(plotsimul)
+```
+
+![PISA Ranking](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples/mathmarg.pdf "Ranking of OECD Countries by 2018 PISA Math Score")
 
 # Reference
 [Mogstad, Romano, Shaikh, and Wilhelm (2020), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", CeMMAP Working Paper CWP10/20](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf)
