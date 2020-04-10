@@ -23,7 +23,7 @@ install_github("danielwilhelm/R-CS-ranks")
 
 ## Example: PISA Ranking
 
-This example illustrates the computation of confidence sets for the ranking of countries according students' achievements in mathematics. The following dataset contains data from the 2018 Program for International Student Assessment (PISA) study by the Organization for Economic Cooperation and Development (OECD), which can be downloaded at [https://www.oecd.org/pisa/data/]. Students' achievement is measured by the average mathematics test scores for all 15-year-old students in the study.
+This example illustrates the computation of confidence sets for the ranking of countries according students' achievements in mathematics. The following dataset contains data from the 2018 Program for International Student Assessment (PISA) study by the Organization for Economic Cooperation and Development (OECD), which can be downloaded at (https://www.oecd.org/pisa/data/). Students' achievement is measured by the average mathematics test scores for all 15-year-old students in the study.
 
 
 First, load the package `csranks` and the data:
