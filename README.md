@@ -82,6 +82,8 @@ Consider ranking countries according to their students' achievement in mathemati
 
 ```R
 math_rank <- xrank(math_score)
+math_rank
+ [1] 24 18 10  7 35 37 17  8  3 11 20 15 34 30 21 16 32 25  1  2 19 29 27 36  4 22 14  5 23 26  9 28 12  6 33 13 31
 ```
 
 These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets. Explanations and details about the differences of these two confidence sets can be found in Mogstad, Romano, Shaikh, and Wilhelm (2020). The complete R script containing this example, as well as R scripts for PISA rankings by reading and science scores, can be found in the subdirectory `examples/`.
