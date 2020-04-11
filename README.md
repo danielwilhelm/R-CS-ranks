@@ -1,21 +1,21 @@
 # csranks
-The `R` package `csranks` implements confidence sets for ranks as in Mogstad, Romano, Shaikh, and Wilhelm (2020). The R package contains help files describing the various commands, their syntax and gives examples.
+The `R` package `csranks` implements confidence sets for ranks as in [Mogstad, Romano, Shaikh, and Wilhelm (2020)](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf).
 
 ## Installation
 
-1. Install the package `devtools` if it isn't already:
+Install the package `devtools` if it isn't already:
 
 ```R
 install.packages("devtools")
 ```
 
-2. Load the package `devtools`:
+Load the package `devtools`:
 
 ```R
 library("devtools")
 ```
 
-3. Install the package `csranks`:
+Install the package `csranks`:
 
 ```R
 install_github("danielwilhelm/R-CS-ranks")
@@ -110,7 +110,7 @@ plotmarg <- plotranking(ranks=math_rank, L=math_rankL_marg, U=math_rankU_marg,
 print(plotmarg)
 ```
 
-![Ranking of OECD Countries by 2018 PISA Math Score](examples/mathmarg.jpg)
+![Ranking of OECD Countries by 2018 PISA Math Score](https://raw.githubusercontent.com/danielwilhelm/R-CS-ranks/master/examples/mathmarg.jpg)
 
 You can then save the graph by
 
@@ -140,7 +140,7 @@ plotsimul <- plotranking(ranks=math_rank, L=math_rankL_simul, U=math_rankU_simul
 print(plotsimul)
 ```
 
-![Ranking of OECD Countries by 2018 PISA Math Score](examples/mathsimul.jpg)
+![Ranking of OECD Countries by 2018 PISA Math Score](https://raw.githubusercontent.com/danielwilhelm/R-CS-ranks/master/examples/mathsimul.jpg)
 
 You can then save the graph by
 
