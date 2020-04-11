@@ -1,3 +1,3 @@
-# pkgdown 0.1.0
+# csranks 0.1.0
 
-* This is the first release of pkgdown.
+* This is the first release of csranks.
