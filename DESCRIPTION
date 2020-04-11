@@ -9,7 +9,7 @@ Description: This package implements methods for computing confidence sets for r
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/danielwilhelm/R-CS-ranks
+URL: https://github.com/danielwilhelm/R-CS-ranks, https://danielwilhelm.github.io/R-CS-ranks/
 BugReports: https://github.com/danielwilhelm/R-CS-ranks/issues
 RoxygenNote: 6.1.1
 Depends:
