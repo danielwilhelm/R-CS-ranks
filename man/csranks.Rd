@@ -39,6 +39,10 @@ Confidence sets for ranks
 \section{Details}{
 
 Implentation of the confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+
+
+Implentation of the confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+Parametric bootstrap based on the normal distribution with independent populations.
 }
 
 \examples{

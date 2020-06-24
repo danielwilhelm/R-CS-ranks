@@ -21,6 +21,10 @@
 #' x <- seq(1,3,length=10)
 #' sd <- rep(0.2,10)
 #' csranks(x, sd)
+
+#' @section Details:
+#' Implentation of the confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+#' Parametric bootstrap based on the normal distribution with independent populations.
 #' @export
 csranks <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, simul=TRUE, indices=NA, na.rm=FALSE, seed=NA) {
 	if (simul) {
@@ -48,6 +52,7 @@ csranks <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1
 
 #' @section Details:
 #' Implentation of the simultaneous confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+#' Parametric bootstrap based on the normal distribution with independent populations.
 #' @export
 csranks_simul <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, indices=NA, na.rm=FALSE, seed=NA) {
 
@@ -110,7 +115,8 @@ csranks_simul <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRU
 #' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 
 #' @section Details:
-#' Implentation of the simultaneous confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+#' Implentation of the marginal confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+#' Parametric bootstrap based on the normal distribution with independent populations.
 #' @export
 csranks_marg <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, indices=NA, na.rm=FALSE, seed=NA) {
 

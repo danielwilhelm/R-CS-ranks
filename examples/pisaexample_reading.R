@@ -17,7 +17,7 @@ reading_rank <- xrank(reading_score, na.rm=TRUE)
   grid::current.viewport()
   plotmarg <- plotranking(ranks=reading_rank, L=reading_rankL_marg, U=reading_rankU_marg, popnames=jurisdiction[!is.na(reading_score)], 
     title="Ranking of OECD Countries by 2018 PISA Reading Score", subtitle="(with 95% marginal confidence sets)", 
-    caption="Note: Spain's reading score is missing.")
+    caption="Note: Spain's reading score is missing.", colorbins=4)
   print(plotmarg)
 
   # save plot
@@ -36,7 +36,7 @@ reading_rank <- xrank(reading_score, na.rm=TRUE)
   grid::current.viewport()
   plotsimul <- plotranking(ranks=reading_rank, L=reading_rankL_simul, U=reading_rankU_simul, popnames=jurisdiction[!is.na(reading_score)], 
     title="Ranking of OECD Countries by 2018 PISA Reading Score", subtitle="(with 95% simultaneous confidence sets)",
-    caption="Note: Spain's reading score is missing.")
+    caption="Note: Spain's reading score is missing.", colorbins=4)
   print(plotsimul)
 
   # save plot

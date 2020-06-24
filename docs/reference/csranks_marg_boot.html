@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • csranks</title>
+<title>Marginal confidence sets for ranks using the bootstrap — csranks_marg_boot • csranks</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Marginal confidence sets for ranks using the bootstrap — csranks_marg_boot" />
+<meta property="og:description" content="This function is called by csranks_marg and by csranks_multinom when simul=FALSE and bootstrap=TRUE." />
 
 
 
@@ -68,7 +69,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -81,7 +82,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
 
@@ -118,79 +119,67 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Marginal confidence sets for ranks using the bootstrap</h1>
+    <small class="dont-index">Source: <a href='https://github.com/danielwilhelm/R-CS-ranks/blob/master/R/ranks.R'><code>R/ranks.R</code></a></small>
+    <div class="hidden name"><code>csranks_marg_boot.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>This function is called by <code><a href='csranks_marg.html'>csranks_marg</a></code> and by <code><a href='csranks_multinom.html'>csranks_multinom</a></code> when <code>simul=FALSE</code> and <code>bootstrap=TRUE</code>.</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'>csranks_marg_boot</span>(<span class='no'>x</span>, <span class='no'>param</span>, <span class='kw'>coverage</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='kw'>cstype</span> <span class='kw'>=</span> <span class='st'>"two-sided"</span>,
+  <span class='kw'>stepdown</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>bootdist</span> <span class='kw'>=</span> <span class='st'>"normal"</span>, <span class='kw'>R</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>indices</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-functions-for-inference-on-ranks" class="hasAnchor"><a href="#section-functions-for-inference-on-ranks" class="anchor"></a>Functions for inference on ranks</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="xrank.html">xrank()</a></code> </p>
-        </td>
-        <td><p>Compute ranks</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="csranks.html">csranks()</a></code> </p>
-        </td>
-        <td><p>Confidence sets for ranks</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="csranks_multinom.html">csranks_multinom()</a></code> </p>
-        </td>
-        <td><p>Confidence sets for ranks based on multinomial data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plotranking.html">plotranking()</a></code> </p>
-        </td>
-        <td><p>Plot ranking with confidence sets</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-datasets" class="hasAnchor"><a href="#section-datasets" class="anchor"></a>Datasets</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="pisa.html">pisa</a></code> </p>
-        </td>
-        <td><p>Cross-country comparison of students' achievement</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>vector of estimates</p></td>
+    </tr>
+    <tr>
+      <th>param</th>
+      <td><p>parameters required for bootstrap: if <code>bootdist="normal"</code>, then <code>param</code> is a vector of standard errors of <code>x</code>; if <code>bootdist="multinom"</code>, then <code>param</code> is number of trials.</p></td>
+    </tr>
+    <tr>
+      <th>coverage</th>
+      <td><p>nominal coverage of the confidence set. Default is 0.95.</p></td>
+    </tr>
+    <tr>
+      <th>cstype</th>
+      <td><p>type of confidence set (<code>two-sided</code>, <code>upper</code>, <code>lower</code>). Default is <code>two-sided</code>.</p></td>
+    </tr>
+    <tr>
+      <th>stepdown</th>
+      <td><p>logical; if <code>TRUE</code> (default), stepwise procedure is used, otherwise single step procedure is used.</p></td>
+    </tr>
+    <tr>
+      <th>bootdist</th>
+      <td><p>distribution to be used for parametric bootstrap; either <code>normal</code> (default) or <code>multinomial</code>.</p></td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td><p>number of bootstrap replications. Default is 1000.</p></td>
+    </tr>
+    <tr>
+      <th>indices</th>
+      <td><p>vector of indices of <code>x</code> for whose ranks the confidence sets are computed. <code>indices=NA</code> (default) means computation for all ranks.</p></td>
+    </tr>
+    <tr>
+      <th>seed</th>
+      <td><p>seed for bootstrap random variable draws. If set to <code>NA</code> (default), then seed is not set.</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>L, U lower and upper bounds of the confidence set for ranks indicated in <code>indices</code>.</p>
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>

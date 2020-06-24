@@ -35,6 +35,7 @@ This function is called by \code{\link{csranks}} when \code{simul=FALSE}.
 }
 \section{Details}{
 
-Implentation of the simultaneous confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+Implentation of the marginal confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
+Parametric bootstrap based on the normal distribution with independent populations.
 }
 

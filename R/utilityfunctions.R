@@ -5,6 +5,8 @@
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
 
 #' @return vector of the same dimension as \code{x} containing the ranks
+#' @examples
+#' xrank(c(4,4,4,3,1,10,7,7))
 #' @export
 xrank <- function(x, best=TRUE, na.rm=FALSE) {
 	if (na.rm) x <- x[!is.na(x)]

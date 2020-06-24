@@ -16,7 +16,7 @@ science_rank <- xrank(science_score)
   # plot ranking with marginal confidence sets
   grid::current.viewport()
   plotmarg <- plotranking(ranks=science_rank, L=science_rankL_marg, U=science_rankU_marg, popnames=jurisdiction, 
-    title="Ranking of OECD Countries by 2018 PISA Science Score", subtitle="(with 95% marginal confidence sets)")
+    title="Ranking of OECD Countries by 2018 PISA Science Score", subtitle="(with 95% marginal confidence sets)", colorbins=4)
   print(plotmarg)
 
   # save plot
@@ -34,7 +34,7 @@ science_rank <- xrank(science_score)
   # plot ranking with simultaneous confidence sets
   grid::current.viewport()
   plotsimul <- plotranking(ranks=science_rank, L=science_rankL_simul, U=science_rankU_simul, popnames=jurisdiction, 
-    title="Ranking of OECD Countries by 2018 PISA Science Score", subtitle="(with 95% simultaneous confidence sets)")
+    title="Ranking of OECD Countries by 2018 PISA Science Score", subtitle="(with 95% simultaneous confidence sets)", colorbins=4)
   print(plotsimul)
 
   # save plot

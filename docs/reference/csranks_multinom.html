@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • csranks</title>
+<title>Confidence sets for ranks based on multinomial data — csranks_multinom • csranks</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Confidence sets for ranks based on multinomial data — csranks_multinom" />
+<meta property="og:description" content="Confidence sets for ranks based on multinomial data" />
 
 
 
@@ -68,7 +69,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -118,79 +119,68 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Confidence sets for ranks based on multinomial data</h1>
+    <small class="dont-index">Source: <a href='https://github.com/danielwilhelm/R-CS-ranks/blob/master/R/ranks_multinom.R'><code>R/ranks_multinom.R</code></a></small>
+    <div class="hidden name"><code>csranks_multinom.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Confidence sets for ranks based on multinomial data</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'>csranks_multinom</span>(<span class='no'>x</span>, <span class='kw'>coverage</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='kw'>cstype</span> <span class='kw'>=</span> <span class='st'>"two-sided"</span>,
+  <span class='kw'>simul</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>multcorr</span> <span class='kw'>=</span> <span class='st'>"Bonferroni"</span>, <span class='kw'>indices</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='kw'>na.rm</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-functions-for-inference-on-ranks" class="hasAnchor"><a href="#section-functions-for-inference-on-ranks" class="anchor"></a>Functions for inference on ranks</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="xrank.html">xrank()</a></code> </p>
-        </td>
-        <td><p>Compute ranks</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="csranks.html">csranks()</a></code> </p>
-        </td>
-        <td><p>Confidence sets for ranks</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="csranks_multinom.html">csranks_multinom()</a></code> </p>
-        </td>
-        <td><p>Confidence sets for ranks based on multinomial data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plotranking.html">plotranking()</a></code> </p>
-        </td>
-        <td><p>Plot ranking with confidence sets</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-datasets" class="hasAnchor"><a href="#section-datasets" class="anchor"></a>Datasets</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="pisa.html">pisa</a></code> </p>
-        </td>
-        <td><p>Cross-country comparison of students' achievement</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>vector of counts of successes for each category</p></td>
+    </tr>
+    <tr>
+      <th>coverage</th>
+      <td><p>nominal coverage of the confidence set. Default is 0.95.</p></td>
+    </tr>
+    <tr>
+      <th>cstype</th>
+      <td><p>type of confidence set (<code>two-sided</code>, <code>upper</code>, <code>lower</code>). Default is <code>two-sided</code>.</p></td>
+    </tr>
+    <tr>
+      <th>simul</th>
+      <td><p>logical; if <code>TRUE</code> (default), then simultaneous confidence sets are computed, which jointly cover all categories indicated by <code>indices</code>. 
+Otherwise, for each category indicated in <code>indices</code> a marginal confidence set is computed.</p></td>
+    </tr>
+    <tr>
+      <th>multcorr</th>
+      <td><p>multiplicity correction to be used: <code>Bonferroni</code> (default), <code>Holm</code> or <code>none</code>.</p></td>
+    </tr>
+    <tr>
+      <th>indices</th>
+      <td><p>vector of indices of <code>x</code> for whose ranks the confidence sets are computed. <code>indices=NA</code> (default) means computation for all ranks.</p></td>
+    </tr>
+    <tr>
+      <th>na.rm</th>
+      <td><p>logical; if <code>TRUE</code>, then <code>NA</code>'s are removed from <code>x</code> and <code>sd</code> (if any).</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>L, U lower and upper bounds of the confidence set for ranks indicated in <code>indices</code>.</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Multinom.html'>rmultinom</a></span>(<span class='fl'>1</span>, <span class='fl'>1000</span>, <span class='fl'>1</span>:<span class='fl'>10</span>))
+<span class='fu'>csranks_multinom</span>(<span class='no'>x</span>)</div><div class='output co'>#&gt; $L
+#&gt;  [1] 9 8 5 4 4 4 2 1 1 1
+#&gt; 
+#&gt; $U
+#&gt;  [1] 10 10  9  8  8  8  7  4  4  3
+#&gt; </div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>

@@ -19,3 +19,6 @@ vector of the same dimension as \code{x} containing the ranks
 \description{
 Compute ranks
 }
+\examples{
+xrank(c(4,4,4,3,1,10,7,7))
+}

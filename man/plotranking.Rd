@@ -5,7 +5,7 @@
 \title{Plot ranking with confidence sets}
 \usage{
 plotranking(ranks, L, U, popnames = NULL, title = NULL,
-  subtitle = NULL, caption = NULL)
+  subtitle = NULL, caption = NULL, colorbins = 1)
 }
 \arguments{
 \item{ranks}{vector of ranks}
@@ -21,6 +21,8 @@ plotranking(ranks, L, U, popnames = NULL, title = NULL,
 \item{subtitle}{character string containing the subtitle of the graph. \code{subtitle=NULL} (default) means no subtitle.}
 
 \item{caption}{character string containing the caption of the graph. \code{caption=NULL} (default) means no caption.}
+
+\item{colorbins}{integer indicating the number of quantile bins into which populations are grouped and color-coded. Value has to lie between 1 (default) and the number of populations.}
 }
 \value{
 ggplot

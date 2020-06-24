@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -156,7 +156,7 @@ math_rank
 
 <span class="no">plotmarg</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/plotranking.html">plotranking</a></span>(<span class="kw">ranks</span><span class="kw">=</span><span class="no">math_rank</span>, <span class="kw">L</span><span class="kw">=</span><span class="no">math_rankL_marg</span>, <span class="kw">U</span><span class="kw">=</span><span class="no">math_rankU_marg</span>,
     <span class="kw">popnames</span><span class="kw">=</span><span class="no">jurisdiction</span>, <span class="kw">title</span><span class="kw">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>,
-    <span class="kw">subtitle</span><span class="kw">=</span><span class="st">"(with 95% marginal confidence sets)"</span>)
+    <span class="kw">subtitle</span><span class="kw">=</span><span class="st">"(with 95% marginal confidence sets)"</span>, <span class="kw">colorbins</span><span class="kw">=</span><span class="fl">4</span>)
 
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">plotmarg</span>)</pre></div>
 <p><img src="https://raw.githubusercontent.com/danielwilhelm/R-CS-ranks/master/examples/mathmarg.jpg" alt="Ranking of OECD Countries by 2018 PISA Math Score"></p>
@@ -175,7 +175,7 @@ math_rank
 
 <span class="no">plotsimul</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/plotranking.html">plotranking</a></span>(<span class="kw">ranks</span><span class="kw">=</span><span class="no">math_rank</span>, <span class="kw">L</span><span class="kw">=</span><span class="no">math_rankL_simul</span>, <span class="kw">U</span><span class="kw">=</span><span class="no">math_rankU_simul</span>,
     <span class="kw">popnames</span><span class="kw">=</span><span class="no">jurisdiction</span>, <span class="kw">title</span><span class="kw">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>,
-    <span class="kw">subtitle</span><span class="kw">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span>)
+    <span class="kw">subtitle</span><span class="kw">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span>, <span class="kw">colorbins</span><span class="kw">=</span><span class="fl">4</span>)
 
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">plotsimul</span>)</pre></div>
 <p><img src="https://raw.githubusercontent.com/danielwilhelm/R-CS-ranks/master/examples/mathsimul.jpg" alt="Ranking of OECD Countries by 2018 PISA Math Score"></p>
