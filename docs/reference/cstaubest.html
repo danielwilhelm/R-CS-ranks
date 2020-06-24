@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Changelog • csranks</title>
+<title>Projection confidence sets for the tau-best — cstaubest • csranks</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Changelog" />
+<meta property="og:title" content="Projection confidence sets for the tau-best — cstaubest" />
+<meta property="og:description" content="Projection confidence sets for the tau-best" />
 
 
 
@@ -68,7 +69,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-news">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -120,33 +121,75 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1 data-toc-skip>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/danielwilhelm/R-CS-ranks/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+    <h1>Projection confidence sets for the tau-best</h1>
+    <small class="dont-index">Source: <a href='https://github.com/danielwilhelm/R-CS-ranks/blob/master/R/ranks.R'><code>R/ranks.R</code></a></small>
+    <div class="hidden name"><code>cstaubest.Rd</code></div>
     </div>
 
-    <div id="csranks-0-2-0" class="section level1">
-<h1 class="page-header" data-toc-text="0.2.0">
-<a href="#csranks-0-2-0" class="anchor"></a>csranks 0.2.0</h1>
-<ul>
-<li>Added implementation of confidence sets for ranks based on multinomial data.</li>
-<li>Added implementation of confidence sets for tau-best and tau-worst.</li>
-</ul>
-</div>
-    <div id="csranks-0-1-0" class="section level1">
-<h1 class="page-header" data-toc-text="0.1.0">
-<a href="#csranks-0-1-0" class="anchor"></a>csranks 0.1.0</h1>
-<ul>
-<li>This is the first release of csranks.</li>
-</ul>
-</div>
-  </div>
+    <div class="ref-description">
+    <p>Projection confidence sets for the tau-best</p>
+    </div>
 
+    <pre class="usage"><span class='fu'>cstaubest</span>(<span class='no'>x</span>, <span class='no'>sd</span>, <span class='kw'>tau</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>coverage</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='kw'>stepdown</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>R</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>na.rm</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>vector of estimates</p></td>
+    </tr>
+    <tr>
+      <th>sd</th>
+      <td><p>vector of standard errors of <code>x</code></p></td>
+    </tr>
+    <tr>
+      <th>tau</th>
+      <td><p>the confidence set contains indicators for the elements in <code>x</code> whose rank is less than or equal to <code>tau</code>.</p></td>
+    </tr>
+    <tr>
+      <th>coverage</th>
+      <td><p>nominal coverage of the confidence set. Default is 0.95.</p></td>
+    </tr>
+    <tr>
+      <th>stepdown</th>
+      <td><p>logical; if <code>TRUE</code> (default), stepwise procedure is used, otherwise single step procedure is used.</p></td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td><p>number of bootstrap replications. Default is 1000.</p></td>
+    </tr>
+    <tr>
+      <th>na.rm</th>
+      <td><p>logical; if <code>TRUE</code>, then <code>NA</code>'s are removed from <code>x</code> and <code>sd</code> (if any).</p></td>
+    </tr>
+    <tr>
+      <th>seed</th>
+      <td><p>seed for bootstrap random variable draws. If set to <code>NA</code> (default), then seed is not set.</p></td>
+    </tr>
+    </table>
+
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>logical vector indicating which of the elements of <code>x</code> are in the confidence set for the tau-best.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    
+
+<p>Implentation of the projection confidence sets for the tau-best proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", <a href='https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf'>CeMMAP Working Paper CWP10/20</a>). The confidence set contains indicators for the elements in <code>x</code> whose rank is less than or equal to <code>tau</code> with probability approximately equal to the coverage indicated in <code>coverage</code>. 
+Parametric bootstrap based on the normal distribution with independent populations.</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>1</span>,<span class='fl'>3</span>,<span class='kw'>length</span><span class='kw'>=</span><span class='fl'>10</span>)
+<span class='no'>sd</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.2</span>,<span class='fl'>10</span>)
+<span class='fu'>cstaubest</span>(<span class='no'>x</span>, <span class='no'>sd</span>, <span class='kw'>tau</span><span class='kw'>=</span><span class='fl'>3</span>)</div><div class='output co'>#&gt;  [1] FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
     </nav>
   </div>
-
 </div>
 
 

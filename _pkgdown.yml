@@ -11,8 +11,9 @@ reference:
     - xrank
     - csranks
     - csranks_multinom
+    - cstaubest
+    - cstauworst
     - plotranking
   - title: "Datasets"
   - contents:
     - pisa
-    
