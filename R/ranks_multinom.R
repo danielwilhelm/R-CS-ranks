@@ -8,7 +8,7 @@
 #'		Otherwise, for each category indicated in \code{indices} a marginal confidence set is computed.
 #' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}.
 #' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
+#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
 
 #' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 
