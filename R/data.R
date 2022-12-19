@@ -8,7 +8,7 @@
 #'
 #' @format A data frame with 37 rows and 6 variables:
 #' \describe{
-#'   \item{jurisdiction}{jurisdiction}
+#'   \item{jurisdiction}{country, from which data was collected}
 #'   \item{math_score}{average score in math}
 #'   \item{math_se}{standard error for the average score in math}
 #'   \item{reading_score}{average score in reading}

@@ -14,18 +14,22 @@
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
 #' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
 
-#' @return A list with two items, L, U - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+#' @return A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 
 #' @examples
 #' x <- seq(1,3,length=10)
 #' sd <- rep(0.2,10)
 #' csranks(x, sd)
+#' csranks_simul(x, sd)
+#' csranks_marg(x, sd)
 
 #' @section Details:
 #' Stepwise procedure is TODO, Single step procedure is TODO.
 #' Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
 #'
-#' @references {1:Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20})}
+#' @references Mogstad, Romano, Shaikh, and Wilhelm.
+#' "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
+#' \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
 #' @export
 csranks <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, simul=TRUE, indices=NA, na.rm=FALSE, seed=NA) {
 	if (simul) {
@@ -35,25 +39,10 @@ csranks <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1
 	}
 }
 
-#' Simultaneous confidence sets for ranks
+#' @describeIn csranks Simultaneous confidence sets for ranks
 #'
-#' This function is called by \code{\link{csranks}} when \code{simul=TRUE}.
+#' This function is called by \code{csranks} when \code{simul=TRUE}.
 #'
-#' @param x vector of estimates
-#' @param sd vector of standard errors of \code{x}
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.
-#' @param R number of bootstrap replications. Default is 1000.
-#' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
-#' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
-
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
-
-#' @section Details:
-#' Implentation of the simultaneous confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
-#' Parametric bootstrap based on the normal distribution with independent populations.
 #' @export
 csranks_simul <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, indices=NA, na.rm=FALSE, seed=NA) {
 
@@ -98,26 +87,10 @@ csranks_simul <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRU
 	return(list(L=as.integer(Nminus+1),U=as.integer(p-Nplus)))
 }
 
-#' Marginal confidence sets for ranks
+#' @describeIn csranks Marginal confidence sets for ranks
 #'
-#' This function is called by \code{\link{csranks}} when \code{simul=FALSE}.
+#' This function is called by \code{csranks} when \code{simul=FALSE}.
 #'
-#'
-#' @param x vector of estimates
-#' @param sd vector of standard errors of \code{x}
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.
-#' @param R number of bootstrap replications. Default is 1000.
-#' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
-#' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
-
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
-
-#' @section Details:
-#' Implentation of the marginal confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
-#' Parametric bootstrap based on the normal distribution with independent populations.
 #' @export
 csranks_marg <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, indices=NA, na.rm=FALSE, seed=NA) {
 
@@ -146,27 +119,25 @@ csranks_marg <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE
 
 
 #' Projection confidence sets for the tau-best
+#' 
+#' Find a set of populations, which belong to tau-best populations according to 
+#' some feature with given confidence.
 #'
-#' @param x vector of estimates
-#' @param sd vector of standard errors of \code{x}
 #' @param tau the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.
-#' @param R number of bootstrap replications. Default is 1000.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
-#' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
-
+#' @inheritParams csranks
 #' @return logical vector indicating which of the elements of \code{x} are in the confidence set for the tau-best.
 
 #' @section Details:
-#' Implentation of the projection confidence sets for the tau-best proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}). The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}. 
+#' The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}. 
 #' Parametric bootstrap based on the normal distribution with independent populations.
 
 #' @examples
 #' x <- seq(1,3,length=10)
 #' sd <- rep(0.2,10)
 #' cstaubest(x, sd, tau=3)
-
+#' cstauworst(x, sd, tau=3)
+#' 
+#' @inherit csranks references
 #' @export
 cstaubest <- function(x, sd, tau=2, coverage=0.95, stepdown=TRUE, R=1000, na.rm=FALSE, seed=NA) {
 	
@@ -176,28 +147,11 @@ cstaubest <- function(x, sd, tau=2, coverage=0.95, stepdown=TRUE, R=1000, na.rm=
 }
 
 
-#' Projection confidence sets for the tau-worst
+#' @describeIn cstaubest Projection confidence sets for the tau-worst
 #'
-#' @param x vector of estimates
-#' @param sd vector of standard errors of \code{x}
-#' @param tau the confidence set contains indicators for the elements in \code{x} whose rank is among the tau worst, i.e. larger than or equal to \code{length(x)-tau+1}.
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.
-#' @param R number of bootstrap replications. Default is 1000.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
-#' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
-
-#' @return logical vector indicating which of the elements of \code{x} are in the confidence set for the tau-worst
-
-#' @section Details:
-#' Implentation of the projection confidence sets for the tau-worst proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}). The confidence set contains indicators for the elements in \code{x} whose rank is larger than or equal to \code{length(x)-tau+1} with probability approximately equal to the coverage indicated in \code{coverage}. 
-#' Parametric bootstrap based on the normal distribution with independent populations.
-
-#' @examples
-#' x <- seq(1,3,length=10)
-#' sd <- rep(0.2,10)
-#' cstauworst(x, sd, tau=3)
-
+#' Similar method, but for populations, which are tau-worst.
+#' Equivalent to calling \code{cstaubest} with \code{-x}.
+#'
 #' @export
 cstauworst <- function(x, sd, tau=2, coverage=0.95, stepdown=TRUE, R=1000, na.rm=FALSE, seed=NA) {
 	
@@ -206,6 +160,3 @@ cstauworst <- function(x, sd, tau=2, coverage=0.95, stepdown=TRUE, R=1000, na.rm
 	p <- length(x)
 	return(U>=p-tau+1)
 }
-
-
-	

@@ -2,11 +2,46 @@
 % Please edit documentation in R/ranks.R
 \name{csranks}
 \alias{csranks}
+\alias{csranks_simul}
+\alias{csranks_marg}
 \title{Confidence sets for ranks}
 \usage{
-csranks(x, sd, coverage = 0.95, cstype = "two-sided",
-  stepdown = TRUE, R = 1000, simul = TRUE, indices = NA,
-  na.rm = FALSE, seed = NA)
+csranks(
+  x,
+  sd,
+  coverage = 0.95,
+  cstype = "two-sided",
+  stepdown = TRUE,
+  R = 1000,
+  simul = TRUE,
+  indices = NA,
+  na.rm = FALSE,
+  seed = NA
+)
+
+csranks_simul(
+  x,
+  sd,
+  coverage = 0.95,
+  cstype = "two-sided",
+  stepdown = TRUE,
+  R = 1000,
+  indices = NA,
+  na.rm = FALSE,
+  seed = NA
+)
+
+csranks_marg(
+  x,
+  sd,
+  coverage = 0.95,
+  cstype = "two-sided",
+  stepdown = TRUE,
+  R = 1000,
+  indices = NA,
+  na.rm = FALSE,
+  seed = NA
+)
 }
 \arguments{
 \item{x}{vector of estimates}
@@ -17,7 +52,7 @@ csranks(x, sd, coverage = 0.95, cstype = "two-sided",
 
 \item{cstype}{type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.}
 
-\item{stepdown}{logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.}
+\item{stepdown}{logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used. See Details section for more.}
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
@@ -31,19 +66,37 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
 \value{
-L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Confidence sets for ranks
+Given estimates and stds of a certain feature, compute confidence sets for ranks based on the feature values.
 }
+\section{Functions}{
+\itemize{
+\item \code{csranks_simul()}: Simultaneous confidence sets for ranks
+
+This function is called by \code{csranks} when \code{simul=TRUE}.
+
+\item \code{csranks_marg()}: Marginal confidence sets for ranks
+
+This function is called by \code{csranks} when \code{simul=FALSE}.
+
+}}
 \section{Details}{
 
-Implentation of the confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
-Parametric bootstrap based on the normal distribution with independent populations.
+Stepwise procedure is TODO, Single step procedure is TODO.
+Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
 }
 
 \examples{
 x <- seq(1,3,length=10)
 sd <- rep(0.2,10)
 csranks(x, sd)
+csranks_simul(x, sd)
+csranks_marg(x, sd)
+}
+\references{
+Mogstad, Romano, Shaikh, and Wilhelm.
+"Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
+\href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
 }

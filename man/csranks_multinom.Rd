@@ -2,11 +2,37 @@
 % Please edit documentation in R/ranks_multinom.R
 \name{csranks_multinom}
 \alias{csranks_multinom}
+\alias{csranks_multinom_simul}
+\alias{csranks_multinom_marg}
 \title{Confidence sets for ranks based on multinomial data}
 \usage{
-csranks_multinom(x, coverage = 0.95, cstype = "two-sided",
-  simul = TRUE, multcorr = "Bonferroni", indices = NA,
-  na.rm = FALSE)
+csranks_multinom(
+  x,
+  coverage = 0.95,
+  cstype = "two-sided",
+  simul = TRUE,
+  multcorr = "Bonferroni",
+  indices = NA,
+  na.rm = FALSE
+)
+
+csranks_multinom_simul(
+  x,
+  coverage = 0.95,
+  cstype = "two-sided",
+  multcorr = "Bonferroni",
+  indices = NA,
+  na.rm = FALSE
+)
+
+csranks_multinom_marg(
+  x,
+  coverage = 0.95,
+  cstype = "two-sided",
+  multcorr = "Bonferroni",
+  indices = NA,
+  na.rm = FALSE
+)
 }
 \arguments{
 \item{x}{vector of counts of successes for each category}
@@ -15,22 +41,40 @@ csranks_multinom(x, coverage = 0.95, cstype = "two-sided",
 
 \item{cstype}{type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.}
 
-\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all categories indicated by \code{indices}. 
-Otherwise, for each category indicated in \code{indices} a marginal confidence set is computed.}
+\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}. 
+Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
 \item{multcorr}{multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}.}
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
 }
 \value{
-L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Confidence sets for ranks based on multinomial data
+Given data with counts of successes for each category, calculate confidence set for ranks by most successes for categories.
 }
+\section{Functions}{
+\itemize{
+\item \code{csranks_multinom_simul()}: Simultaneous Confidence sets for ranks based on multinomial data
+
+This function is called by \code{csranks_multinom} when \code{simul=TRUE}.
+
+\item \code{csranks_multinom_marg()}: Marginal Confidence sets for ranks based on multinomial data
+
+This function is called by \code{csranks_multinom} when \code{simul=FALSE}.
+
+}}
+\section{Details}{
+
+Bonferroni is TODO, Holm is TODO
+}
+
 \examples{
 x <- c(rmultinom(1, 1000, 1:10))
 csranks_multinom(x)
+csranks_multinom_simul(x)
+csranks_multinom_marg(x)
 }
