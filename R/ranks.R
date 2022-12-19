@@ -1,10 +1,12 @@
 #' Confidence sets for ranks
+#' 
+#' Given estimates and stds of a certain feature, compute confidence sets for ranks based on the feature values.
 #'
 #' @param x vector of estimates
 #' @param sd vector of standard errors of \code{x}
 #' @param coverage nominal coverage of the confidence set. Default is 0.95.
 #' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.
+#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used. See Details section for more.
 #' @param R number of bootstrap replications. Default is 1000.
 #' @param simul logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}. 
 #'		Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.
@@ -20,8 +22,10 @@
 #' csranks(x, sd)
 
 #' @section Details:
-#' Implentation of the confidence sets proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}).
-#' Parametric bootstrap based on the normal distribution with independent populations.
+#' Stepwise procedure is TODO, Single step procedure is TODO.
+#' Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
+#'
+#' @references {1:Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20})}
 #' @export
 csranks <- function(x, sd, coverage=0.95, cstype="two-sided", stepdown=TRUE, R=1000, simul=TRUE, indices=NA, na.rm=FALSE, seed=NA) {
 	if (simul) {
