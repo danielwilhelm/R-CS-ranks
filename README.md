@@ -1,4 +1,7 @@
 # csranks
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/danielwilhelm/R-CS-ranks/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/danielwilhelm/R-CS-ranks/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 The `R` package `csranks` implements confidence sets for ranks as in [Mogstad, Romano, Shaikh, and Wilhelm (2020)](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf).
 
 ## Installation
