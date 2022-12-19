@@ -9,7 +9,7 @@
 #' @param caption character string containing the caption of the graph. \code{caption=NULL} (default) means no caption.
 #' @param colorbins integer indicating the number of quantile bins into which populations are grouped and color-coded. Value has to lie between 1 (default) and the number of populations.
 
-#' @return ggplot
+#' @return A ggplot plot displaying confidence sets.
 
 #' @examples
 #' x <- seq(1,3,length=10)
