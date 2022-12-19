@@ -14,7 +14,7 @@
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
 #' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
 
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+#' @return A list with two items, L, U - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 
 #' @examples
 #' x <- seq(1,3,length=10)
