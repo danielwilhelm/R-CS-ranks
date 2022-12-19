@@ -1,17 +1,14 @@
 
 #' Confidence sets for ranks based on multinomial data
 #'
+#' Given data with counts of successes for each category, calculate confidence set for ranks by most successes for categories.
+#'
 #' @param x vector of counts of successes for each category
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param simul logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all categories indicated by \code{indices}. 
-#'		Otherwise, for each category indicated in \code{indices} a marginal confidence set is computed.
 #' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}.
-#' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
-
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
-
+#' @inheritParams csranks
+#' @inherit csranks return
+#' @section Details
+#' Bonferroni is TODO, Holm is TODO
 #' @examples
 #' x <- c(rmultinom(1, 1000, 1:10))
 #' csranks_multinom(x)
