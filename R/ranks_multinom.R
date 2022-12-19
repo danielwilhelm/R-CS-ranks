@@ -3,11 +3,18 @@
 #' Given data with counts of successes for each category, calculate confidence set for ranks by most successes for categories.
 #'
 #' @param x vector of counts of successes for each category
-#' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}.
+#' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}. See Details section for more.
 #' @inheritParams csranks
 #' @inherit csranks return
 #' @section Details:
-#' Bonferroni is TODO, Holm is TODO
+#' The procedure of determining intervals is described in the article in references.
+#' Generally, it consists of verification of a large set of hypotheses. 
+#' With data from multinomial distributions, exact tests for individual category at given confidence level are available.
+#' When we are testing for multiple hypotheses at once, a correction is needed - usually on confidence level.
+#' 
+#' Bonferroni correction simply divides the error level (0.05 in case of 0.95 coverage) by the number of hypotheses.
+#' Holm correction is more complicated: it sorts p-values and rejects the larger ones with slightly higher error levels.
+#' 
 #' @examples
 #' x <- c(rmultinom(1, 1000, 1:10))
 #' csranks_multinom(x)

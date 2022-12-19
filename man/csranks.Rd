@@ -84,7 +84,14 @@ This function is called by \code{csranks} when \code{simul=FALSE}.
 }}
 \section{Details}{
 
-Stepwise procedure is TODO, Single step procedure is TODO.
+The procedure of determining intervals is described in the article in references.
+Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
+of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that 
+were not rejected so far. The former corresponds to \code{stepdown=FALSE}; the latter to \code{stepdown=TRUE}.
+
+From a practical point of view, \code{stepdown=TRUE} takes more time, but usually results
+in tighter (better) confidence sets.
+
 Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
 }
 

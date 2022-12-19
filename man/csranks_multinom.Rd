@@ -44,7 +44,7 @@ csranks_multinom_marg(
 \item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}. 
 Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
-\item{multcorr}{multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}.}
+\item{multcorr}{multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}. See Details section for more.}
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
@@ -69,7 +69,13 @@ This function is called by \code{csranks_multinom} when \code{simul=FALSE}.
 }}
 \section{Details}{
 
-Bonferroni is TODO, Holm is TODO
+The procedure of determining intervals is described in the article in references.
+Generally, it consists of verification of a large set of hypotheses. 
+With data from multinomial distributions, exact tests for individual category at given confidence level are available.
+When we are testing for multiple hypotheses at once, a correction is needed - usually on confidence level.
+
+Bonferroni correction simply divides the error level (0.05 in case of 0.95 coverage) by the number of hypotheses.
+Holm correction is more complicated: it sorts p-values and rejects the larger ones with slightly higher error levels.
 }
 
 \examples{
