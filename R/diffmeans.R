@@ -1,18 +1,10 @@
 #' Confidence sets for vector of differences
-#'
-#' @param x vector of estimates
-#' @param sd vector of standard errors of \code{x}
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param indices vector of indices of \code{x} whose differences with all others the confidence set jointly covers. \code{indices=NA} (default) means confidence set jointly covers all possible differences.
-#' @param cstype type of confidence set (\code{symmetric}, \code{upper}, \code{lower}). Default is \code{symmetric}.
-#' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.
-#' @param R number of bootstrap replications. Default is 1000.
-#' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
-
-#' @return L,U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+#' @inheritParams csranks
+#' @inherit csranks return
 
 #' @importFrom stats quantile
 #' @importFrom stats rnorm
+#' @noRd
 csdiffmeans <- function(x, sd, coverage=0.95, indices=NA, cstype="symmetric", stepdown=TRUE, R=1000, seed=NA) {
 
   # check arguments

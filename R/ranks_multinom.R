@@ -1,20 +1,23 @@
-
 #' Confidence sets for ranks based on multinomial data
 #'
+#' Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
+#'
 #' @param x vector of counts of successes for each category
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param simul logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all categories indicated by \code{indices}. 
-#'		Otherwise, for each category indicated in \code{indices} a marginal confidence set is computed.
-#' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}.
-#' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
-
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
-
+#' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}. See Details section for more.
+#' @inheritParams csranks
+#' @inherit csranks return
+#' @section Details:
+#' The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
+#' 
+#' @references 
+#' Bazylik, Mogstad, Romano, Shaikh, and Wilhelm. 
+#' "Finite-and large-sample inference for ranks using multinomial data with an application to ranking political parties". 
+#' 
 #' @examples
 #' x <- c(rmultinom(1, 1000, 1:10))
 #' csranks_multinom(x)
+#' csranks_multinom_simul(x)
+#' csranks_multinom_marg(x)
 #' @export
 csranks_multinom <- function(x, coverage=0.95, cstype="two-sided", simul=TRUE, multcorr="Bonferroni", indices=NA, na.rm=FALSE) {
 
@@ -27,19 +30,10 @@ csranks_multinom <- function(x, coverage=0.95, cstype="two-sided", simul=TRUE, m
 
 
 
-#' Simultaneous Confidence sets for ranks based on multinomial data
+#' @describeIn csranks_multinom Simultaneous Confidence sets for ranks based on multinomial data
 #'
-#' This function is called by \code{\link{csranks_multinom}} when \code{simul=TRUE}.
+#' This function is called by \code{csranks_multinom} when \code{simul=TRUE}.
 #'
-#' @param x vector of counts of successes for each category
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default) or \code{Holm}.
-#' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
-
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
-
 #' @export
 #' @importFrom stats rmultinom
 #' @importFrom stats pbinom
@@ -134,19 +128,10 @@ csranks_multinom_simul <- function(x, coverage=0.95, cstype="two-sided", multcor
 }
 
 
-#' Marginal Confidence sets for ranks based on multinomial data
+#' @describeIn csranks_multinom Marginal Confidence sets for ranks based on multinomial data
 #'
-#' This function is called by \code{\link{csranks_multinom}} when \code{simul=FALSE}.
+#' This function is called by \code{csranks_multinom} when \code{simul=FALSE}.
 #'
-#' @param x vector of counts of successes for each category
-#' @param coverage nominal coverage of the confidence set. Default is 0.95.
-#' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
-#' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default) or \code{Holm}.
-#' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any). 
-
-#' @return L, U lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
-
 #' @export
 csranks_multinom_marg <- function(x, coverage=0.95, cstype="two-sided", multcorr="Bonferroni", indices=NA, na.rm=FALSE) {
 

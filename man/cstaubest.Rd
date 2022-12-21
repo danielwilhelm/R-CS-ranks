@@ -2,10 +2,30 @@
 % Please edit documentation in R/ranks.R
 \name{cstaubest}
 \alias{cstaubest}
+\alias{cstauworst}
 \title{Projection confidence sets for the tau-best}
 \usage{
-cstaubest(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE,
-  R = 1000, na.rm = FALSE, seed = NA)
+cstaubest(
+  x,
+  sd,
+  tau = 2,
+  coverage = 0.95,
+  stepdown = TRUE,
+  R = 1000,
+  na.rm = FALSE,
+  seed = NA
+)
+
+cstauworst(
+  x,
+  sd,
+  tau = 2,
+  coverage = 0.95,
+  stepdown = TRUE,
+  R = 1000,
+  na.rm = FALSE,
+  seed = NA
+)
 }
 \arguments{
 \item{x}{vector of estimates}
@@ -16,7 +36,7 @@ cstaubest(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE,
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 
-\item{stepdown}{logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used.}
+\item{stepdown}{logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used. See Details section for more.}
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
@@ -28,11 +48,20 @@ cstaubest(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE,
 logical vector indicating which of the elements of \code{x} are in the confidence set for the tau-best.
 }
 \description{
-Projection confidence sets for the tau-best
+Find a set of populations, which belong to tau-best populations according to 
+some feature with given confidence.
 }
+\section{Functions}{
+\itemize{
+\item \code{cstauworst()}: Projection confidence sets for the tau-worst
+
+Similar method, but for populations, which are tau-worst.
+Equivalent to calling \code{cstaubest} with \code{-x}.
+
+}}
 \section{Details}{
 
-Implentation of the projection confidence sets for the tau-best proposed in Mogstad, Romano, Shaikh, and Wilhelm ("Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}). The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}. 
+The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}. 
 Parametric bootstrap based on the normal distribution with independent populations.
 }
 
@@ -40,4 +69,11 @@ Parametric bootstrap based on the normal distribution with independent populatio
 x <- seq(1,3,length=10)
 sd <- rep(0.2,10)
 cstaubest(x, sd, tau=3)
+cstauworst(x, sd, tau=3)
+
+}
+\references{
+Mogstad, Romano, Shaikh, and Wilhelm.
+"Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
+\href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
 }

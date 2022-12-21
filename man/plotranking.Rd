@@ -4,8 +4,16 @@
 \alias{plotranking}
 \title{Plot ranking with confidence sets}
 \usage{
-plotranking(ranks, L, U, popnames = NULL, title = NULL,
-  subtitle = NULL, caption = NULL, colorbins = 1)
+plotranking(
+  ranks,
+  L,
+  U,
+  popnames = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  colorbins = 1
+)
 }
 \arguments{
 \item{ranks}{vector of ranks}
@@ -25,7 +33,7 @@ plotranking(ranks, L, U, popnames = NULL, title = NULL,
 \item{colorbins}{integer indicating the number of quantile bins into which populations are grouped and color-coded. Value has to lie between 1 (default) and the number of populations.}
 }
 \value{
-ggplot
+A ggplot plot displaying confidence sets.
 }
 \description{
 Plot ranking with confidence sets

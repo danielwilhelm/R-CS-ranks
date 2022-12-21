@@ -19,6 +19,7 @@ xrank <- function(x, best=TRUE, na.rm=FALSE) {
 #' @param n number of bins
 
 #' @return vector of the same dimension as \code{x} containing the a bin membership indicator
+#' @noRd
 createbins <- function(x, n) {
 	bins <- cut(x, breaks=quantile(x, probs=seq(0,1, by=1/n), na.rm=TRUE), include.lowest=TRUE)	
 	levels(bins) <- as.character(1:n)
@@ -30,4 +31,5 @@ createbins <- function(x, n) {
 #' @param x vector of values to be partitioned
 
 #' @return vector of the same dimension as \code{x} containing the a quartile bin membership indicator
+#' @noRd
 createquartiles <- function(x) return(createbins(x,4))

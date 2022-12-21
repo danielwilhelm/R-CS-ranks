@@ -4,16 +4,18 @@
 \name{pisa}
 \alias{pisa}
 \title{Cross-country comparison of students' achievement}
-\format{A data frame with 37 rows and 6 variables:
+\format{
+A data frame with 37 rows and 6 variables:
 \describe{
-  \item{jurisdiction}{jurisdiction}
+  \item{jurisdiction}{country, from which data was collected}
   \item{math_score}{average score in math}
   \item{math_se}{standard error for the average score in math}
   \item{reading_score}{average score in reading}
   \item{reading_se}{standard error for the average score in reading}
   \item{science_score}{average score in science}
   \item{science_se}{standard error for the average score in science}
-}}
+}
+}
 \source{
 \url{https://www.oecd.org/pisa/data/}
 }
