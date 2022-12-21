@@ -38,11 +38,19 @@ plotranking <- function(ranks, L, U, popnames=NULL, title=NULL, subtitle=NULL, c
 	} else {
 		pl <- ggplot(data=dat, aes(x=reorder(popnames, ranks), y=ranks))	
 	}
-
+	
+	# To understand geom_errorbar behavior, it's better to imagine example with barplots and errorbars
+	# The absolute width of bars depends on amount of categories. The more categories, the narrower bars
+	# `width` in geom_errorbar is width relative to width of associated bar
+	# So again, the more categories (or populations in our case), the narrower errorbar
+	desired_errorbar_width <- .0125 # This is a value, which looked nice for PISA example
+	errorbar_width <- desired_errorbar_width * p # Inside the geom_errorbar, it will be divided back to desired value
+	
 	pl = pl +
 	  	theme_bw() + 
 	  	geom_point() +
-	  	geom_errorbar(aes(ymin=L, ymax=U), width=.5, size=1, position=position_dodge(0.1)) +
+	  	geom_errorbar(aes(ymin=L, ymax=U), width=errorbar_width, 
+	  	              size=1, position=position_dodge(0.1)) +
 	  	coord_flip()
 
  	if (colorbins>1) {
