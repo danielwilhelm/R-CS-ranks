@@ -1,19 +1,17 @@
 #' Confidence sets for ranks based on multinomial data
 #'
-#' Given data with counts of successes for each category, calculate confidence set for ranks by most successes for categories.
+#' Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
 #'
 #' @param x vector of counts of successes for each category
 #' @param multcorr multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}. See Details section for more.
 #' @inheritParams csranks
 #' @inherit csranks return
 #' @section Details:
-#' The procedure of determining intervals is described in the article in references.
-#' Generally, it consists of verification of a large set of hypotheses. 
-#' With data from multinomial distributions, exact tests for individual category at given confidence level are available.
-#' When we are testing for multiple hypotheses at once, a correction is needed - usually on confidence level.
+#' The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 #' 
-#' Bonferroni correction simply divides the error level (0.05 in case of 0.95 coverage) by the number of hypotheses.
-#' Holm correction is more complicated: it sorts p-values and rejects the larger ones with slightly higher error levels.
+#' @references 
+#' Bazylik, Mogstad, Romano, Shaikh, and Wilhelm. 
+#' "Finite-and large-sample inference for ranks using multinomial data with an application to ranking political parties". 
 #' 
 #' @examples
 #' x <- c(rmultinom(1, 1000, 1:10))

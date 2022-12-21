@@ -1,6 +1,8 @@
 #' Confidence sets for ranks
 #' 
-#' Given estimates and stds of a certain feature, compute confidence sets for ranks based on the feature values.
+#' Given estimates and their standard errors of a certain feature for a set of populations, 
+#' calculate confidence sets for the ranks of populations, 
+#' where populations are ranked by the feature values.
 #'
 #' @param x vector of estimates
 #' @param sd vector of standard errors of \code{x}
@@ -24,7 +26,7 @@
 #' csranks_marg(x, sd)
 
 #' @section Details:
-#' The procedure of determining intervals is described in the article in references.
+#' The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 #' Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
 #' of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that 
 #' were not rejected so far. The former corresponds to \code{stepdown=FALSE}; the latter to \code{stepdown=TRUE}.

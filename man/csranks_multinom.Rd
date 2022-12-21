@@ -54,7 +54,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Given data with counts of successes for each category, calculate confidence set for ranks by most successes for categories.
+Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
 }
 \section{Functions}{
 \itemize{
@@ -69,13 +69,7 @@ This function is called by \code{csranks_multinom} when \code{simul=FALSE}.
 }}
 \section{Details}{
 
-The procedure of determining intervals is described in the article in references.
-Generally, it consists of verification of a large set of hypotheses. 
-With data from multinomial distributions, exact tests for individual category at given confidence level are available.
-When we are testing for multiple hypotheses at once, a correction is needed - usually on confidence level.
-
-Bonferroni correction simply divides the error level (0.05 in case of 0.95 coverage) by the number of hypotheses.
-Holm correction is more complicated: it sorts p-values and rejects the larger ones with slightly higher error levels.
+The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 }
 
 \examples{
@@ -83,4 +77,8 @@ x <- c(rmultinom(1, 1000, 1:10))
 csranks_multinom(x)
 csranks_multinom_simul(x)
 csranks_multinom_marg(x)
+}
+\references{
+Bazylik, Mogstad, Romano, Shaikh, and Wilhelm. 
+"Finite-and large-sample inference for ranks using multinomial data with an application to ranking political parties".
 }

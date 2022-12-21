@@ -69,7 +69,9 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Given estimates and stds of a certain feature, compute confidence sets for ranks based on the feature values.
+Given estimates and their standard errors of a certain feature for a set of populations, 
+calculate confidence sets for the ranks of populations, 
+where populations are ranked by the feature values.
 }
 \section{Functions}{
 \itemize{
@@ -84,7 +86,7 @@ This function is called by \code{csranks} when \code{simul=FALSE}.
 }}
 \section{Details}{
 
-The procedure of determining intervals is described in the article in references.
+The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
 of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that 
 were not rejected so far. The former corresponds to \code{stepdown=FALSE}; the latter to \code{stepdown=TRUE}.
