@@ -8,7 +8,7 @@
 csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetric", stepdown = TRUE, R = 1000, seed = NA) {
   # check arguments
   cstype <- match.arg(cstype, c("symmetric", "upper", "lower"))
-
+  
   # initializations
   p <- length(x)
   if (any(is.na(indices))) indices <- 1:p
@@ -21,15 +21,12 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   mmax <- function(x) max(-x)
 
   # which differences?
-  I0 <- matrix(TRUE, p, p)
-  I0[-indices, ] <- FALSE
-  if (stepdown & cstype == "symmetric") {
+  I0 <- initialize_I0(p=p, indices=indices, stepdown = stepdown, cstype=cstype)
+  if (stepdown & cstype == "symmetric")
     cstype <- "lower"
-    I0[, indices] <- TRUE
-  }
-  diag(I0) <- FALSE
   I1 <- I0
   Istar <- I0
+  
 
   # beta-quantiles from Ln and Un
   LInv <- function(I, beta, fn){
@@ -83,4 +80,14 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   ChatU[!Istar] <- NA
 
   return(list(L = ChatL, U = ChatU))
+}
+
+initialize_I0 <- function(p, indices, stepdown, cstype){
+  I0 <- matrix(TRUE, p, p)
+  I0[-indices,] <- FALSE
+  if (stepdown & cstype == "symmetric") {
+    I0[, indices] <- TRUE
+  }
+  diag(I0) <- FALSE
+  I0
 }
