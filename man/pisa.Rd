@@ -24,7 +24,7 @@ pisa
 }
 \description{
 A dataset containing average scores on math, reading, and science
-together with standard errors for all OECD countries. These are 
+together with standard errors for all OECD countries. These are
 from the 2018 Program for International Student Assessment (PISA)
 study by the Organization for Economic Cooperation and Development (OECD).
 The average scores are over all 15-year-old students in the study.

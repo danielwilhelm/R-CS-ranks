@@ -48,7 +48,7 @@ cstauworst(
 logical vector indicating which of the elements of \code{x} are in the confidence set for the tau-best.
 }
 \description{
-Find a set of populations, which belong to tau-best populations according to 
+Find a set of populations, which belong to tau-best populations according to
 some feature with given confidence.
 }
 \section{Functions}{
@@ -61,15 +61,15 @@ Equivalent to calling \code{cstaubest} with \code{-x}.
 }}
 \section{Details}{
 
-The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}. 
+The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
 Parametric bootstrap based on the normal distribution with independent populations.
 }
 
 \examples{
-x <- seq(1,3,length=10)
-sd <- rep(0.2,10)
-cstaubest(x, sd, tau=3)
-cstauworst(x, sd, tau=3)
+x <- seq(1, 3, length = 10)
+sd <- rep(0.2, 10)
+cstaubest(x, sd, tau = 3)
+cstauworst(x, sd, tau = 3)
 
 }
 \references{

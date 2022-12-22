@@ -42,8 +42,8 @@ A ggplot plot displaying confidence sets.
 Plot ranking with confidence sets
 }
 \examples{
-x <- seq(1,3,length=10)
-sd <- rep(0.2,10)
+x <- seq(1, 3, length = 10)
+sd <- rep(0.2, 10)
 ranks <- xrank(x)
 CS <- csranks(x, sd)
 grid::current.viewport()

@@ -41,7 +41,7 @@ csranks_multinom_marg(
 
 \item{cstype}{type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.}
 
-\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}. 
+\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}.
 Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
 \item{multcorr}{multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}. See Details section for more.}
@@ -79,6 +79,6 @@ csranks_multinom_simul(x)
 csranks_multinom_marg(x)
 }
 \references{
-Bazylik, Mogstad, Romano, Shaikh, and Wilhelm. 
+Bazylik, Mogstad, Romano, Shaikh, and Wilhelm.
 "Finite-and large-sample inference for ranks using multinomial data with an application to ranking political parties".
 }

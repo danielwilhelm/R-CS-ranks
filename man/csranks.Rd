@@ -56,7 +56,7 @@ csranks_marg(
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
-\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}. 
+\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}.
 Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
@@ -69,8 +69,8 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Given estimates and their standard errors of a certain feature for a set of populations, 
-calculate confidence sets for the ranks of populations, 
+Given estimates and their standard errors of a certain feature for a set of populations,
+calculate confidence sets for the ranks of populations,
 where populations are ranked by the feature values.
 }
 \section{Functions}{
@@ -88,7 +88,7 @@ This function is called by \code{csranks} when \code{simul=FALSE}.
 
 The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
-of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that 
+of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that
 were not rejected so far. The former corresponds to \code{stepdown=FALSE}; the latter to \code{stepdown=TRUE}.
 
 From a practical point of view, \code{stepdown=TRUE} takes more time, but usually results
@@ -98,8 +98,8 @@ Parametric bootstrap used to calculate distribution for confidence sets based on
 }
 
 \examples{
-x <- seq(1,3,length=10)
-sd <- rep(0.2,10)
+x <- seq(1, 3, length = 10)
+sd <- rep(0.2, 10)
 csranks(x, sd)
 csranks_simul(x, sd)
 csranks_marg(x, sd)
