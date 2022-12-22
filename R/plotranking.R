@@ -8,7 +8,7 @@
 #' @param subtitle character string containing the subtitle of the graph. \code{subtitle=NULL} (default) means no subtitle.
 #' @param caption character string containing the caption of the graph. \code{caption=NULL} (default) means no caption.
 #' @param colorbins integer indicating the number of quantile bins into which populations are grouped and color-coded. Value has to lie between 1 (default) and the number of populations.
-
+#' @param horizontal logical. Should be the bars displayed horizontally, or vertically?
 #' @return A ggplot plot displaying confidence sets.
 
 #' @examples
@@ -22,7 +22,8 @@
 #' @export
 #' @import ggplot2
 #' @importFrom stats reorder
-plotranking <- function(ranks, L, U, popnames=NULL, title=NULL, subtitle=NULL, caption=NULL, colorbins=1) {
+plotranking <- function(ranks, L, U, popnames=NULL, title=NULL, subtitle=NULL, 
+                        caption=NULL, colorbins=1, horizontal=TRUE) {
 
 	# initializations
 	cc <- scales::seq_gradient_pal("#66a182", "#d1495b", "Lab")(seq(0,1,length.out=4))
@@ -34,9 +35,11 @@ plotranking <- function(ranks, L, U, popnames=NULL, title=NULL, subtitle=NULL, c
 
 	# plot
 	if (colorbins>1) {
-		pl <- ggplot(data=dat, aes(x=reorder(popnames, ranks), y=ranks, color=createbins(ranks,colorbins)))	
+		pl <- ggplot(data=dat, aes(x=reorder(popnames, ranks),
+		                           y=ranks, color=createbins(ranks,colorbins)))	
 	} else {
-		pl <- ggplot(data=dat, aes(x=reorder(popnames, ranks), y=ranks))	
+		pl <- ggplot(data=dat, aes(x=reorder(popnames, ranks), 
+		                           y=ranks))	
 	}
 	
 	# To understand geom_errorbar behavior, it's better to imagine example with barplots and errorbars
@@ -50,9 +53,9 @@ plotranking <- function(ranks, L, U, popnames=NULL, title=NULL, subtitle=NULL, c
 	  	theme_bw() + 
 	  	geom_point() +
 	  	geom_errorbar(aes(ymin=L, ymax=U), width=errorbar_width, 
-	  	              size=1, position=position_dodge(0.1)) +
-	  	coord_flip()
-
+	  	              size=1, position=position_dodge(0.1))
+  if(horizontal)
+    pl <- pl + coord_flip()
  	if (colorbins>1) {
  		pl = pl +
  			labs(title = title, subtitle = subtitle, caption=caption, color=coltitle)
