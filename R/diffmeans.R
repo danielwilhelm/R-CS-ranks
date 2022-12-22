@@ -31,16 +31,19 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   I1 <- I0
   Istar <- I0
 
-  # parametric bootstrap
-  diffFn <- function(Z, I, fn) {
-    Zdiff <- outer(Z, Z, "-")
-    fn(Zdiff[I] / sigmadiff[I])
-  }
-
   # beta-quantiles from Ln and Un
-  LLowerInv <- function(I, beta) quantile(replicate(R, diffFn(sd * rnorm(p), I, max)), probs = beta)
-  LUpperInv <- function(I, beta) quantile(replicate(R, diffFn(sd * rnorm(p), I, mmax)), probs = beta)
-  LSymmInv <- function(I, beta) quantile(replicate(R, diffFn(sd * rnorm(p), I, maxabs)), probs = beta)
+  LInv <- function(I, beta, fn){
+    bootstrap_estimates <- sapply(1:R, function(i){
+      # parametric bootstrap
+      Z <- rnorm(p, sd=sd)
+      Zdiff <- outer(Z, Z, "-")
+      fn(Zdiff[I] / sigmadiff[I])
+    })
+    quantile(bootstrap_estimates, probs=beta)
+  }
+  LLowerInv <- function(I, beta) LInv(I, beta, max)
+  LUpperInv <- function(I, beta) LInv(I, beta, mmax)
+  LSymmInv <- function(I, beta) LInv(I, beta, maxabs)
 
   # compute CS
   if (!is.na(seed)) set.seed(seed)
