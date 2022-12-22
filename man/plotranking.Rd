@@ -12,7 +12,8 @@ plotranking(
   title = NULL,
   subtitle = NULL,
   caption = NULL,
-  colorbins = 1
+  colorbins = 1,
+  horizontal = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ plotranking(
 \item{caption}{character string containing the caption of the graph. \code{caption=NULL} (default) means no caption.}
 
 \item{colorbins}{integer indicating the number of quantile bins into which populations are grouped and color-coded. Value has to lie between 1 (default) and the number of populations.}
+
+\item{horizontal}{logical. Should be the bars displayed horizontally, or vertically?}
 }
 \value{
 A ggplot plot displaying confidence sets.
