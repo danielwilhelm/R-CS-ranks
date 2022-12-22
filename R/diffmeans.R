@@ -26,16 +26,11 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
     cstype <- "lower"
   I1 <- I0
   Istar <- I0
-  
 
   # beta-quantiles from Ln and Un
   LInv <- function(I, beta, fn){
-    bootstrap_estimates <- sapply(1:R, function(i){
-      # parametric bootstrap
-      Z <- rnorm(p, sd=sd)
-      Zdiff <- outer(Z, Z, "-")
-      fn(Zdiff[I] / sigmadiff[I])
-    })
+    bootstrap_estimates <- sapply(1:R, function(i) 
+      draw_bootstrap_estimate(i, sd=sd, I=I, sigmadiff=sigmadiff, fn=fn))
     quantile(bootstrap_estimates, probs=beta)
   }
   LLowerInv <- function(I, beta) LInv(I, beta, max)
@@ -90,4 +85,12 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
   }
   diag(I0) <- FALSE
   I0
+}
+
+draw_bootstrap_estimate <- function(i, sd, sigmadiff, I, fn){
+  p <- nrow(I)
+  # parametric bootstrap
+  Z <- sd * rnorm(p)
+  Zdiff <- outer(Z, Z, "-")
+  fn(Zdiff[I] / sigmadiff[I])
 }
