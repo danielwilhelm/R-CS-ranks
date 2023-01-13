@@ -51,6 +51,18 @@ test_that("NAs are handled correctly", {
   expect_equal(length(res$U), 9)
   expect_false(any(is.na(res$L)))
   expect_false(any(is.na(res$U)))
+  
+  res <- csranks_marg(1:4, matrix(c(1,NA,0.1,0.1,
+                                    0.1,1,0.1,0.1,
+                                    0.1,0.1,1,0.1,
+                                    0.1,0.1,0.1,1),4), 
+                      coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
+  expect_is(res$L, "integer")
+  expect_is(res$U, "integer")
+  expect_equal(length(res$L), 2)
+  expect_equal(length(res$U), 2)
+  expect_false(any(is.na(res$L)))
+  expect_false(any(is.na(res$U)))
 })
 
 
