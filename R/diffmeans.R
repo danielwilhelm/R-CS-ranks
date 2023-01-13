@@ -82,7 +82,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
 }
 
 calculate_difference_sds <- function(cov_mat){
-  # cov_mat is a covariance matrix of multivariate normal distribution
+  # cov_mat: a covariance matrix of multivariate normal distribution
   # return: matrix pxp with standard deviations of differences of variables
   # Var[X_1 - X_2] = Var[X_1] + Var[X_2] - 2Cov[X_1,X_2]
   # And a difference of correlated Gaussians is still Gaussian
