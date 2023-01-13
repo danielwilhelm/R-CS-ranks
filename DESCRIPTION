@@ -20,7 +20,7 @@ Imports:
     stats,
     ggplot2,
     scales,
-    grid,
     MASS
 Suggests: 
-    testthat (>= 2.1.0)
+    testthat (>= 2.1.0),
+    grid
