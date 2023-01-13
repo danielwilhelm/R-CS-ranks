@@ -16,9 +16,11 @@ BugReports: https://github.com/danielwilhelm/R-CS-ranks/issues
 RoxygenNote: 7.2.1
 Depends:
     R (>= 3.5.0)
-Imports: stats, 
-	ggplot2,
-	scales,
-	grid
+Imports: 
+    stats,
+    ggplot2,
+    scales,
+    grid,
+    MASS
 Suggests: 
     testthat (>= 2.1.0)
