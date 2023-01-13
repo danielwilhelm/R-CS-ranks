@@ -54,14 +54,9 @@ csranks <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRU
 #'
 #' @export
 csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
-  # remove NAs
-  if (na.rm) {
-    ind <- !is.na(x) & !is.na(sd)
-    x <- x[ind]
-    sd <- sd[ind]
-  }
-  stopifnot(all(!is.na(x) & !is.na(sd)))
-
+  l <- process_csranks_args(x, sd, na.rm)
+  x <- l$x; sd <- l$sd
+  
   # joint CS for difference in means
   csdifftype <- switch(cstype,
     "lower" = "upper",
@@ -103,13 +98,8 @@ csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown
 #'
 #' @export
 csranks_marg <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
-  # remove NAs
-  if (na.rm) {
-    ind <- !is.na(x) & !is.na(sd)
-    x <- x[ind]
-    sd <- sd[ind]
-  }
-  stopifnot(all(!is.na(x) & !is.na(sd)))
+  l <- process_csranks_args(x, sd, na.rm)
+  x <- l$x; sd <- l$sd
 
   # initializations
   p <- length(x)
@@ -165,6 +155,6 @@ cstaubest <- function(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000
 cstauworst <- function(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
   # return indices whose lower bound on the rank is <= tau
   U <- csranks_simul(x, sd, coverage = coverage, cstype = "upper", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$U
-  p <- length(x)
+  p <- length(x) # what if na.rm?
   return(U >= p - tau + 1)
 }
