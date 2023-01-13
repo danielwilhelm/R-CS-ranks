@@ -5,7 +5,7 @@
 #' @importFrom stats quantile
 #' @importFrom stats rnorm
 #' @noRd
-csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetric", stepdown = TRUE, R = 1000, seed = NA) {
+csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "symmetric", stepdown = TRUE, R = 1000, seed = NA) {
   # check arguments
   cstype <- match.arg(cstype, c("symmetric", "upper", "lower"))
   
@@ -13,10 +13,7 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   p <- length(x)
   if (any(is.na(indices))) indices <- 1:p
   thetadiff <- outer(x, x, "-")
-  if(!is.matrix(sd)) 
-    cov_mat <- diag(sd^2)
-  else
-    cov_mat <- sd
+  cov_mat <- cov_mat
   sigmadiff <- calculate_difference_sds(cov_mat)
   anyrejections <- TRUE
   ChatL <- matrix(0, p, p)
@@ -33,8 +30,11 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
 
   # beta-quantiles from Ln and Un
   LInv <- function(I, beta, fn){
+    samples_from_mvtnorm <- MASS::mvrnorm(R, mu = rep(0, nrow(cov_mat)),
+                                          Sigma = cov_mat)
     bootstrap_estimates <- sapply(1:R, function(i) 
-      draw_bootstrap_estimate(i, cov_mat=cov_mat, I=I, sigmadiff=sigmadiff, fn=fn))
+      get_bootstrap_estimate(samples_from_mvtnorm[i,], I=I, 
+                             sigmadiff=sigmadiff, fn=fn))
     quantile(bootstrap_estimates, probs=beta)
   }
   LLowerInv <- function(I, beta) LInv(I, beta, max)
@@ -99,10 +99,7 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
   I0
 }
 
-draw_bootstrap_estimate <- function(i, cov_mat, sigmadiff, I, fn){
-  p <- nrow(cov_mat)
-  # parametric bootstrap
-  Z <- MASS::mvrnorm(n=1, mu = rep(0, p), Sigma = cov_mat)
+get_bootstrap_estimate <- function(Z, sigmadiff, I, fn){
   Zdiff <- outer(Z, Z, "-")
   fn(Zdiff[I] / sigmadiff[I])
 }
