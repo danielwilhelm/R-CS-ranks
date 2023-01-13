@@ -30,7 +30,7 @@ cstauworst(
 \arguments{
 \item{x}{vector of estimates}
 
-\item{sd}{vector of standard errors of \code{x}}
+\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
 

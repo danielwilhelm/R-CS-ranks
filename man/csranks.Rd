@@ -46,7 +46,7 @@ csranks_marg(
 \arguments{
 \item{x}{vector of estimates}
 
-\item{sd}{vector of standard errors of \code{x}}
+\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 

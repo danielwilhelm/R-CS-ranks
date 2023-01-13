@@ -37,6 +37,7 @@ createquartiles <- function(x) {
 }
 
 #' Process csranks arguments
+#' @noRd
 
 process_csranks_args <- function(x, sd, na.rm){
   if(!is.matrix(sd))
