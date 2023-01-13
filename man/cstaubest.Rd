@@ -28,9 +28,9 @@ cstauworst(
 )
 }
 \arguments{
-\item{x}{vector of estimates}
+\item{x}{vector of estimates.}
 
-\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}}
+\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}.}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
 
@@ -62,7 +62,7 @@ Equivalent to calling \code{cstaubest} with \code{-x}.
 \section{Details}{
 
 The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
-Parametric bootstrap based on the normal distribution with independent populations.
+Parametric bootstrap based on the multivariate normal distribution.
 }
 
 \examples{

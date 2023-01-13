@@ -4,8 +4,8 @@
 #' calculate confidence sets for the ranks of populations,
 #' where populations are ranked by the feature values.
 #'
-#' @param x vector of estimates
-#' @param sd vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}
+#' @param x vector of estimates.
+#' @param sd vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}.
 #' @param coverage nominal coverage of the confidence set. Default is 0.95.
 #' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
 #' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used. See Details section for more.

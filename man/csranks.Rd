@@ -44,9 +44,9 @@ csranks_marg(
 )
 }
 \arguments{
-\item{x}{vector of estimates}
+\item{x}{vector of estimates.}
 
-\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}}
+\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}.}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 
@@ -69,7 +69,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Given estimates and their standard errors of a certain feature for a set of populations,
+Given estimates and their standard errors (or covariance matrix) of a certain feature for a set of populations,
 calculate confidence sets for the ranks of populations,
 where populations are ranked by the feature values.
 }
@@ -94,7 +94,7 @@ were not rejected so far. The former corresponds to \code{stepdown=FALSE}; the l
 From a practical point of view, \code{stepdown=TRUE} takes more time, but usually results
 in tighter (better) confidence sets.
 
-Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
+Parametric bootstrap used to calculate distribution for confidence sets based on the multivariate normal distribution.
 }
 
 \examples{
