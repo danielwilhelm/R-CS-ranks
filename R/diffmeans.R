@@ -13,7 +13,11 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   p <- length(x)
   if (any(is.na(indices))) indices <- 1:p
   thetadiff <- outer(x, x, "-")
-  sigmadiff <- sqrt(outer(sd^2, sd^2, "+"))
+  if(!is.matrix(sd)) 
+    cov_mat <- diag(sd^2)
+  else
+    cov_mat <- sd
+  sigmadiff <- calculate_difference_sds(cov_mat)
   anyrejections <- TRUE
   ChatL <- matrix(0, p, p)
   ChatU <- ChatL
@@ -30,7 +34,7 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   # beta-quantiles from Ln and Un
   LInv <- function(I, beta, fn){
     bootstrap_estimates <- sapply(1:R, function(i) 
-      draw_bootstrap_estimate(i, sd=sd, I=I, sigmadiff=sigmadiff, fn=fn))
+      draw_bootstrap_estimate(i, cov_mat=cov_mat, I=I, sigmadiff=sigmadiff, fn=fn))
     quantile(bootstrap_estimates, probs=beta)
   }
   LLowerInv <- function(I, beta) LInv(I, beta, max)
@@ -77,6 +81,14 @@ csdiffmeans <- function(x, sd, coverage = 0.95, indices = NA, cstype = "symmetri
   return(list(L = ChatL, U = ChatU))
 }
 
+calculate_difference_sds <- function(cov_mat){
+  # cov_mat is a covariance matrix of multivariate normal distribution
+  # return: matrix pxp with standard deviations of differences of variables
+  # Var[X_1 - X_2] = Var[X_1] + Var[X_2] - 2Cov[X_1,X_2]
+  # And a difference of correlated Gaussians is still Gaussian
+  sqrt(outer(diag(cov_mat), diag(cov_mat), "+") - 2 * cov_mat)
+}
+
 initialize_I0 <- function(p, indices, stepdown, cstype){
   I0 <- matrix(TRUE, p, p)
   I0[-indices,] <- FALSE
@@ -87,10 +99,11 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
   I0
 }
 
-draw_bootstrap_estimate <- function(i, sd, sigmadiff, I, fn){
-  p <- nrow(I)
+draw_bootstrap_estimate <- function(i, cov_mat, sigmadiff, I, fn){
+  p <- nrow(cov_mat)
   # parametric bootstrap
-  Z <- sd * rnorm(p)
+  Z <- MASS::mvrnorm(n=1, mu = rep(0, p), Sigma = cov_mat)
   Zdiff <- outer(Z, Z, "-")
   fn(Zdiff[I] / sigmadiff[I])
 }
+
