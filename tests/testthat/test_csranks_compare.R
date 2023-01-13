@@ -26,45 +26,45 @@ test_that("simultaneous CS is not wider than marginal CS", {
 
 test_that("CS with stepdown is not wider than single-step CS", {
   for (cstype in c("two-sided", "lower", "upper")) {
-    set.seed(100)
-    res1T <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = TRUE, R = 1000, indices = NA)
-    set.seed(100)
-    res1F <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = FALSE, R = 1000, indices = NA)
+    res1T <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                          stepdown = TRUE, R = 1000, indices = NA, seed = 100)
+    res1F <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                          stepdown = FALSE, R = 1000, indices = NA, seed = 100)
 
     expect_true(all(res1T$L >= res1F$L & res1T$U <= res1F$U))
 
-    set.seed(100)
-    res1T <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = TRUE, R = 1000, indices = NA)
-    set.seed(100)
-    res1F <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = FALSE, R = 1000, indices = NA)
+    res1T <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                           stepdown = TRUE, R = 1000, indices = NA, seed = 100)
+    res1F <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                           stepdown = FALSE, R = 1000, indices = NA, seed = 100)
 
     expect_true(all(res1T$L >= res1F$L & res1T$U <= res1F$U))
 
-    set.seed(100)
-    res2T <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = TRUE, R = 1000, indices = 1)
-    set.seed(100)
-    res2F <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = FALSE, R = 1000, indices = 1)
+    res2T <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                          stepdown = TRUE, R = 1000, indices = 1, seed = 100)
+    res2F <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                          stepdown = FALSE, R = 1000, indices = 1, seed = 100)
 
     expect_true(all(res2T$L >= res2F$L & res2T$U <= res2F$U))
 
-    set.seed(100)
-    res2T <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = TRUE, R = 1000, indices = 1)
-    set.seed(100)
-    res2F <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = FALSE, R = 1000, indices = 1)
+    res2T <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                           stepdown = TRUE, R = 1000, indices = 1, seed = 100)
+    res2F <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                           stepdown = FALSE, R = 1000, indices = 1, seed = 100)
 
     expect_true(all(res2T$L >= res2F$L & res2T$U <= res2F$U))
 
-    set.seed(100)
-    res3T <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = TRUE, R = 1000, indices = 1:3)
-    set.seed(100)
-    res3F <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = FALSE, R = 1000, indices = 1:3)
+    res3T <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                          stepdown = TRUE, R = 1000, indices = 1:3, seed = 100)
+    res3F <- csranks_marg(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                          stepdown = FALSE, R = 1000, indices = 1:3, seed = 100)
 
     expect_true(all(res3T$L >= res3F$L & res3T$U <= res3F$U))
 
-    set.seed(100)
-    res3T <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = TRUE, R = 1000, indices = 1:3)
-    set.seed(100)
-    res3F <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, stepdown = FALSE, R = 1000, indices = 1:3)
+    res3T <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                           stepdown = TRUE, R = 1000, indices = 1:3, seed = 100)
+    res3F <- csranks_simul(1:5, rep(1, 5), coverage = 0.95, cstype = cstype, 
+                           stepdown = FALSE, R = 1000, indices = 1:3, seed = 100)
 
     expect_true(all(res3T$L >= res3F$L & res3T$U <= res3F$U))
   }
