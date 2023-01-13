@@ -1,6 +1,6 @@
 #' Confidence sets for ranks
 #'
-#' Given estimates and their standard errors of a certain feature for a set of populations,
+#' Given estimates and their standard errors (or covariance matrix) of a certain feature for a set of populations,
 #' calculate confidence sets for the ranks of populations,
 #' where populations are ranked by the feature values.
 #'
@@ -34,7 +34,7 @@
 #' From a practical point of view, \code{stepdown=TRUE} takes more time, but usually results
 #' in tighter (better) confidence sets.
 #'
-#' Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
+#' Parametric bootstrap used to calculate distribution for confidence sets based on the multivariate normal distribution.
 #'
 #' @references Mogstad, Romano, Shaikh, and Wilhelm.
 #' "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
@@ -129,7 +129,7 @@ csranks_marg <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown 
 
 #' @section Details:
 #' The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
-#' Parametric bootstrap based on the normal distribution with independent populations.
+#' Parametric bootstrap based on the multivariate normal distribution.
 
 #' @examples
 #' x <- seq(1, 3, length = 10)
