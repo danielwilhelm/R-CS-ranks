@@ -13,7 +13,6 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   p <- length(x)
   if (any(is.na(indices))) indices <- 1:p
   thetadiff <- outer(x, x, "-")
-  cov_mat <- cov_mat
   sigmadiff <- calculate_difference_sds(cov_mat)
   anyrejections <- TRUE
   ChatL <- matrix(0, p, p)
