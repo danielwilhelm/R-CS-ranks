@@ -43,9 +43,20 @@ Plot ranking with confidence sets
 }
 \examples{
 x <- seq(1, 3, length = 10)
-sd <- diag(rep(0.04, 10))
+V <- diag(rep(0.04, 10))
 ranks <- xrank(x)
-CS <- csranks(x, sd)
+CS <- csranks(x, V)
 grid::current.viewport()
 plotranking(ranks, CS$L, CS$U)
+
+# plotranking returns a ggplot object. It can be customized further:
+library(ggplot2)
+pl <- plotranking(ranks, CS$L, CS$U)
+pl + xlab("position in ranking") + ylab("population label") + theme_gray()
+
+# horizontal = FALSE uses ggplot2::coord_flip underneath. The x and y axes swap places.
+pl <- plotranking(ranks, CS$L, CS$U, horizontal = FALSE)
+pl + xlab("position in ranking") + # Note, that xlab refers to vertical axis now
+  ylab("population label") + theme_gray()
+
 }

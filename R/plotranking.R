@@ -13,12 +13,22 @@
 
 #' @examples
 #' x <- seq(1, 3, length = 10)
-#' sd <- diag(rep(0.04, 10))
+#' V <- diag(rep(0.04, 10))
 #' ranks <- xrank(x)
-#' CS <- csranks(x, sd)
+#' CS <- csranks(x, V)
 #' grid::current.viewport()
 #' plotranking(ranks, CS$L, CS$U)
-
+#' 
+#' # plotranking returns a ggplot object. It can be customized further:
+#' library(ggplot2)
+#' pl <- plotranking(ranks, CS$L, CS$U)
+#' pl + xlab("position in ranking") + ylab("population label") + theme_gray()
+#' 
+#' # horizontal = FALSE uses ggplot2::coord_flip underneath. The x and y axes swap places.
+#' pl <- plotranking(ranks, CS$L, CS$U, horizontal = FALSE)
+#' pl + xlab("position in ranking") + # Note, that xlab refers to vertical axis now
+#'   ylab("population label") + theme_gray()
+#' 
 #' @export
 #' @import ggplot2
 #' @importFrom stats reorder
@@ -35,13 +45,13 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
   # plot
   if (colorbins > 1) {
     pl <- ggplot(data = dat, aes(
-      x = reorder(popnames, ranks),
-      y = ranks, color = createbins(ranks, colorbins)
+      y = reorder(popnames, ranks),
+      x = ranks, color = createbins(ranks, colorbins)
     ))
   } else {
     pl <- ggplot(data = dat, aes(
-      x = reorder(popnames, ranks),
-      y = ranks
+      y = reorder(popnames, ranks),
+      x = ranks
     ))
   }
 
@@ -55,11 +65,11 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
   pl <- pl +
     theme_bw() +
     geom_point() +
-    geom_errorbar(aes(ymin = L, ymax = U),
+    geom_errorbar(aes(xmin = L, xmax = U),
       width = errorbar_width,
       size = 1, position = position_dodge(0.1)
     )
-  if (horizontal) {
+  if (!horizontal) {
     pl <- pl + coord_flip()
   }
   if (colorbins > 1) {
@@ -71,8 +81,8 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
   }
 
   pl <- pl +
-    scale_y_continuous(name = "rank", limits = c(1, p), breaks = unique(c(1, seq(5, p, by = 5), p)), labels = unique(c(1, seq(5, p, by = 5), p))) +
-    xlab(NULL)
+    scale_x_continuous(limits = c(1, p), breaks = unique(c(1, seq(5, p, by = 5), p)), labels = unique(c(1, seq(5, p, by = 5), p))) +
+    ylab(NULL) + xlab("rank")
 
   if (colorbins > 1) {
     pl <- pl +
