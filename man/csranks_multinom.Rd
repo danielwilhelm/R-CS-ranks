@@ -2,8 +2,6 @@
 % Please edit documentation in R/ranks_multinom.R
 \name{csranks_multinom}
 \alias{csranks_multinom}
-\alias{csranks_multinom_simul}
-\alias{csranks_multinom_marg}
 \title{Confidence sets for ranks based on multinomial data}
 \usage{
 csranks_multinom(
@@ -11,24 +9,6 @@ csranks_multinom(
   coverage = 0.95,
   cstype = "two-sided",
   simul = TRUE,
-  multcorr = "Bonferroni",
-  indices = NA,
-  na.rm = FALSE
-)
-
-csranks_multinom_simul(
-  x,
-  coverage = 0.95,
-  cstype = "two-sided",
-  multcorr = "Bonferroni",
-  indices = NA,
-  na.rm = FALSE
-)
-
-csranks_multinom_marg(
-  x,
-  coverage = 0.95,
-  cstype = "two-sided",
   multcorr = "Bonferroni",
   indices = NA,
   na.rm = FALSE
@@ -48,7 +28,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
 }
 \value{
 A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
@@ -56,17 +36,6 @@ A list with two items, `L` and `U` - lower and upper bounds of the confidence se
 \description{
 Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
 }
-\section{Functions}{
-\itemize{
-\item \code{csranks_multinom_simul()}: Simultaneous Confidence sets for ranks based on multinomial data
-
-This function is called by \code{csranks_multinom} when \code{simul=TRUE}.
-
-\item \code{csranks_multinom_marg()}: Marginal Confidence sets for ranks based on multinomial data
-
-This function is called by \code{csranks_multinom} when \code{simul=FALSE}.
-
-}}
 \section{Details}{
 
 The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
@@ -75,8 +44,6 @@ The command implements the procedure for construction of confidence sets for ran
 \examples{
 x <- c(rmultinom(1, 1000, 1:10))
 csranks_multinom(x)
-csranks_multinom_simul(x)
-csranks_multinom_marg(x)
 }
 \references{
 Bazylik, Mogstad, Romano, Shaikh, and Wilhelm.

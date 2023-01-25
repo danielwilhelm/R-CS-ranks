@@ -2,13 +2,11 @@
 % Please edit documentation in R/ranks.R
 \name{csranks}
 \alias{csranks}
-\alias{csranks_simul}
-\alias{csranks_marg}
 \title{Confidence sets for ranks}
 \usage{
 csranks(
   x,
-  sd,
+  V,
   coverage = 0.95,
   cstype = "two-sided",
   stepdown = TRUE,
@@ -18,35 +16,12 @@ csranks(
   na.rm = FALSE,
   seed = NA
 )
-
-csranks_simul(
-  x,
-  sd,
-  coverage = 0.95,
-  cstype = "two-sided",
-  stepdown = TRUE,
-  R = 1000,
-  indices = NA,
-  na.rm = FALSE,
-  seed = NA
-)
-
-csranks_marg(
-  x,
-  sd,
-  coverage = 0.95,
-  cstype = "two-sided",
-  stepdown = TRUE,
-  R = 1000,
-  indices = NA,
-  na.rm = FALSE,
-  seed = NA
-)
 }
 \arguments{
 \item{x}{vector of estimates.}
 
-\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}.}
+\item{V}{covariance matrix of \code{x}. Note, that it must be covariance matrix
+of ESTIMATES, not populations.}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 
@@ -61,7 +36,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
 
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
@@ -73,17 +48,6 @@ Given estimates and their standard errors (or covariance matrix) of a certain fe
 calculate confidence sets for the ranks of populations,
 where populations are ranked by the feature values.
 }
-\section{Functions}{
-\itemize{
-\item \code{csranks_simul()}: Simultaneous confidence sets for ranks
-
-This function is called by \code{csranks} when \code{simul=TRUE}.
-
-\item \code{csranks_marg()}: Marginal confidence sets for ranks
-
-This function is called by \code{csranks} when \code{simul=FALSE}.
-
-}}
 \section{Details}{
 
 The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
@@ -99,10 +63,8 @@ Parametric bootstrap used to calculate distribution for confidence sets based on
 
 \examples{
 x <- seq(1, 3, length = 10)
-sd <- rep(0.2, 10)
-csranks(x, sd)
-csranks_simul(x, sd)
-csranks_marg(x, sd)
+V <- diag(rep(0.04, 10))
+csranks(x, V)
 }
 \references{
 Mogstad, Romano, Shaikh, and Wilhelm.

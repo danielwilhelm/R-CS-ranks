@@ -5,7 +5,8 @@
 #' where populations are ranked by the feature values.
 #'
 #' @param x vector of estimates.
-#' @param sd vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}.
+#' @param V covariance matrix of \code{x}. Note, that it must be covariance matrix
+#' of ESTIMATES, not populations.
 #' @param coverage nominal coverage of the confidence set. Default is 0.95.
 #' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
 #' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used. See Details section for more.
@@ -13,15 +14,15 @@
 #' @param simul logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}.
 #' 		Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.
 #' @param indices vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).
+#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).
 #' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
 
 #' @return A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 
 #' @examples
 #' x <- seq(1, 3, length = 10)
-#' sd <- rep(0.2, 10)
-#' csranks(x, sd)
+#' V <- diag(rep(0.04, 10))
+#' csranks(x, V)
 
 #' @section Details:
 #' The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
@@ -38,11 +39,11 @@
 #' "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
 #' \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
 #' @export
-csranks <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, simul = TRUE, indices = NA, na.rm = FALSE, seed = NA) {
+csranks <- function(x, V, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, simul = TRUE, indices = NA, na.rm = FALSE, seed = NA) {
   if (simul) {
-    return(csranks_simul(x, sd, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
+    return(csranks_simul(x, V, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
   } else {
-    return(csranks_marg(x, sd, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
+    return(csranks_marg(x, V, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
   }
 }
 
@@ -51,9 +52,9 @@ csranks <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRU
 #' This function is called by \code{csranks} when \code{simul=TRUE}.
 #'
 #' @noRd
-csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
-  l <- process_csranks_args(x, sd, na.rm)
-  x <- l$x; sd <- l$sd
+csranks_simul <- function(x, V, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
+  l <- process_csranks_args(x, V, na.rm)
+  x <- l$x; V <- l$V
   
   # joint CS for difference in means
   csdifftype <- switch(cstype,
@@ -63,7 +64,7 @@ csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown
   )
   p <- length(x)
   if (any(is.na(indices))) indices <- 1:p
-  res <- csdiffmeans(x, sd, coverage = coverage, indices = indices, cstype = csdifftype, stepdown = stepdown, R = R, seed = seed)
+  res <- csdiffmeans(x, V, coverage = coverage, indices = indices, cstype = csdifftype, stepdown = stepdown, R = R, seed = seed)
   L <- res$L
   U <- res$U
 
@@ -95,9 +96,9 @@ csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown
 #' Marginal confidence sets for ranks
 #' 
 #' @noRd
-csranks_marg <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
-  l <- process_csranks_args(x, sd, na.rm)
-  x <- l$x; sd <- l$sd
+csranks_marg <- function(x, V, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
+  l <- process_csranks_args(x, V, na.rm)
+  x <- l$x; V <- l$V
 
   # initializations
   p <- length(x)
@@ -107,7 +108,7 @@ csranks_marg <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown 
 
   # compute marginal CS for each population indicated by indices
   for (i in 1:length(indices)) {
-    CS <- csranks_simul(x, sd, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices[i], seed = seed)
+    CS <- csranks_simul(x, V, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices[i], seed = seed)
     L[i] <- CS$L
     U[i] <- CS$U
   }
@@ -131,15 +132,15 @@ csranks_marg <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown 
 
 #' @examples
 #' x <- seq(1, 3, length = 10)
-#' sd <- rep(0.2, 10)
-#' cstaubest(x, sd, tau = 3)
-#' cstauworst(x, sd, tau = 3)
+#' V <- diag(rep(0.04, 10))
+#' cstaubest(x, V, tau = 3)
+#' cstauworst(x, V, tau = 3)
 #'
 #' @inherit csranks references
 #' @export
-cstaubest <- function(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
+cstaubest <- function(x, V, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
   # return indices whose lower bound on the rank is <= tau
-  L <- csranks_simul(x, sd, coverage = coverage, cstype = "lower", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$L
+  L <- csranks_simul(x, V, coverage = coverage, cstype = "lower", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$L
   return(L <= tau)
 }
 
@@ -150,9 +151,9 @@ cstaubest <- function(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000
 #' Equivalent to calling \code{cstaubest} with \code{-x}.
 #'
 #' @export
-cstauworst <- function(x, sd, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
+cstauworst <- function(x, V, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
   # return indices whose lower bound on the rank is <= tau
-  U <- csranks_simul(x, sd, coverage = coverage, cstype = "upper", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$U
+  U <- csranks_simul(x, V, coverage = coverage, cstype = "upper", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$U
   p <- length(x) # what if na.rm?
   return(U >= p - tau + 1)
 }

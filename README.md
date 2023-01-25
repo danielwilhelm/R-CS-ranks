@@ -96,7 +96,8 @@ These are only estimated ranks as they are computed from estimates of achievemen
 The marginal confidence sets for the ranks are computed as follows:
 
 ```R
-CS_marg <- csranks(math_score, math_se, coverage=0.95, simul=FALSE, R=1000, seed=101)
+math_cov_mat <- diag(math_se^2)
+CS_marg <- csranks(math_score, math_cov_mat, coverage=0.95, simul=FALSE, R=1000, seed=101)
 math_rankL_marg <- CS_marg$L
 math_rankU_marg <- CS_marg$U
 ```
@@ -126,7 +127,7 @@ ggplot2::ggsave("mathmarg.pdf", plot=plotmarg)
 The simultaneous confidence sets for the ranks are computed as follows:
 
 ```R
-CS_simul <- csranks(math_score, math_se, coverage=0.95, simul=TRUE, R=1000, seed=101)
+CS_simul <- csranks(math_score, math_cov_mat, coverage=0.95, simul=TRUE, R=1000, seed=101)
 math_rankL_simul <- CS_simul$L
 math_rankU_simul <- CS_simul$U
 ```

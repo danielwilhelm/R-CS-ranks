@@ -39,15 +39,13 @@ createquartiles <- function(x) {
 #' Process csranks arguments
 #' @noRd
 
-process_csranks_args <- function(x, sd, na.rm){
-  if(!is.matrix(sd))
-    sd <- diag(sd^2)
+process_csranks_args <- function(x, V, na.rm){
   # remove NAs
   if (na.rm) {
-    ind <- !is.na(x) & apply(sd, 1, function(v) all(!is.na(v))) & apply(sd, 2, function(v) all(!is.na(v)))
+    ind <- !is.na(x) & apply(V, 1, function(v) all(!is.na(v))) & apply(V, 2, function(v) all(!is.na(v)))
     x <- x[ind]
-    sd <- sd[ind, ind]
+    V <- V[ind, ind]
   }
-  stopifnot(all(!is.na(x)) & all(!is.na(sd)))
-  list(x=x,sd=sd)
+  stopifnot(all(!is.na(x)) & all(!is.na(V)))
+  list(x=x,V=V)
 }

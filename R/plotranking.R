@@ -13,7 +13,7 @@
 
 #' @examples
 #' x <- seq(1, 3, length = 10)
-#' sd <- rep(0.2, 10)
+#' sd <- diag(rep(0.04, 10))
 #' ranks <- xrank(x)
 #' CS <- csranks(x, sd)
 #' grid::current.viewport()

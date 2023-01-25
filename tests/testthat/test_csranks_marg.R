@@ -1,11 +1,11 @@
 context("marginal CS for ranks")
-
+V <- diag(rep(1, 10))
 test_that("return value is of correct class and size", {
   for (cstype in c("two-sided", "lower", "upper")) {
     for (stepdown in c(TRUE, FALSE)) {
-      res1 <- csranks_marg(1:10, rep(1, 10), coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = NA)
-      res2 <- csranks_marg(1:10, rep(1, 10), coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1)
-      res3 <- csranks_marg(1:10, rep(1, 10), coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1:3)
+      res1 <- csranks_marg(1:10, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = NA)
+      res2 <- csranks_marg(1:10, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1)
+      res3 <- csranks_marg(1:10, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1:3)
 
       expect_is(res1$L, "integer")
       expect_is(res1$U, "integer")
@@ -33,18 +33,19 @@ test_that("return value is of correct class and size", {
 
 
 test_that("NAs are handled correctly", {
-  expect_error(csranks_marg(c(1:8, NA, 2), rep(1, 10), coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA))
-  expect_error(csranks_marg(c(1:8, NA, NA), rep(1, 10), coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA))
+  expect_error(csranks_marg(c(1:8, NA, 2), V, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA))
+  expect_error(csranks_marg(c(1:8, NA, NA), V, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA))
 
-  res <- csranks_marg(c(1:8, NA, 2), rep(1, 10), coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
+  res <- csranks_marg(c(1:8, NA, 2), V, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
   expect_is(res$L, "integer")
   expect_is(res$U, "integer")
   expect_equal(length(res$L), 9)
   expect_equal(length(res$U), 9)
   expect_false(any(is.na(res$L)))
   expect_false(any(is.na(res$U)))
+  V_with_NAs <- diag(c(rep(1, 8), NA, 1))
 
-  res <- csranks_marg(1:10, c(rep(1, 8), NA, 1), coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
+  res <- csranks_marg(1:10, V_with_NAs, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
   expect_is(res$L, "integer")
   expect_is(res$U, "integer")
   expect_equal(length(res$L), 9)
@@ -69,9 +70,9 @@ test_that("NAs are handled correctly", {
 test_that("lower and upper bounds are in the correct range of values", {
   for (cstype in c("two-sided", "lower", "upper")) {
     for (stepdown in c(TRUE, FALSE)) {
-      res1 <- csranks_marg(1:10, rep(1, 10), coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = NA)
-      res2 <- csranks_marg(1:10, rep(1, 10), coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1)
-      res3 <- csranks_marg(1:10, rep(1, 10), coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1:3)
+      res1 <- csranks_marg(1:10, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = NA)
+      res2 <- csranks_marg(1:10, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1)
+      res3 <- csranks_marg(1:10, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 100, indices = 1:3)
 
       expect_true(all(res1$L <= res1$U))
       expect_true(all(res2$L <= res2$U))

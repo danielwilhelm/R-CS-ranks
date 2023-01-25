@@ -7,7 +7,7 @@
 \usage{
 cstaubest(
   x,
-  sd,
+  V,
   tau = 2,
   coverage = 0.95,
   stepdown = TRUE,
@@ -18,7 +18,7 @@ cstaubest(
 
 cstauworst(
   x,
-  sd,
+  V,
   tau = 2,
   coverage = 0.95,
   stepdown = TRUE,
@@ -30,7 +30,8 @@ cstauworst(
 \arguments{
 \item{x}{vector of estimates.}
 
-\item{sd}{vector of standard errors of \code{x} OR a covariance matrix of vector \code{x}.}
+\item{V}{covariance matrix of \code{x}. Note, that it must be covariance matrix
+of ESTIMATES, not populations.}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
 
@@ -40,7 +41,7 @@ cstauworst(
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
 
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
@@ -67,9 +68,9 @@ Parametric bootstrap based on the multivariate normal distribution.
 
 \examples{
 x <- seq(1, 3, length = 10)
-sd <- rep(0.2, 10)
-cstaubest(x, sd, tau = 3)
-cstauworst(x, sd, tau = 3)
+V <- diag(rep(0.04, 10))
+cstaubest(x, V, tau = 3)
+cstauworst(x, V, tau = 3)
 
 }
 \references{
