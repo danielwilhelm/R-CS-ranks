@@ -59,16 +59,23 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
   # The absolute width of bars depends on amount of categories. The more categories, the narrower bars
   # `width` in geom_errorbar is width relative to width of associated bar
   # So again, the more categories (or populations in our case), the narrower errorbar
+  
   desired_errorbar_width <- .0125 # This is a value, which looked nice for PISA example
   errorbar_width <- desired_errorbar_width * p # Inside the geom_errorbar, it will be divided back to desired value
 
   pl <- pl +
     theme_bw() +
-    geom_point() +
-    geom_errorbar(aes(xmin = L, xmax = U),
-      width = errorbar_width,
-      size = 1, position = position_dodge(0.1)
-    )
+    geom_point()
+  
+  if(nrow(dat) >= 50){ # Chosen with trial and error
+    pl <- pl + geom_errorbar(aes(xmin = L, xmax = U))
+  } else {
+    pl <- pl + geom_errorbar(aes(xmin = L, xmax = U),
+                  width = errorbar_width,
+                  size = 1, position = position_dodge(0.1)) + 
+      scale_x_continuous(limits = c(1, p), breaks = unique(c(1, seq(5, p, by = 5), p)), labels = unique(c(1, seq(5, p, by = 5), p)))
+  }
+    
   if (!horizontal) {
     pl <- pl + coord_flip()
   }
@@ -79,10 +86,8 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
     pl <- pl +
       labs(title = title, subtitle = subtitle, caption = caption)
   }
-
-  pl <- pl +
-    scale_x_continuous(limits = c(1, p), breaks = unique(c(1, seq(5, p, by = 5), p)), labels = unique(c(1, seq(5, p, by = 5), p))) +
-    ylab(NULL) + xlab("rank")
+  
+  pl <- pl + ylab(NULL) + xlab("rank")
 
   if (colorbins > 1) {
     pl <- pl +
