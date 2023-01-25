@@ -1,3 +1,8 @@
+# csranks 0.4.0
+
+* `sd` argument renamed to `V`; now accepts ONLY covariance matrix.
+* `*_marg` and `*_simul` methods removed; use `*` with `simul` option.
+
 # csranks 0.3.0
 
 * Added possibility of features to be correlated across populations. 
