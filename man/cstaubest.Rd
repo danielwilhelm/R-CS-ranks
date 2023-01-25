@@ -31,7 +31,7 @@ cstauworst(
 \item{x}{vector of estimates.}
 
 \item{V}{covariance matrix of \code{x}. Note, that it must be covariance matrix
-of ESTIMATES, not populations.}
+of feature \bold{means}, not features themselves.}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
 
@@ -67,7 +67,19 @@ Parametric bootstrap based on the multivariate normal distribution.
 }
 
 \examples{
-x <- seq(1, 3, length = 10)
+# Setup example data
+n <- 10
+x <- seq(1, 3, length = n)
+V <- matrix(0.001, nrow = n, ncol = n)
+diag(V) <- 0.04
+
+# Run csranks to get confidence sets for top 3 populations
+cstaubest(x, V, tau = 3)
+cstauworst(x, V, tau = 3)
+
+# If you assume that the feature measurements are independent, 
+# (or just have access to variances / standard errors)
+# then pass a diagonal covariance matrix.
 V <- diag(rep(0.04, 10))
 cstaubest(x, V, tau = 3)
 cstauworst(x, V, tau = 3)

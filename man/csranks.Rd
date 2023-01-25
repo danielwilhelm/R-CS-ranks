@@ -21,7 +21,7 @@ csranks(
 \item{x}{vector of estimates.}
 
 \item{V}{covariance matrix of \code{x}. Note, that it must be covariance matrix
-of ESTIMATES, not populations.}
+of feature \bold{means}, not features themselves.}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 
@@ -41,14 +41,20 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
 \value{
-A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+A list with two items, \code{L} and \code{U} - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
-Given estimates and their standard errors (or covariance matrix) of a certain feature for a set of populations,
+Given estimates and their covariance matrix of a certain feature for a set of populations,
 calculate confidence sets for the ranks of populations,
 where populations are ranked by the feature values.
 }
 \section{Details}{
+
+IMPORTANT: make sure, that the \code{V} is a (perhaps estimated) covariance matrix
+of estimates of feature means across populations, not of features themselves.
+For example, sample of size \eqn{n} of a feature following a standard normal distribution 
+has variance \eqn{\sigma^2=1}, but mean from such sample has variance \eqn{1/n}.
+We refer to the latter.
 
 The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
@@ -62,7 +68,18 @@ Parametric bootstrap used to calculate distribution for confidence sets based on
 }
 
 \examples{
-x <- seq(1, 3, length = 10)
+# Setup example data
+n <- 10
+x <- seq(1, 3, length = n)
+V <- matrix(0.001, nrow = n, ncol = n)
+diag(V) <- 0.04
+
+# Run csranks to get confidence sets for ranks of features
+csranks(x, V)
+
+# If you assume that the feature measurements are independent 
+# (or have access only to variances / standard errors estimates),
+# then pass a diagonal covariance matrix.
 V <- diag(rep(0.04, 10))
 csranks(x, V)
 }

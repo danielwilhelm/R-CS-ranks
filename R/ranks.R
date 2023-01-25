@@ -1,12 +1,12 @@
 #' Confidence sets for ranks
 #'
-#' Given estimates and their standard errors (or covariance matrix) of a certain feature for a set of populations,
+#' Given estimates and their covariance matrix of a certain feature for a set of populations,
 #' calculate confidence sets for the ranks of populations,
 #' where populations are ranked by the feature values.
 #'
 #' @param x vector of estimates.
 #' @param V covariance matrix of \code{x}. Note, that it must be covariance matrix
-#' of ESTIMATES, not populations.
+#' of feature \bold{means}, not features themselves.
 #' @param coverage nominal coverage of the confidence set. Default is 0.95.
 #' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.
 #' @param stepdown logical; if \code{TRUE} (default), stepwise procedure is used, otherwise single step procedure is used. See Details section for more.
@@ -17,14 +17,31 @@
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).
 #' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
 
-#' @return A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+#' @return A list with two items, \code{L} and \code{U} - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 
 #' @examples
-#' x <- seq(1, 3, length = 10)
+#' # Setup example data
+#' n <- 10
+#' x <- seq(1, 3, length = n)
+#' V <- matrix(0.001, nrow = n, ncol = n)
+#' diag(V) <- 0.04
+#' 
+#' # Run csranks to get confidence sets for ranks of features
+#' csranks(x, V)
+#' 
+#' # If you assume that the feature measurements are independent 
+#' # (or have access only to variances / standard errors estimates),
+#' # then pass a diagonal covariance matrix.
 #' V <- diag(rep(0.04, 10))
 #' csranks(x, V)
 
 #' @section Details:
+#' IMPORTANT: make sure, that the \code{V} is a (perhaps estimated) covariance matrix
+#' of estimates of feature means across populations, not of features themselves.
+#' For example, sample of size \eqn{n} of a feature following a standard normal distribution 
+#' has variance \eqn{\sigma^2=1}, but mean from such sample has variance \eqn{1/n}.
+#' We refer to the latter.
+#' 
 #' The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 #' Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
 #' of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that
@@ -131,7 +148,19 @@ csranks_marg <- function(x, V, coverage = 0.95, cstype = "two-sided", stepdown =
 #' Parametric bootstrap based on the multivariate normal distribution.
 
 #' @examples
-#' x <- seq(1, 3, length = 10)
+#' # Setup example data
+#' n <- 10
+#' x <- seq(1, 3, length = n)
+#' V <- matrix(0.001, nrow = n, ncol = n)
+#' diag(V) <- 0.04
+#' 
+#' # Run csranks to get confidence sets for top 3 populations
+#' cstaubest(x, V, tau = 3)
+#' cstauworst(x, V, tau = 3)
+#' 
+#' # If you assume that the feature measurements are independent, 
+#' # (or just have access to variances / standard errors)
+#' # then pass a diagonal covariance matrix.
 #' V <- diag(rep(0.04, 10))
 #' cstaubest(x, V, tau = 3)
 #' cstauworst(x, V, tau = 3)

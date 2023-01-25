@@ -31,7 +31,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 \item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
 }
 \value{
-A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+A list with two items, \code{L} and \code{U} - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
 }
 \description{
 Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
