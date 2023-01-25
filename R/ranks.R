@@ -22,8 +22,6 @@
 #' x <- seq(1, 3, length = 10)
 #' sd <- rep(0.2, 10)
 #' csranks(x, sd)
-#' csranks_simul(x, sd)
-#' csranks_marg(x, sd)
 
 #' @section Details:
 #' The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
@@ -48,11 +46,11 @@ csranks <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRU
   }
 }
 
-#' @describeIn csranks Simultaneous confidence sets for ranks
-#'
+#' Simultaneous confidence sets for ranks 
+#' 
 #' This function is called by \code{csranks} when \code{simul=TRUE}.
 #'
-#' @export
+#' @noRd
 csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
   l <- process_csranks_args(x, sd, na.rm)
   x <- l$x; sd <- l$sd
@@ -92,11 +90,11 @@ csranks_simul <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown
   return(list(L = as.integer(Nminus + 1), U = as.integer(p - Nplus)))
 }
 
-#' @describeIn csranks Marginal confidence sets for ranks
-#'
 #' This function is called by \code{csranks} when \code{simul=FALSE}.
-#'
-#' @export
+#' 
+#' Marginal confidence sets for ranks
+#' 
+#' @noRd
 csranks_marg <- function(x, sd, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
   l <- process_csranks_args(x, sd, na.rm)
   x <- l$x; sd <- l$sd

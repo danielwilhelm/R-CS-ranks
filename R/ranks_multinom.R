@@ -16,8 +16,6 @@
 #' @examples
 #' x <- c(rmultinom(1, 1000, 1:10))
 #' csranks_multinom(x)
-#' csranks_multinom_simul(x)
-#' csranks_multinom_marg(x)
 #' @export
 csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = TRUE, multcorr = "Bonferroni", indices = NA, na.rm = FALSE) {
   if (simul) {
@@ -29,11 +27,11 @@ csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = T
 
 
 
-#' @describeIn csranks_multinom Simultaneous Confidence sets for ranks based on multinomial data
+#' Simultaneous Confidence sets for ranks based on multinomial data
 #'
 #' This function is called by \code{csranks_multinom} when \code{simul=TRUE}.
 #'
-#' @export
+#' @noRd
 #' @importFrom stats rmultinom
 #' @importFrom stats pbinom
 #' @importFrom stats aggregate
@@ -127,11 +125,11 @@ csranks_multinom_simul <- function(x, coverage = 0.95, cstype = "two-sided", mul
 }
 
 
-#' @describeIn csranks_multinom Marginal Confidence sets for ranks based on multinomial data
+#' Marginal Confidence sets for ranks based on multinomial data
 #'
 #' This function is called by \code{csranks_multinom} when \code{simul=FALSE}.
 #'
-#' @export
+#' @noRd
 csranks_multinom_marg <- function(x, coverage = 0.95, cstype = "two-sided", multcorr = "Bonferroni", indices = NA, na.rm = FALSE) {
   # remove NAs
   if (na.rm) x <- x[!is.na(x)]
