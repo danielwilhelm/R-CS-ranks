@@ -7,9 +7,13 @@
 frank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
 }
 \arguments{
-\item{x}{vector of estimates}
+\item{x}{vector of values to be ranked}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
+\item{omega}{numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.}
+
+\item{increasing}{logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. Otherwise, large elements receive small ranks.}
+
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any).}
 }
 \value{
 vector of the same dimension as \code{x} containing the ranks
@@ -17,6 +21,16 @@ vector of the same dimension as \code{x} containing the ranks
 \description{
 Compute fractional ranks
 }
+\section{Details}{
+
+tba
+}
+
 \examples{
+frank(c(4,3,1,10,7))
+frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+frank(c(4,3,1,10,7), omega=0.5) # mid-ranks, equal to previous ranks because there are no ties
 frank(c(4,4,4,3,1,10,7,7))
+frank(c(4,4,4,3,1,10,7,7), omega=1)
+frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
 }

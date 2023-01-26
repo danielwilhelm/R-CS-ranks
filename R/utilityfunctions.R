@@ -28,7 +28,7 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 
 #' Compute fractional ranks
 #'
-#' @inheritParams csranks
+#' @inheritParams irank
 
 #' @return vector of the same dimension as \code{x} containing the ranks
 #' @examples

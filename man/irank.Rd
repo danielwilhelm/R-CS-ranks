@@ -21,6 +21,16 @@ vector of the same dimension as \code{x} containing the ranks
 \description{
 Compute integer ranks
 }
+\section{Details}{
+
+tba
+}
+
 \examples{
+irank(c(4,3,1,10,7))
+irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+irank(c(4,3,1,10,7), omega=0.5) # equal to previous ranks because there are no ties
 irank(c(4,4,4,3,1,10,7,7))
+irank(c(4,4,4,3,1,10,7,7), omega=1)
+irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
 }
