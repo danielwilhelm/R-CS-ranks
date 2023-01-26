@@ -44,7 +44,7 @@ Plot ranking with confidence sets
 \examples{
 x <- seq(1,3,length=10)
 sd <- rep(0.2,10)
-ranks <- xrank(x)
+ranks <- irank(x)
 CS <- csranks(x, sd)
 grid::current.viewport()
 plotranking(ranks, CS$L, CS$U)
