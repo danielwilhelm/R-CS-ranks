@@ -18,7 +18,6 @@
 #' CS <- csranks(x, sd)
 #' grid::current.viewport()
 #' plotranking(ranks, CS$L, CS$U)
-
 #' @export
 #' @import ggplot2
 #' @importFrom stats reorder

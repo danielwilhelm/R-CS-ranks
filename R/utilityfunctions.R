@@ -7,7 +7,14 @@
 
 #' @return vector of the same dimension as \code{x} containing the ranks
 #' @examples
+#' irank(c(4,3,1,10,7))
+#' irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+#' irank(c(4,3,1,10,7), omega=0.5) # equal to previous ranks because there are no ties
 #' irank(c(4,4,4,3,1,10,7,7))
+#' irank(c(4,4,4,3,1,10,7,7), omega=1)
+#' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
+#' @section Details:
+#' tba
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 	if (na.rm) x <- x[!is.na(x)]
@@ -25,7 +32,14 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 
 #' @return vector of the same dimension as \code{x} containing the ranks
 #' @examples
+#' frank(c(4,3,1,10,7))
+#' frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+#' frank(c(4,3,1,10,7), omega=0.5) # mid-ranks, equal to previous ranks because there are no ties
 #' frank(c(4,4,4,3,1,10,7,7))
+#' frank(c(4,4,4,3,1,10,7,7), omega=1)
+#' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
+#' @section Details:
+#' tba
 #' @export
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, omega, increasing, na.rm) / length(x))
 
