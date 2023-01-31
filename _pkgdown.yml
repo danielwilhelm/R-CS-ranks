@@ -8,7 +8,8 @@ template:
 reference:
   - title: "Functions for inference on ranks"
   - contents: 
-    - xrank
+    - irank
+    - frank
     - csranks
     - csranks_multinom
     - cstaubest
