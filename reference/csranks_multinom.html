@@ -150,24 +150,24 @@ Otherwise, for each population indicated in <code>indices</code> a marginal conf
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Multinom.html" class="external-link">rmultinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1000</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">csranks_multinom</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  6  6  5  5  2  2  1  1  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 5 4 2 1 1 1 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  9  9  9  7  5  5  5  3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  8  7  7  6  5  5  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu">csranks_multinom_simul</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  6  6  5  5  2  2  1  1  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 5 4 2 1 1 1 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  9  9  9  7  5  5  5  3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  8  7  7  6  5  5  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu">csranks_multinom_marg</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  6  6  5  5  2  2  1  2  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 5 4 4 2 1 1 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  9  9  9  7  5  5  5  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  8  7  7  6  4  4  3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

@@ -28,15 +28,18 @@
     <loc>/reference/cstaubest.html</loc>
   </url>
   <url>
+    <loc>/reference/frank.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/irank.html</loc>
   </url>
   <url>
     <loc>/reference/pisa.html</loc>
   </url>
   <url>
     <loc>/reference/plotranking.html</loc>
-  </url>
-  <url>
-    <loc>/reference/xrank.html</loc>
   </url>
 </urlset>
