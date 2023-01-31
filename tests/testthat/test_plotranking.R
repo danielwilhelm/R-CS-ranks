@@ -22,7 +22,7 @@ test_that("custom plotranking returns a ggplot object", {
 N <- 100 # not larger than 23
 X <- seq(1, 3, length = n)
 V <- diag(rep(0.04, n))
-Ranks <- xrank(x)
+Ranks <- irank(x)
 CS_large <- csranks(x, sd)
 
 test_that("default plotranking works for larger dataset", {

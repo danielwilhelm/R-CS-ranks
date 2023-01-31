@@ -58,5 +58,4 @@ pl + xlab("position in ranking") + ylab("population label") + theme_gray()
 pl <- plotranking(ranks, CS$L, CS$U, horizontal = FALSE)
 pl + xlab("position in ranking") + # Note, that xlab refers to vertical axis now
   ylab("population label") + theme_gray()
-
 }

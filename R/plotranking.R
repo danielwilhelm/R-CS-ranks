@@ -14,7 +14,7 @@
 #' @examples
 #' x <- seq(1, 3, length = 10)
 #' V <- diag(rep(0.04, 10))
-#' ranks <- xrank(x)
+#' ranks <- irank(x)
 #' CS <- csranks(x, V)
 #' grid::current.viewport()
 #' plotranking(ranks, CS$L, CS$U)
