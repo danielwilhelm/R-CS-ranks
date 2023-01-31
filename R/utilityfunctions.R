@@ -49,3 +49,18 @@ process_csranks_args <- function(x, V, na.rm){
   stopifnot(all(!is.na(x)) & all(!is.na(V)))
   list(x=x,V=V)
 }
+
+#' Indices utils
+#'
+#' Elements of `matrix` can be accessed by double indices `M[i,j]`
+#' This function allows to switch from the latter kind of indices to the former.
+#'
+#' @noRd
+get_double_from_single_indices <- function(indices, matrix_size) {
+  row_indices <- indices %% matrix_size
+  row_indices[row_indices == 0] <- matrix_size
+  matrix(c(
+    row_indices,
+    ceiling(indices / matrix_size)
+  ), ncol = 2)
+}

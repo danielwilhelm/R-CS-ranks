@@ -28,12 +28,18 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   Istar <- I0
 
   # beta-quantiles from Ln and Un
+  # using parametric bootstrap
   LInv <- function(I, beta, fn){
-    samples_from_mvtnorm <- MASS::mvrnorm(R, mu = rep(0, nrow(cov_mat)),
-                                          Sigma = cov_mat)
-    bootstrap_estimates <- sapply(1:R, function(i) 
-      get_bootstrap_estimate(samples_from_mvtnorm[i,], I=I, 
-                             sigmadiff=sigmadiff, fn=fn))
+    # Use some low-level functions to test them later
+    reduced_I <- reduce_I(I)
+    needed_variables <- reduced_I$needed_variables
+    requested_diffrences <- reduced_I$requested_differences
+    needed_cov_mat <- cov_mat[needed_variables, needed_variables]
+    Z <- MASS::mvrnorm(R, mu = rep(0, nrow(needed_cov_mat)),
+                       Sigma = needed_cov_mat)
+    Zdiff_scaled <- calculate_scaled_differences_in_samples(Z, requested_diffrences,
+                                                            sigmadiff[I])
+    bootstrap_estimates <- apply(Zdiff_scaled, 1, fn)
     quantile(bootstrap_estimates, probs=beta)
   }
   LLowerInv <- function(I, beta) LInv(I, beta, max)
@@ -98,8 +104,29 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
   I0
 }
 
-get_bootstrap_estimate <- function(Z, sigmadiff, I, fn){
-  Zdiff <- outer(Z, Z, "-")
-  fn(Zdiff[I] / sigmadiff[I])
+reduce_I <- function(I){
+  needed_variables <- sapply(1:nrow(I), function(i){
+    any(I[i,]) || any(I[,i])
+  })
+  needed_I <- I[needed_variables, needed_variables]
+  requested_diffrences <- get_double_from_single_indices(which(needed_I), 
+                                                         nrow(needed_I))
+  list(needed_variables = needed_variables,
+       requested_diffrences = requested_diffrences)
 }
+
+calculate_scaled_differences_in_samples <- function(Z, requested_diffrences, scales){
+  # Z: sample from mvt normal with observations in rows
+  # requested_differences: matrix with 2 columns
+  # we want to calculate differences between z_i and z_j variables
+  # for i,j in rows of requesetd_differences
+  # for each observation z in Z 
+  # And then scale them with
+  # scales: vector of length nrow(requested_differences)
+  Zdiff <- Z[, requested_diffrences[, 1]] - Z[, requested_diffrences[, 2]]
+  # Vectorized division goes over rows
+  Zdiff_scaled <- t(t(Zdiff) / scales) 
+  Zdiff_scaled
+}
+
 
