@@ -20,7 +20,8 @@ Imports:
     stats,
     ggplot2,
     scales,
-    MASS
+    MASS,
+    cli
 Suggests: 
     testthat (>= 2.1.0),
     grid

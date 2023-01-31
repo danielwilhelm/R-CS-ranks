@@ -39,15 +39,53 @@ createquartiles <- function(x) {
 #' Process csranks arguments
 #' @noRd
 
-process_csranks_args <- function(x, V, na.rm){
+process_csranks_args <- function(x, Sigma, na.rm){
+  if(!is.numeric(x))
+    cli::cli_abort(c("{.var x} must be a numeric vector.",
+                     "x" = "Supplied {.var x} is of {.cls {typeof(x)}} type."))
+  if(!is.vector(x))
+    cli::cli_abort(c("{.var x} must be a numeric vector.",
+                    "x" = "{.var x} is of {.cls {class(x)}} class."))
+  if(!is.numeric(Sigma))
+    cli::cli_abort(c("{.var Sigma} must be a numeric matrix.",
+                   "x" = "{.var Sigma} is of {.cls {typeof(Sigma)}} type."))
+  if(!is.matrix(Sigma))
+    cli::cli_abort(c("`Sigma` must be a numeric matrix.",
+                     "x" = "{.var Sigma} if of {.cls {class(Sigma)}} class.",
+                     "i" = "Did you provide only a vector of variances? If so, use a diagonal covariance matrix."))
   # remove NAs
   if (na.rm) {
-    ind <- !is.na(x) & apply(V, 1, function(v) all(!is.na(v))) & apply(V, 2, function(v) all(!is.na(v)))
+    ind <- !is.na(x) & apply(Sigma, 1, function(v) all(!is.na(v))) & apply(Sigma, 2, function(v) all(!is.na(v)))
     x <- x[ind]
-    V <- V[ind, ind]
+    Sigma <- Sigma[ind, ind]
   }
-  stopifnot(all(!is.na(x)) & all(!is.na(V)))
-  list(x=x,V=V)
+  if(any(is.na(x)))
+    cli::cli_abort("NA values found in `x`.")
+  if(any(is.na(Sigma)))
+    cli::cli_abort("NA values found in `Sigma`.")
+  list(x=x,Sigma=Sigma)
+}
+
+process_indices_argument <- function(indices,p){
+  if (any(is.na(indices))) indices <- 1:p
+  else{
+    if(!is.numeric(indices))
+      cli::cli_abort(c("{.var indices} must be an integer vector.",
+                       "x" = "{.var indices} is of {.cls {typeof(x)}} type."))
+    deviation_from_int <- which.max(abs(indices - round(indices)))
+    if(indices[deviation_from_int] < 1e-10)
+      cli::cli_abort(c("{.var indices} must be an integer vector.",
+                       "x" = "{.var indices[{deviation_from_int}]}={indices[deviation_from_int]} is not an integer."))
+    if(!is.vector(indices))
+      cli::cli_abort(c("{.var indices} must be an integer vector.",
+                       "x" = "{.var indices} is of {.cls {class(x)}} class."))
+    if(any(indices < 1) || any(indices > p)){
+      wrong_index <- which(indices < 1 | indices > p)[1]
+      cli::cli_abort(c("{.var indices} must be a vector of integer indices of x.",
+                       "x" = "{.var indices[{wrong_index}]}={indices[wrong_index]} is not an integer."))
+    }
+  }
+  indices
 }
 
 #' Indices utils
