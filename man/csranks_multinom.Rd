@@ -28,7 +28,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).}
 }
 \value{
 A list with two items, \code{L} and \code{U} - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.

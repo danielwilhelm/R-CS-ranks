@@ -6,7 +6,7 @@
 \usage{
 csranks(
   x,
-  V,
+  Sigma,
   coverage = 0.95,
   cstype = "two-sided",
   stepdown = TRUE,
@@ -20,7 +20,7 @@ csranks(
 \arguments{
 \item{x}{vector of estimates.}
 
-\item{V}{covariance matrix of \code{x}. Note, that it must be covariance matrix
+\item{Sigma}{covariance matrix of \code{x}. Note, that it must be covariance matrix
 of feature \bold{means}, not features themselves.}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
@@ -36,7 +36,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).}
 
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
@@ -50,7 +50,7 @@ where populations are ranked by the feature values.
 }
 \section{Details}{
 
-IMPORTANT: make sure, that the \code{V} is a (perhaps estimated) covariance matrix
+IMPORTANT: make sure, that the \code{Sigma} is a (perhaps estimated) covariance matrix
 of estimates of feature means across populations, not of features themselves.
 For example, sample of size \eqn{n} of a feature following a standard normal distribution 
 has variance \eqn{\sigma^2=1}, but mean from such sample has variance \eqn{1/n}.
@@ -71,17 +71,17 @@ Parametric bootstrap used to calculate distribution for confidence sets based on
 # Setup example data
 n <- 10
 x <- seq(1, 3, length = n)
-V <- matrix(0.001, nrow = n, ncol = n)
-diag(V) <- 0.04
+Sigma <- matrix(0.001, nrow = n, ncol = n)
+diag(Sigma) <- 0.04
 
 # Run csranks to get confidence sets for ranks of features
-csranks(x, V)
+csranks(x, Sigma)
 
 # If you assume that the feature measurements are independent 
 # (or have access only to variances / standard errors estimates),
 # then pass a diagonal covariance matrix.
-V <- diag(rep(0.04, 10))
-csranks(x, V)
+Sigma <- diag(rep(0.04, 10))
+csranks(x, Sigma)
 }
 \references{
 Mogstad, Romano, Shaikh, and Wilhelm.

@@ -7,7 +7,7 @@
 \usage{
 cstaubest(
   x,
-  V,
+  Sigma,
   tau = 2,
   coverage = 0.95,
   stepdown = TRUE,
@@ -18,7 +18,7 @@ cstaubest(
 
 cstauworst(
   x,
-  V,
+  Sigma,
   tau = 2,
   coverage = 0.95,
   stepdown = TRUE,
@@ -30,7 +30,7 @@ cstauworst(
 \arguments{
 \item{x}{vector of estimates.}
 
-\item{V}{covariance matrix of \code{x}. Note, that it must be covariance matrix
+\item{Sigma}{covariance matrix of \code{x}. Note, that it must be covariance matrix
 of feature \bold{means}, not features themselves.}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
@@ -41,7 +41,7 @@ of feature \bold{means}, not features themselves.}
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{V} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).}
 
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
@@ -70,19 +70,19 @@ Parametric bootstrap based on the multivariate normal distribution.
 # Setup example data
 n <- 10
 x <- seq(1, 3, length = n)
-V <- matrix(0.001, nrow = n, ncol = n)
-diag(V) <- 0.04
+Sigma <- matrix(0.001, nrow = n, ncol = n)
+diag(Sigma) <- 0.04
 
 # Run csranks to get confidence sets for top 3 populations
-cstaubest(x, V, tau = 3)
-cstauworst(x, V, tau = 3)
+cstaubest(x, Sigma, tau = 3)
+cstauworst(x, Sigma, tau = 3)
 
 # If you assume that the feature measurements are independent, 
 # (or just have access to variances / standard errors)
 # then pass a diagonal covariance matrix.
-V <- diag(rep(0.04, 10))
-cstaubest(x, V, tau = 3)
-cstauworst(x, V, tau = 3)
+Sigma <- diag(rep(0.04, 10))
+cstaubest(x, Sigma, tau = 3)
+cstauworst(x, Sigma, tau = 3)
 
 }
 \references{
