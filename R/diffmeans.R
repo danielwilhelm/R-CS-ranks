@@ -33,7 +33,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
     # Use some low-level functions to test them later
     reduced_I <- reduce_I(I)
     needed_variables <- reduced_I$needed_variables
-    requested_diffrences <- reduced_I$requested_differences
+    requested_diffrences <- reduced_I$requested_diffrences
     needed_cov_mat <- cov_mat[needed_variables, needed_variables]
     Z <- MASS::mvrnorm(R, mu = rep(0, nrow(needed_cov_mat)),
                        Sigma = needed_cov_mat)

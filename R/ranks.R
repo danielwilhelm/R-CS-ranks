@@ -77,6 +77,7 @@ csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = 
 #'
 #' @noRd
 csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
+  indices <- process_indices_argument(indices, length(x))
   # joint CS for difference in means
   csdifftype <- switch(cstype,
     "lower" = "upper",
@@ -116,6 +117,7 @@ csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepd
 #' 
 #' @noRd
 csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
+  indices <- process_indices_argument(indices, length(x))
   L <- rep(NA, length(indices))
   U <- L
 

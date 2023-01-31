@@ -18,6 +18,10 @@
 #' csranks_multinom(x)
 #' @export
 csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = TRUE, multcorr = "Bonferroni", indices = NA, na.rm = FALSE) {
+  # initializations
+  x <- process_x_counts_argument(x, na.rm)
+  indices <- process_indices_argument(indices, length(x))
+  
   if (simul) {
     return(csranks_multinom_simul(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices, na.rm = na.rm))
   } else {
@@ -39,17 +43,13 @@ csranks_multinom_simul <- function(x, coverage = 0.95, cstype = "two-sided", mul
   # check arguments
   cstype <- match.arg(cstype, c("two-sided", "upper", "lower"))
   multcorr <- match.arg(multcorr, c("Bonferroni", "Holm"))
-
-  # remove NAs
-  if (na.rm) x <- x[!is.na(x)]
-  stopifnot(all(!is.na(x)))
-
+  indices <- process_indices_argument(indices, length(x))
+  
   # initializations
   S <- outer(x, x, "+")
   p <- length(x)
-
+  
   # which comparisons?
-  if (any(is.na(indices))) indices <- 1:p
   ind <- matrix(TRUE, p, p)
   if (cstype == "two-sided") {
     ind[-indices, ] <- FALSE
@@ -131,13 +131,7 @@ csranks_multinom_simul <- function(x, coverage = 0.95, cstype = "two-sided", mul
 #'
 #' @noRd
 csranks_multinom_marg <- function(x, coverage = 0.95, cstype = "two-sided", multcorr = "Bonferroni", indices = NA, na.rm = FALSE) {
-  # remove NAs
-  if (na.rm) x <- x[!is.na(x)]
-  stopifnot(all(!is.na(x)))
-
-  # initializations
-  p <- length(x)
-  if (any(is.na(indices))) indices <- 1:p
+  
   L <- rep(NA, length(indices))
   U <- L
 

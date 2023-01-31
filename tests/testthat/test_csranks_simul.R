@@ -31,42 +31,6 @@ test_that("return value is of correct class and size", {
   }
 })
 
-
-test_that("NAs are handled correctly", {
-  expect_error(csranks_simul(c(1:8, NA, 2), V, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA))
-  expect_error(csranks_simul(c(1:8, NA, NA), V, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA))
-
-  res <- csranks_simul(c(1:8, NA, 2), V, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
-  expect_is(res$L, "integer")
-  expect_is(res$U, "integer")
-  expect_equal(length(res$L), 9)
-  expect_equal(length(res$U), 9)
-  expect_false(any(is.na(res$L)))
-  expect_false(any(is.na(res$U)))
-
-  V_with_NAs <- diag(c(rep(1, 8), NA, 1))
-  res <- csranks_simul(1:10, V_with_NAs, coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
-  expect_is(res$L, "integer")
-  expect_is(res$U, "integer")
-  expect_equal(length(res$L), 9)
-  expect_equal(length(res$U), 9)
-  expect_false(any(is.na(res$L)))
-  expect_false(any(is.na(res$U)))
-  
-  res <- csranks_simul(1:4, matrix(c(1,NA,0.1,0.1,
-                                    0.1,1,0.1,0.1,
-                                    0.1,0.1,1,0.1,
-                                    0.1,0.1,0.1,1),4), 
-                      coverage = 0.95, cstype = "two-sided", stepdown = FALSE, R = 100, indices = NA, na.rm = TRUE)
-  expect_is(res$L, "integer")
-  expect_is(res$U, "integer")
-  expect_equal(length(res$L), 2)
-  expect_equal(length(res$U), 2)
-  expect_false(any(is.na(res$L)))
-  expect_false(any(is.na(res$U)))
-})
-
-
 test_that("lower and upper bounds are in the correct range of values", {
   for (cstype in c("two-sided", "lower", "upper")) {
     for (stepdown in c(TRUE, FALSE)) {

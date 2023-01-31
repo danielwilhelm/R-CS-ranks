@@ -4,9 +4,9 @@ test_that("simultaneous CS is not wider than marginal CS", {
   for (cstype in c("two-sided", "lower", "upper")) {
     for (stepdown in c(TRUE, FALSE)) {
       set.seed(100)
-      res1M <- csranks_marg(1:5, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 10000, indices = NA)
+      res1M <- csranks_marg(1:5, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 10000, indices = 1:5)
       set.seed(100)
-      res1S <- csranks_simul(1:5, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 10000, indices = NA)
+      res1S <- csranks_simul(1:5, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 10000, indices = 1:5)
       set.seed(100)
       res2M <- csranks_marg(1:5, V, coverage = 0.95, cstype = cstype, stepdown = stepdown, R = 10000, indices = 1)
       set.seed(100)
@@ -27,16 +27,16 @@ test_that("simultaneous CS is not wider than marginal CS", {
 test_that("CS with stepdown is not wider than single-step CS", {
   for (cstype in c("two-sided", "lower", "upper")) {
     res1T <- csranks_marg(1:5, V, coverage = 0.95, cstype = cstype, 
-                          stepdown = TRUE, R = 1000, indices = NA, seed = 100)
+                          stepdown = TRUE, R = 1000, indices = 1:5, seed = 100)
     res1F <- csranks_marg(1:5, V, coverage = 0.95, cstype = cstype, 
-                          stepdown = FALSE, R = 1000, indices = NA, seed = 100)
+                          stepdown = FALSE, R = 1000, indices = 1:5, seed = 100)
 
     expect_true(all(res1T$L >= res1F$L & res1T$U <= res1F$U))
 
     res1T <- csranks_simul(1:5, V, coverage = 0.95, cstype = cstype, 
-                           stepdown = TRUE, R = 1000, indices = NA, seed = 100)
+                           stepdown = TRUE, R = 1000, indices = 1:5, seed = 100)
     res1F <- csranks_simul(1:5, V, coverage = 0.95, cstype = cstype, 
-                           stepdown = FALSE, R = 1000, indices = NA, seed = 100)
+                           stepdown = FALSE, R = 1000, indices = 1:5, seed = 100)
 
     expect_true(all(res1T$L >= res1F$L & res1T$U <= res1F$U))
 

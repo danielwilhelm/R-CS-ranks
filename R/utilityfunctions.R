@@ -53,6 +53,12 @@ process_csranks_args <- function(x, Sigma, na.rm){
     cli::cli_abort(c("`Sigma` must be a numeric matrix.",
                      "x" = "{.var Sigma} if of {.cls {class(Sigma)}} class.",
                      "i" = "Did you provide only a vector of variances? If so, use a diagonal covariance matrix."))
+  if(nrow(Sigma) != length(x))
+    cli::cli_abort(c("{.var Sigma} must be a matrix with number of rows and columns equal to length of {.var x}.",
+                     "x" = "{.var Sigma} has {nrow(Sigma} rows, but {.var x} has length of {length(x)}."))
+  if(ncol(Sigma) != length(x))
+    cli::cli_abort(c("{.var Sigma} must be a matrix with number of rows and columns equal to length of {.var x}.",
+                     "x" = "{.var Sigma} has {ncol(Sigma} columns, but {.var x} has length of {length(x)}."))
   # remove NAs
   if (na.rm) {
     ind <- !is.na(x) & apply(Sigma, 1, function(v) all(!is.na(v))) & apply(Sigma, 2, function(v) all(!is.na(v)))
@@ -66,6 +72,35 @@ process_csranks_args <- function(x, Sigma, na.rm){
   list(x=x,Sigma=Sigma)
 }
 
+process_x_counts_argument <- function(x, na.rm){
+  if(!is.vector(x))
+    cli::cli_abort(c("{.var x} must be an integer vector.",
+                     "x" = "{.var x} is of {.cls {class(x)}} class."))
+  if(!is.numeric(x))
+    cli::cli_abort(c("{.var x} must be an integer vector.",
+                     "x" = "Supplied {.var x} is of {.cls {typeof(x)}} type."))
+  if (na.rm) {
+    ind <- !is.na(x)
+    x <- x[ind]
+  }
+  
+  deviation_from_int <- which.max(abs(x - round(x)))
+  max_deviation <- max(abs(x - round(x)))
+  
+  if(max_deviation > 1e-10)
+    cli::cli_abort(c("{.var x} must be an integer vector.",
+                     "x" = "{.var x[{deviation_from_int}]} = {x[deviation_from_int]} is not an integer."))
+  if(any(x < 0)){
+    wrong_index <- which(x < 0)[1]
+    cli::cli_abort(c("{.var x} must be a vector of non negative integers.",
+                     "x" = "{.var x[{wrong_index}]}={x[wrong_index]} is negative."))
+  }
+  # remove NAs
+  if(any(is.na(x)))
+    cli::cli_abort("NA values found in `x`.")
+  x
+}
+
 process_indices_argument <- function(indices,p){
   if (any(is.na(indices))) indices <- 1:p
   else{
@@ -73,7 +108,8 @@ process_indices_argument <- function(indices,p){
       cli::cli_abort(c("{.var indices} must be an integer vector.",
                        "x" = "{.var indices} is of {.cls {typeof(x)}} type."))
     deviation_from_int <- which.max(abs(indices - round(indices)))
-    if(indices[deviation_from_int] < 1e-10)
+    max_deviation <- max(abs(indices - round(indices)))
+    if(max_deviation > 1e-10)
       cli::cli_abort(c("{.var indices} must be an integer vector.",
                        "x" = "{.var indices[{deviation_from_int}]}={indices[deviation_from_int]} is not an integer."))
     if(!is.vector(indices))

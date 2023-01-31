@@ -35,12 +35,8 @@ test_that("NAs are handled correctly", {
   expect_error(csranks_multinom(c(1:8, NA, NA), coverage = 0.95, indices = NA))
 
   res <- csranks_multinom(c(1:8, NA, 2), coverage = 0.95, indices = NA, na.rm = TRUE)
-  expect_is(res$L, "integer")
-  expect_is(res$U, "integer")
-  expect_equal(length(res$L), 9)
-  expect_equal(length(res$U), 9)
-  expect_false(any(is.na(res$L)))
-  expect_false(any(is.na(res$U)))
+  expected_res <- csranks_multinom(c(1:8, 2), coverage = 0.95, indices = NA)
+  expect_equal(res, expected_res)
 })
 
 
