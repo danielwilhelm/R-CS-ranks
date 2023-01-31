@@ -1,17 +1,49 @@
-#' Compute ranks
+#' Compute integer ranks
 #'
 #' @param x vector of values to be ranked
-#' @param best logical; if \code{TRUE} (default), the rank of the j-th element is defined as the number of other elements strictly larger than the j-th. Otherwise, the rank is defined as the number of other elements strictly smaller than the j-th.
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any).
+#' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.
+#' @param increasing logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. Otherwise, large elements receive small ranks. 
+#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
 
 #' @return vector of the same dimension as \code{x} containing the ranks
 #' @examples
-#' xrank(c(4, 4, 4, 3, 1, 10, 7, 7))
+#' irank(c(4,3,1,10,7))
+#' irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+#' irank(c(4,3,1,10,7), omega=0.5) # equal to previous ranks because there are no ties
+#' irank(c(4,4,4,3,1,10,7,7))
+#' irank(c(4,4,4,3,1,10,7,7), omega=1)
+#' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
+#' @section Details:
+#' tba
 #' @export
-xrank <- function(x, best = TRUE, na.rm = FALSE) {
-  if (na.rm) x <- x[!is.na(x)]
-  return(best * (colSums(outer(x, x, ">")) + 1) + (1 - best) * (colSums(outer(x, x, "<")) + 1))
+irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
+	if (na.rm) x <- x[!is.na(x)]
+	if (increasing) {
+		return( omega*colSums(outer(x, x, "<=")) + (1-omega)*colSums(outer(x, x, "<")) + 1 - omega )
+	} else {
+		return( omega*colSums(outer(x, x, ">=")) + (1-omega)*colSums(outer(x, x, ">")) + 1 - omega )
+	}
 }
+
+
+#' Compute fractional ranks
+#'
+#' @inheritParams irank
+
+#' @return vector of the same dimension as \code{x} containing the ranks
+#' @examples
+#' frank(c(4,3,1,10,7))
+#' frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+#' frank(c(4,3,1,10,7), omega=0.5) # mid-ranks, equal to previous ranks because there are no ties
+#' frank(c(4,4,4,3,1,10,7,7))
+#' frank(c(4,4,4,3,1,10,7,7), omega=1)
+#' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
+#' @section Details:
+#' tba
+#' @export
+frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, omega, increasing, na.rm) / length(x))
+
+
 
 #' partition vector into quantile bins
 #'

@@ -28,7 +28,6 @@
 #' pl <- plotranking(ranks, CS$L, CS$U, horizontal = FALSE)
 #' pl + xlab("position in ranking") + # Note, that xlab refers to vertical axis now
 #'   ylab("population label") + theme_gray()
-#' 
 #' @export
 #' @import ggplot2
 #' @importFrom stats reorder

@@ -2,7 +2,7 @@
 n <- 10 # not larger than 23
 x <- seq(1, 3, length = n)
 sd <- diag(rep(0.04, n))
-ranks <- xrank(x)
+ranks <- irank(x)
 CS <- csranks(x, sd)
 popnames <- rev(LETTERS[1:n])
 

@@ -81,10 +81,10 @@ print(pisa)
 37   United States      502.3800   3.317920      505.3528   3.568673   478.2447 3.235444
 ```
 
-Consider ranking countries according to their students' achievement in mathematics. The scores in `math_score` are estimates of these achievements. The countries' ranks can be estimated using the function `xrank()`:
+Consider ranking countries according to their students' achievement in mathematics. The scores in `math_score` are estimates of these achievements. The countries' ranks can be estimated using the function `irank()`:
 
 ```R
-math_rank <- xrank(math_score)
+math_rank <- irank(math_score)
 math_rank
  [1] 24 18 10  7 35 37 17  8  3 11 20 15 34 30 21 16 32 25  1  2 19 29 27 36  4 22 14  5 23 26  9 28 12  6 33 13 31
 ```
