@@ -154,4 +154,4 @@ ggplot2::ggsave("mathsimul.pdf", plot=plotsimul)
 
 
 # Reference
-[Mogstad, Romano, Shaikh, and Wilhelm (2020), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", CeMMAP Working Paper CWP10/20](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf)
+[Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf)
