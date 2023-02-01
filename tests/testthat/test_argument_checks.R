@@ -14,11 +14,11 @@ test_that("`x` argument is handled correctly by process_csranks_args",{
 })
 
 test_that("`Sigma` argument is handled correctly by process_csranks_args",{
-  expect_error(process_csranks_args(1:10, data.frame(x=1:10),
-                                    V))
-  expect_error(process_csranks_args(1:10, diag(paste0(1:10))))
-  expect_error(process_csranks_args(1:10, V[-1,]))
-  expect_error(process_csranks_args(1:10, V[,-1]))
+  expect_error(process_csranks_args(1:10, data.frame(x=1:10), na.rm=TRUE))
+  expect_error(process_csranks_args(1:10, 1:10 / 10, na.rm=TRUE),
+               "variances")
+  expect_error(process_csranks_args(1:10, V[-1,], na.rm=TRUE))
+  expect_error(process_csranks_args(1:10, V[,-1], na.rm=TRUE))
 })
 
 test_that("NAs are handled correctly by process_csranks_args", {
@@ -61,9 +61,14 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
                1:10)
   expect_equal(process_indices_argument(c(NA, 2:10), 10),
                1:10)
+  expect_equal(process_indices_argument(c(-2,-5,-6), 10),
+               c(1,3,4,7,8,9,10))
   expect_error(process_indices_argument(data.frame(x=1:10), 10))
   expect_error(process_indices_argument(paste0(1:10), 10))
   expect_error(process_indices_argument(c(0,2:10), 10))
   expect_error(process_indices_argument(c(1:9, 11), 10))
   expect_error(process_indices_argument(c(3.14, 2:10), 10))
+  expect_error(process_indices_argument(c(0, 2:10), 10))
+  expect_error(process_indices_argument(c(-1, 2:10), 10))
+  expect_error(process_indices_argument(2:11, 10))
 })
