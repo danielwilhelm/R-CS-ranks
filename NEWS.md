@@ -1,3 +1,8 @@
+# csranks 0.4.1
+
+* `V` argument (`sd` before 0.4) renamed to `Sigma`
+* Adding `irank` and `frank` functions
+
 # csranks 0.4.0
 
 * `sd` argument renamed to `V`; now accepts ONLY covariance matrix.
