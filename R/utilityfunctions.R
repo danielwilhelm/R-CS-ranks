@@ -1,4 +1,9 @@
-#' Compute integer ranks
+#' Compute ranks from feature values
+#' 
+#' Given estimates of a certain feature for a set of populations,
+#' calculate the integer ranks of populations, i.e. places in ranking done by feature
+#' values. The larger feature value, the higher the place and the lower the integer
+#' rank (lowest, 1, is the best place).
 #'
 #' @param x vector of values to be ranked
 #' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.
@@ -26,11 +31,11 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 }
 
 
-#' Compute fractional ranks
-#'
-#' @inheritParams irank
-
-#' @return vector of the same dimension as \code{x} containing the ranks
+#' @describeIn irank Compute fractional ranks
+#' 
+#' This method returns ranks in form of fractions from [0-1] interval.
+#' Smaller values (closer to 0) indicate higher rank.
+#' 
 #' @examples
 #' frank(c(4,3,1,10,7))
 #' frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
@@ -38,8 +43,6 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' frank(c(4,4,4,3,1,10,7,7))
 #' frank(c(4,4,4,3,1,10,7,7), omega=1)
 #' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
-#' @section Details:
-#' tba
 #' @export
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, omega, increasing, na.rm) / length(x))
 

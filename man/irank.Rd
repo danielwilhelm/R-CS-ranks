@@ -2,9 +2,12 @@
 % Please edit documentation in R/utilityfunctions.R
 \name{irank}
 \alias{irank}
-\title{Compute integer ranks}
+\alias{frank}
+\title{Compute ranks from feature values}
 \usage{
 irank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
+
+frank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
 }
 \arguments{
 \item{x}{vector of values to be ranked}
@@ -19,8 +22,19 @@ irank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
 vector of the same dimension as \code{x} containing the ranks
 }
 \description{
-Compute integer ranks
+Given estimates of a certain feature for a set of populations,
+calculate the integer ranks of populations, i.e. places in ranking done by feature
+values. The larger feature value, the higher the place and the lower the integer
+rank (lowest, 1, is the best place).
 }
+\section{Functions}{
+\itemize{
+\item \code{frank()}: Compute fractional ranks
+
+This method returns ranks in form of fractions from [0-1] interval.
+Smaller values (closer to 0) indicate higher rank.
+
+}}
 \section{Details}{
 
 tba
@@ -33,4 +47,10 @@ irank(c(4,3,1,10,7), omega=0.5) # equal to previous ranks because there are no t
 irank(c(4,4,4,3,1,10,7,7))
 irank(c(4,4,4,3,1,10,7,7), omega=1)
 irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
+frank(c(4,3,1,10,7))
+frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+frank(c(4,3,1,10,7), omega=0.5) # mid-ranks, equal to previous ranks because there are no ties
+frank(c(4,4,4,3,1,10,7,7))
+frank(c(4,4,4,3,1,10,7,7), omega=1)
+frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
 }
