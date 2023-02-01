@@ -29,7 +29,3 @@ test_that("calculate_scaled_diffs works", {
     Z, expected_requested_diffrences,scales)
   expect_equal(actual_Z_diff, expected_Z_diff)
 })
-
-
-
-
