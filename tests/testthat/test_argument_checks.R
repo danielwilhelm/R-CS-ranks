@@ -57,28 +57,28 @@ test_that("adjust_indices_for_NAs work correctly",{
                c(3,5,6))
 })
 
-test_that("`x` argument is handled correctly by process_csranks_multinom_argumentss",{
-  expect_equal(process_csranks_multinom_arguments(1:10, NA, na.rm=TRUE)[["x"]],
+test_that("`x` argument is handled correctly by process_csranks_multinom_argss",{
+  expect_equal(process_csranks_multinom_args(1:10, NA, na.rm=TRUE)[["x"]],
                1:10)
-  expect_equal(process_csranks_multinom_arguments(c(NA, 2:10), NA, na.rm=TRUE)[["x"]],
+  expect_equal(process_csranks_multinom_args(c(NA, 2:10), NA, na.rm=TRUE)[["x"]],
                2:10)
-  expect_error(process_csranks_multinom_arguments(data.frame(x=1:10), NA, na.rm=TRUE))
-  expect_error(process_csranks_multinom_arguments(paste0(1:10), NA, na.rm=TRUE))
-  expect_error(process_csranks_multinom_arguments(c(-1,2:10), NA, na.rm=TRUE))
-  expect_error(process_csranks_multinom_arguments(c(3.14, 2:10), NA, na.rm=TRUE))
-  expect_error(process_csranks_multinom_arguments(c(NA, 2:10), NA, na.rm=FALSE))
+  expect_error(process_csranks_multinom_args(data.frame(x=1:10), NA, na.rm=TRUE))
+  expect_error(process_csranks_multinom_args(paste0(1:10), NA, na.rm=TRUE))
+  expect_error(process_csranks_multinom_args(c(-1,2:10), NA, na.rm=TRUE))
+  expect_error(process_csranks_multinom_args(c(3.14, 2:10), NA, na.rm=TRUE))
+  expect_error(process_csranks_multinom_args(c(NA, 2:10), NA, na.rm=FALSE))
 })
 
-test_that("`indices` argument is handled correctly by process_csranks_multinom_arguments",{
-  expect_equal(process_csranks_multinom_arguments(1:10, NA, na.rm=TRUE)[["indices"]],
+test_that("`indices` argument is handled correctly by process_csranks_multinom_args",{
+  expect_equal(process_csranks_multinom_args(1:10, NA, na.rm=TRUE)[["indices"]],
                1:10)
-  expect_equal(process_csranks_multinom_arguments(c(NA, 2:10), NA, na.rm=TRUE)[["indices"]],
+  expect_equal(process_csranks_multinom_args(c(NA, 2:10), NA, na.rm=TRUE)[["indices"]],
                1:9)
-  expect_equal(process_csranks_multinom_arguments(c(NA, 2:10), 1:10, na.rm=TRUE)[["indices"]],
+  expect_equal(process_csranks_multinom_args(c(NA, 2:10), 1:10, na.rm=TRUE)[["indices"]],
                1:9)
-  expect_equal(process_csranks_multinom_arguments(c(NA, 2:10), 2:10, na.rm=TRUE)[["indices"]],
+  expect_equal(process_csranks_multinom_args(c(NA, 2:10), 2:10, na.rm=TRUE)[["indices"]],
                1:9)
-  expect_equal(process_csranks_multinom_arguments(c(NA, 2,3,NA,NA,6:10), 
+  expect_equal(process_csranks_multinom_args(c(NA, 2,3,NA,NA,6:10), 
                                          c(1,3,5,6), na.rm=TRUE)[["indices"]],
                c(2,3))
 })

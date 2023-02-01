@@ -58,6 +58,8 @@
 #' @export
 csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, simul = TRUE, indices = NA, na.rm = FALSE, seed = NA) {
   # initializations
+  check_csranks_args(coverage=coverage, cstype=cstype, stepdown=stepdown, R=R,
+                     simul=simul, seed=seed)
   l <- process_csranks_args(x, Sigma, indices, na.rm)
   x <- l$x; Sigma <- l$Sigma; indices <- l$indices
   
@@ -157,6 +159,9 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
 #' @inherit csranks references
 #' @export
 cstaubest <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
+  check_csranks_args(coverage=coverage, stepdown=stepdown, R=R, seed=seed, 
+                     simul=TRUE, cstype="lower")
+  check_tau(tau, length(x))
   l <- process_csranks_args(x, Sigma, NA, na.rm)
   x <- l$x; Sigma <- l$Sigma; indices <- l$indices
   
@@ -173,6 +178,9 @@ cstaubest <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1
 #'
 #' @export
 cstauworst <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
+  check_csranks_args(coverage=coverage, stepdown=stepdown, R=R, seed=seed, 
+                     simul=TRUE, cstype="lower")
+  check_tau(tau, length(x))
   l <- process_csranks_args(x, Sigma, NA, na.rm)
   x <- l$x; Sigma <- l$Sigma; indices <- l$indices
   # return indices whose lower bound on the rank is <= tau

@@ -26,7 +26,8 @@
 #' @export
 csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = TRUE, multcorr = "Holm", indices = NA, na.rm = FALSE) {
   # initializations
-  l <- process_csranks_multinom_arguments(x, indices, na.rm)
+  check_csranks_multinom_args(coverage=coverage, cstype=cstype, simul=simul, multcorr=multcorr)
+  l <- process_csranks_multinom_args(x, indices, na.rm)
   x <- l$x; indices <- l$indices
   
   if (simul) {
@@ -48,8 +49,6 @@ csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = T
 #' @importFrom stats aggregate
 csranks_multinom_simul <- function(x, coverage = 0.95, cstype = "two-sided", multcorr = "Bonferroni", indices = NA, na.rm = FALSE) {
   # check arguments
-  cstype <- match.arg(cstype, c("two-sided", "upper", "lower"))
-  multcorr <- match.arg(multcorr, c("Bonferroni", "Holm"))
   indices <- process_indices_argument(indices, length(x))
   
   # initializations
