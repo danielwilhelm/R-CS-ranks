@@ -9,7 +9,7 @@ csranks_multinom(
   coverage = 0.95,
   cstype = "two-sided",
   simul = TRUE,
-  multcorr = "Bonferroni",
+  multcorr = "Holm",
   indices = NA,
   na.rm = FALSE
 )
@@ -39,6 +39,13 @@ Given data on counts of successes for each category, calculate confidence sets f
 \section{Details}{
 
 The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
+
+It involves testing multiple hypotheses. The `\code{multcorr}` states, how the 
+p-values should be corrected to control the Family Wise Error Rate (FWER).
+Not applying correction (\code{multcorr=none}) is not advised.
+
+From a practical point of view, \code{multcorr=Holm} takes more time, but usually results
+in tighter (better) confidence sets than \code{multcorr=Bonferroni}.
 }
 
 \examples{
