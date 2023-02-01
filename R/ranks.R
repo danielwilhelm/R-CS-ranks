@@ -52,9 +52,9 @@
 #'
 #' Parametric bootstrap used to calculate distribution for confidence sets based on the multivariate normal distribution.
 #'
-#' @references Mogstad, Romano, Shaikh, and Wilhelm.
-#' "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
-#' \href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
+#' @references Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
+#' 
+#' \href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{link to pdf}
 #' @export
 csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, simul = TRUE, indices = NA, na.rm = FALSE, seed = NA) {
   # initializations

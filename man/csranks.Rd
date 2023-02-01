@@ -84,7 +84,7 @@ Sigma <- diag(rep(0.04, 10))
 csranks(x, Sigma)
 }
 \references{
-Mogstad, Romano, Shaikh, and Wilhelm.
-"Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
-\href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
+Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
+
+\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{link to pdf}
 }
