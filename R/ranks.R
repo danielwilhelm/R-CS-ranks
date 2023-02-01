@@ -58,11 +58,8 @@
 #' @export
 csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, simul = TRUE, indices = NA, na.rm = FALSE, seed = NA) {
   # initializations
-  l <- process_csranks_args(x, Sigma, na.rm)
-  x <- l$x; Sigma <- l$Sigma
-  
-  p <- length(x)
-  indices <- process_indices_argument(indices, p)
+  l <- process_csranks_args(x, Sigma, indices, na.rm)
+  x <- l$x; Sigma <- l$Sigma; indices <- l$indices
   
   if (simul) {
     return(csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
@@ -89,22 +86,14 @@ csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepd
   U <- res$U
 
   # compute Nminus and Nplus
+  # AKA the number of populations, for which the feature value
+  # is larger / smaller in a statistically significant way
   if (stepdown & cstype == "two-sided") {
-    if (length(indices) == 1 & all(!is.na(indices))) {
-      Nplus <- sum(L[indices, ] > 0, na.rm = TRUE)
-      Nminus <- sum(L[, indices] > 0, na.rm = TRUE)
-    } else {
-      Nplus <- rowSums(L[indices, ] > 0, na.rm = TRUE)
-      Nminus <- colSums(L[, indices] > 0, na.rm = TRUE)
-    }
+      Nplus <- rowSums(L[indices, , drop=FALSE] > 0, na.rm = TRUE)
+      Nminus <- colSums(L[, indices, drop=FALSE] > 0, na.rm = TRUE)
   } else {
-    if (length(indices) == 1 & all(!is.na(indices))) {
-      Nplus <- sum(L[indices, ] > 0, na.rm = TRUE)
-      Nminus <- sum(U[indices, ] < 0, na.rm = TRUE)
-    } else {
-      Nplus <- rowSums(L[indices, ] > 0, na.rm = TRUE)
-      Nminus <- rowSums(U[indices, ] < 0, na.rm = TRUE)
-    }
+      Nplus <- rowSums(L[indices, , drop=FALSE] > 0, na.rm = TRUE)
+      Nminus <- rowSums(U[indices, , drop=FALSE] < 0, na.rm = TRUE)
   }
 
   # return lower and upper confidence bounds for the ranks
@@ -144,7 +133,9 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
 #' @section Details:
 #' The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
 #' Parametric bootstrap based on the multivariate normal distribution.
-
+#'
+#' If \code{na.rm=TRUE} and NAs are present, then results are returned for tau-best (worst)
+#' populations among those without NA values, i.e. after NA removal.
 #' @examples
 #' # Setup example data
 #' n <- 10
@@ -166,8 +157,11 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
 #' @inherit csranks references
 #' @export
 cstaubest <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
+  l <- process_csranks_args(x, Sigma, NA, na.rm)
+  x <- l$x; Sigma <- l$Sigma; indices <- l$indices
+  
   # return indices whose lower bound on the rank is <= tau
-  L <- csranks_simul(x, Sigma, coverage = coverage, cstype = "lower", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$L
+  L <- csranks_simul(x, Sigma, coverage = coverage, cstype = "lower", stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)$L
   return(L <= tau)
 }
 
@@ -179,8 +173,10 @@ cstaubest <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1
 #'
 #' @export
 cstauworst <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
+  l <- process_csranks_args(x, Sigma, NA, na.rm)
+  x <- l$x; Sigma <- l$Sigma; indices <- l$indices
   # return indices whose lower bound on the rank is <= tau
-  U <- csranks_simul(x, Sigma, coverage = coverage, cstype = "upper", stepdown = stepdown, R = R, indices = NA, na.rm = na.rm, seed = seed)$U
-  p <- length(x) # what if na.rm?
+  U <- csranks_simul(x, Sigma, coverage = coverage, cstype = "upper", stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)$U
+  p <- length(x)
   return(U >= p - tau + 1)
 }

@@ -26,8 +26,8 @@
 #' @export
 csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = TRUE, multcorr = "Holm", indices = NA, na.rm = FALSE) {
   # initializations
-  x <- process_x_counts_argument(x, na.rm)
-  indices <- process_indices_argument(indices, length(x))
+  l <- process_csranks_multinom_arguments(x, indices, na.rm)
+  x <- l$x; indices <- l$indices
   
   if (simul) {
     return(csranks_multinom_simul(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices, na.rm = na.rm))

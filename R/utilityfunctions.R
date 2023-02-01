@@ -74,7 +74,7 @@ createquartiles <- function(x) {
 #' Process csranks arguments
 #' @noRd
 
-process_csranks_args <- function(x, Sigma, na.rm){
+process_csranks_args <- function(x, Sigma, indices, na.rm){
   if(!is.vector(x))
     cli::cli_abort(c("{.var x} must be a numeric vector.",
                      "x" = "{.var x} is of {.cls {class(x)}} class."))
@@ -94,29 +94,34 @@ process_csranks_args <- function(x, Sigma, na.rm){
   if(ncol(Sigma) != length(x))
     cli::cli_abort(c("{.var Sigma} must be a matrix with number of rows and columns equal to length of {.var x}.",
                      "x" = "{.var Sigma} has {ncol(Sigma)} columns, but {.var x} has length of {length(x)}."))
+  indices = process_indices_argument(indices, length(x))
   # remove NAs
   if (na.rm) {
     ind <- !is.na(x) & apply(Sigma, 1, function(v) all(!is.na(v))) & apply(Sigma, 2, function(v) all(!is.na(v)))
     x <- x[ind]
     Sigma <- Sigma[ind, ind]
+    indices <- adjust_indices_for_NAs(indices, ind)
   }
   if(any(is.na(x)))
     cli::cli_abort("NA values found in `x`.")
   if(any(is.na(Sigma)))
     cli::cli_abort("NA values found in `Sigma`.")
-  list(x=x,Sigma=Sigma)
+  list(x=x,Sigma=Sigma,indices=indices)
 }
 
-process_x_counts_argument <- function(x, na.rm){
+process_csranks_multinom_arguments <- function(x, indices, na.rm){
   if(!is.vector(x))
     cli::cli_abort(c("{.var x} must be an integer vector.",
                      "x" = "{.var x} is of {.cls {class(x)}} class."))
   if(!is.numeric(x))
     cli::cli_abort(c("{.var x} must be an integer vector.",
                      "x" = "{.var x} is of {.cls {typeof(x)}} type."))
+  indices <- process_indices_argument(indices, length(x))
+  
   if (na.rm) {
     ind <- !is.na(x)
     x <- x[ind]
+    indices <- adjust_indices_for_NAs(indices, ind)
   }
   if(any(is.na(x)))
     cli::cli_abort("NA values found in `x`.")
@@ -132,7 +137,7 @@ process_x_counts_argument <- function(x, na.rm){
     cli::cli_abort(c("{.var x} must be a vector of non negative integers.",
                      "x" = "{.var x[{wrong_index}]} == {x[wrong_index]} is negative."))
   }
-  x
+  list(x=x, indices=indices)
 }
 
 process_indices_argument <- function(indices,p){
@@ -170,6 +175,12 @@ process_indices_argument <- function(indices,p){
     indices <- (1:p)[indices]
   }
   indices
+}
+
+adjust_indices_for_NAs <- function(original_indices, is_not_na){
+  all_indices <- 1:length(is_not_na)
+  filtered_indices <- (all_indices %in% original_indices) & is_not_na
+  (all_indices - cumsum(!is_not_na))[filtered_indices]
 }
 
 #' Indices utils

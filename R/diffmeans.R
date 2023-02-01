@@ -1,7 +1,14 @@
 #' Confidence sets for vector of differences
 #' @inheritParams csranks
-#' @inherit csranks return
-
+#' 
+#' @return Confidence intervals for diferences between feature values in x.
+#' In a form of a list with two items, \code{L} and \code{U}.
+#' Each is a matrix of size length(x) times length(x).
+#' The confidence interval for a difference between feature from ith and jth 
+#' population is [out$L[i,j], out$U[i,j]].
+#' NAs are returned whenever the value is not of interest (one-sided CI or 
+#' i,j not in indices)
+#' 
 #' @importFrom stats quantile
 #' @importFrom stats rnorm
 #' @noRd

@@ -64,6 +64,9 @@ Equivalent to calling \code{cstaubest} with \code{-x}.
 
 The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
 Parametric bootstrap based on the multivariate normal distribution.
+
+If \code{na.rm=TRUE} and NAs are present, then results are returned for tau-best (worst)
+populations among those without NA values, i.e. after NA removal.
 }
 
 \examples{
