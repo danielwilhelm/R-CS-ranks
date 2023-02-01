@@ -8,6 +8,7 @@ check_csranks_args <- function(coverage, cstype, stepdown, R, simul, seed){
 }
 
 process_csranks_args <- function(x, Sigma, indices, na.rm){
+  # Do some checks and optionally handle NA values.
   assert_is_numeric_vector(x, "x", na_ok=TRUE)
   if(!is.matrix(Sigma)){
     msg <- c("{.var Sigma} must be a numeric matrix.",
@@ -39,10 +40,11 @@ check_csranks_multinom_args <- function(coverage, cstype, simul, multcorr){
   assert_is_single_probability(coverage, "coverage")
   assert_is_single_boolean(simul, "simul")
   assert_is_one_of(cstype, "cstype", c("two-sided", "upper", "lower"))
-  assert_is_one_of(cstype, "multcorr", c("Bonferroni", "Holm", "none"))
+  assert_is_one_of(multcorr, "multcorr", c("Bonferroni", "Holm", "none"))
 }
 
 process_csranks_multinom_args <- function(x, indices, na.rm){
+  # Do some checks and optionally handle NA values.
   assert_is_integer(x, "x", na_ok=TRUE)
   indices <- process_indices_argument(indices, length(x))
   
@@ -70,6 +72,7 @@ check_tau <- function(tau, p){
 }
 
 process_indices_argument <- function(indices,p){
+  # Do some checks and optionally handle NA values.
   if (any(is.na(indices))) indices <- 1:p
   else{
     assert_is_integer(indices, "indices")
@@ -97,6 +100,8 @@ process_indices_argument <- function(indices,p){
 }
 
 adjust_indices_for_NAs <- function(original_indices, is_not_na){
+  # If we are deleting NAs from x, the indices point to different entries (populations) in x than before
+  # We have to correct for that
   all_indices <- 1:length(is_not_na)
   filtered_indices <- (all_indices %in% original_indices) & is_not_na
   (all_indices - cumsum(!is_not_na))[filtered_indices]
@@ -131,7 +136,7 @@ assert_is_single_probability <- function(x, name){
       negative_index <- which(x < 0)[1]
       msg["x"] <- "{.var {name}[{negative_index}]} == {x[negative_index]} is below 0."
     } else {
-      too_large_index <- which(abs(x) > 1)[1]
+      too_large_index <- which(x > 1)[1]
       msg["x"] <- "{.var {name}[{too_large_index}]} == {x[too_large_index]} is above 1."
     }
     cli::cli_abort(msg)
@@ -140,7 +145,9 @@ assert_is_single_probability <- function(x, name){
 
 assert_is_integer <- function(x, name, na_ok=FALSE){
   assert_is_numeric_vector(x, name, na_ok)
-  if(na_ok){
+  if(!na_ok)
+    assert_has_no_NAs(x)
+  else{
     if(all(is.na(x))) return()
     x <- x[!is.na(x)]
   }
@@ -168,7 +175,7 @@ assert_is_single <- function(x, name){
 assert_is_single_boolean <- function(x, name){
   assert_is_vector(x, name)
   assert_is_single(x, name)
-  if(!is.logical(x) || is.na(x))
+  if(!is.logical(x) || is.na(x)) # single NA is a boolean for R. Tri-valued logic
     cli::cli_abort(c("{.var {name}} must be a single boolean.",
                      "x" = "{.var {name}} is of {.cls {typeof(x)}} type."))
 }
@@ -193,7 +200,7 @@ assert_has_no_NAs <- function(x, name){
 }
 
 assert_is_vector <- function(x, name){
-  if(!is.vector(x))
+  if(!is.atomic(x))
     cli::cli_abort(c("{.var {name}} must be a vector.",
                      "x" = "{.var {name}} is of {.cls {class(x)}} class."))
 }

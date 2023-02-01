@@ -57,7 +57,7 @@ test_that("adjust_indices_for_NAs work correctly",{
                c(3,5,6))
 })
 
-test_that("`x` argument is handled correctly by process_csranks_multinom_argss",{
+test_that("`x` argument is handled correctly by process_csranks_multinom_args",{
   expect_equal(process_csranks_multinom_args(1:10, NA, na.rm=TRUE)[["x"]],
                1:10)
   expect_equal(process_csranks_multinom_args(c(NA, 2:10), NA, na.rm=TRUE)[["x"]],
@@ -98,4 +98,56 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
   expect_error(process_indices_argument(c(0, 2:10), 10))
   expect_error(process_indices_argument(c(-1, 2:10), 10))
   expect_error(process_indices_argument(2:11, 10))
+})
+
+# Low-level assert tests
+test_that("assert_is_positive works correctly", {
+  expect_silent(assert_is_positive(0.95, "x", TRUE))
+  expect_error(assert_is_positive(-1, "x", TRUE))
+  expect_error(assert_is_positive(0, "x", TRUE))
+})
+
+test_that("assert_is_single_probability works correctly", {
+  expect_silent(assert_is_single_probability(0.95, "x"))
+  expect_error(assert_is_single_probability(-1, "x"))
+  expect_error(assert_is_single_probability(1.1, "x"))
+})
+
+test_that("assert_is_integer works correctly", {
+  expect_silent(assert_is_integer(1:3, "x"))
+  expect_silent(assert_is_integer(NA, "x", na_ok=TRUE))
+  expect_error(assert_is_integer(c(1,2,3.14), "x"))
+})
+
+test_that("assert_is_numeric_vector works correctly", {
+  expect_silent(assert_is_numeric_vector(1:3, "x"))
+  expect_silent(assert_is_numeric_vector(NA, "x", na_ok=TRUE))
+  expect_error(assert_is_numeric_vector(LETTERS[1:3], "x"))
+})
+
+test_that("assert_is_single works correctly", {
+  expect_silent(assert_is_single(1, "x"))
+  expect_error(assert_is_single(1:3, "x"))
+})
+
+test_that("assert_is_single_boolean works correctly", {
+  expect_silent(assert_is_single_boolean(TRUE, "x"))
+  expect_error(assert_is_single_boolean(1, "x"))
+  expect_error(assert_is_single_boolean(NA, "x"))
+})
+
+test_that("assert_is_one_of works correctly", {
+  expect_silent(assert_is_one_of("A", "x", LETTERS[1:3]))
+  expect_error(assert_is_one_of(1, "x", LETTERS[1:3]))
+  expect_error(assert_is_one_of("Y", "x", LETTERS[1:3]))
+})
+
+test_that("assert_has_no_NAs works correctly", {
+  expect_silent(assert_has_no_NAs(1:4, "x"))
+  expect_error(assert_has_no_NAs(c(NA, 1:3), "x"))
+})
+
+test_that("assert_is_vector works correctly", {
+  expect_silent(assert_is_vector(1:4, "x"))
+  expect_error(assert_is_vector(list(1:4), "x"))
 })
