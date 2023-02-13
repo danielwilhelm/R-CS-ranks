@@ -123,7 +123,7 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
 #' and `requested differences` - matrix with 2 columns. Each row corresponds
 #' to single TRUE entraince in I. Its contents are the indices of the entry.
 #' 
-#' @example 
+#' @examples
 #' I <- matrix(c(FALSE, FALSE, FALSE,
 #'               FALSE, FALSE, TRUE,
 #'               FALSE, FALSE, FALSE), byrow = TRUE, ncol = 3)
@@ -132,7 +132,6 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
 #' r$requested_diffrences # matrix(c(2,3), ncol = 2)
 #' @noRd
 reduce_I <- function(I){
-  # I: boolean matrix
   needed_variables <- sapply(1:nrow(I), function(i){
     any(I[i,]) || any(I[,i])
   })

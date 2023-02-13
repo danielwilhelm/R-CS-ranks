@@ -24,7 +24,7 @@ csranks_multinom(
 \item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}.
 Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
-\item{multcorr}{multiplicity correction to be used: \code{Bonferroni} (default), \code{Holm} or \code{none}. See Details section for more.}
+\item{multcorr}{multiplicity correction to be used: \code{Holm} (default), \code{Bonferroni} or \code{none}. See Details section for more.}
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
