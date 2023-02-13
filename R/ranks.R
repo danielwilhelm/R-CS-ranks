@@ -78,6 +78,7 @@ csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = 
 csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
   indices <- process_indices_argument(indices, length(x))
   # joint CS for difference in means
+  # switching cause lower rank is associated with higher values in x
   csdifftype <- switch(cstype,
     "lower" = "upper",
     "upper" = "lower",
@@ -113,13 +114,12 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
   U <- L
 
   # compute marginal CS for each population indicated by indices
-  for (i in 1:length(indices)) {
-    CS <- csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices[i], seed = seed)
-    L[i] <- CS$L
-    U[i] <- CS$U
-  }
+  LU <- sapply(indices, function(i){
+    CS <- csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = i, seed = seed)
+    c(L = CS$L, U = CS$U)
+  })
 
-  return(list(L = as.integer(L), U = as.integer(U)))
+  return(list(L = as.integer(LU["L",]), U = as.integer(LU["U",])))
 }
 
 
