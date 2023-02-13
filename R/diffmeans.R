@@ -22,15 +22,15 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   thetadiff <- outer(x, x, "-")
   sigmadiff <- calculate_difference_sds(cov_mat)
   anyrejections <- TRUE
+  # Bounds for confidence intervals of diffrences
   ChatL <- matrix(0, p, p)
   ChatU <- ChatL
   maxabs <- function(x) max(abs(x))
   mmax <- function(x) max(-x)
 
   # which differences?
-  I0 <- initialize_I0(p=p, indices=indices, stepdown = stepdown, cstype=cstype)
-  if (stepdown & cstype == "symmetric")
-    cstype <- "lower"
+  l <- initialize_I0(p=p, indices=indices, stepdown = stepdown, cstype=cstype)
+  I0 <- l$I0; cstype <- l$cstype
   I1 <- I0
   Istar <- I0
 
@@ -41,6 +41,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
     reduced_I <- reduce_I(I)
     needed_variables <- reduced_I$needed_variables
     requested_diffrences <- reduced_I$requested_diffrences
+    # Yes, this is correct
     needed_cov_mat <- cov_mat[needed_variables, needed_variables]
     Z <- MASS::mvrnorm(R, mu = rep(0, nrow(needed_cov_mat)),
                        Sigma = needed_cov_mat)
@@ -93,9 +94,12 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   return(list(L = ChatL, U = ChatU))
 }
 
+
+#' Calculate standard deviations of diffrences in an MVTNormal distribution
+#' @param cov_mat a covariance matrix of multivariate normal distribution
+#' @return matrix pxp with standard deviations of differences of variables
+#' @noRd
 calculate_difference_sds <- function(cov_mat){
-  # cov_mat: a covariance matrix of multivariate normal distribution
-  # return: matrix pxp with standard deviations of differences of variables
   # Var[X_1 - X_2] = Var[X_1] + Var[X_2] - 2Cov[X_1,X_2]
   # And a difference of correlated Gaussians is still Gaussian
   sqrt(outer(diag(cov_mat), diag(cov_mat), "+") - 2 * cov_mat)
@@ -105,13 +109,30 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
   I0 <- matrix(TRUE, p, p)
   I0[-indices,] <- FALSE
   if (stepdown & cstype == "symmetric") {
+    # for other cstypes, correction is unnecessary
     I0[, indices] <- TRUE
+    cstype <- "lower"
   }
   diag(I0) <- FALSE
-  I0
+  list(I0 = I0, cstype = cstype)
 }
 
+#' Convert information about needed differences
+#' from a boolean matrix to more useful form
+#' @return a list with `needed_variables` - boolean
+#' and `requested differences` - matrix with 2 columns. Each row corresponds
+#' to single TRUE entraince in I. Its contents are the indices of the entry.
+#' 
+#' @example 
+#' I <- matrix(c(FALSE, FALSE, FALSE,
+#'               FALSE, FALSE, TRUE,
+#'               FALSE, FALSE, FALSE), byrow = TRUE, ncol = 3)
+#' r <- reduce_I(I)
+#' r$needed_variables # c(FALSE, TRUE, TRUE)
+#' r$requested_diffrences # matrix(c(2,3), ncol = 2)
+#' @noRd
 reduce_I <- function(I){
+  # I: boolean matrix
   needed_variables <- sapply(1:nrow(I), function(i){
     any(I[i,]) || any(I[,i])
   })
@@ -122,14 +143,15 @@ reduce_I <- function(I){
        requested_diffrences = requested_diffrences)
 }
 
+#' @param Z sample from mvt normal with observations in rows
+#' @param requested_differences matrix with 2 columns
+#' we want to calculate differences between z_i and z_j variables
+#' for i,j in rows of requested_differences
+#' for each observation z in Z 
+#' And then scale them with
+#' @param scales: numeric of length nrow(requested_differences)
+#' @noRd
 calculate_scaled_differences_in_samples <- function(Z, requested_diffrences, scales){
-  # Z: sample from mvt normal with observations in rows
-  # requested_differences: matrix with 2 columns
-  # we want to calculate differences between z_i and z_j variables
-  # for i,j in rows of requesetd_differences
-  # for each observation z in Z 
-  # And then scale them with
-  # scales: vector of length nrow(requested_differences)
   Zdiff <- Z[, requested_diffrences[, 1]] - Z[, requested_diffrences[, 2]]
   # Vectorized division goes over rows
   Zdiff_scaled <- t(t(Zdiff) / scales) 
