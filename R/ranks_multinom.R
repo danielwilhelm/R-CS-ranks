@@ -54,7 +54,7 @@ csranks_multinom_simul <- function(x, coverage = 0.95, cstype = "two-sided", mul
   pairwise_p_values <- calculate_pairwise_p_values(x, which_pairs)
   rejection_results <- reject_or_accept(pairwise_p_values, multcorr, coverage)
   Nlist <- calculate_N_plus_minus(rejection_results, cstype, indices)
-  convert_N_plus_minus_to_rank_cs(Nlist$Nminus, Nlist$Nplus, p)
+  convert_N_plus_minus_to_csrank(Nlist$Nminus, Nlist$Nplus, p)
 }
 
 #' @return boolean matrix M. M[j,k] == TRUE means that we want to test hypothesis
@@ -149,7 +149,7 @@ calculate_N_plus_minus <- function(df, cstype, indices){
   list(Nminus = Nminus, Nplus = Nplus)
 }
 
-convert_N_plus_minus_to_rank_cs <- function(Nminus, Nplus, p){
+convert_N_plus_minus_to_csrank <- function(Nminus, Nplus, p){
   L <- Nminus + 1
   U <- p - Nplus
   list(L = as.integer(L), U = as.integer(U))
