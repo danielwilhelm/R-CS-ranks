@@ -37,7 +37,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   # beta-quantiles from Ln and Un
   # using parametric bootstrap
   LInv <- function(I, beta, fn){
-    educed_I <- reduce_I(I)
+    reduced_I <- reduce_I(I)
     needed_variables <- reduced_I$needed_variables
     requested_diffrences <- reduced_I$requested_diffrences
     # Marginal distribution of MVTNormal is MVTNormal 
