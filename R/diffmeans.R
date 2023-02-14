@@ -22,7 +22,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   thetadiff <- outer(x, x, "-")
   sigmadiff <- calculate_difference_sds(cov_mat)
   anyrejections <- TRUE
-  # Bounds for confidence intervals of diffrences
+  # Bounds for confidence intervals of differences
   ChatL <- matrix(0, p, p)
   ChatU <- ChatL
   maxabs <- function(x) max(abs(x))
@@ -37,11 +37,11 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   # beta-quantiles from Ln and Un
   # using parametric bootstrap
   LInv <- function(I, beta, fn){
-    # Use some low-level functions to test them later
-    reduced_I <- reduce_I(I)
+    educed_I <- reduce_I(I)
     needed_variables <- reduced_I$needed_variables
     requested_diffrences <- reduced_I$requested_diffrences
-    # Yes, this is correct
+    # Marginal distribution of MVTNormal is MVTNormal 
+    # with correct block of covariance matrix
     needed_cov_mat <- cov_mat[needed_variables, needed_variables]
     Z <- MASS::mvrnorm(R, mu = rep(0, nrow(needed_cov_mat)),
                        Sigma = needed_cov_mat)
