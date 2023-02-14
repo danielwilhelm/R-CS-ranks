@@ -7,9 +7,22 @@
 #'
 #' @param x vector of values to be ranked
 #' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.
-#' @param increasing logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. Otherwise, large elements receive small ranks. 
+#' @param increasing logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. 
+#' In other words, larger values in \code{x} are lower in ranking. Otherwise, large elements receive small ranks. 
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
-
+#' 
+#' @details 
+#' \code{omega} value determines, how equal entries in x should be ranked; 
+#' in other words how to handle ex aequo cases. If there are none, then the parameter 
+#' does not affect the output of this function. 
+#' For example, let's say, that two largest entries in x are equal.
+#' Those entries could both receive rank 1 or rank 2 or some value in between.
+#'
+#' Suppose, that we want to assign rank to \eqn{n} largest values in an array and they are all equal.
+#' Then the assigned rank is \eqn{1 + (n - 1)\omega}. 
+#' Ranking n equal values, that are not largest, works similarly. See also examples below.
+#' 
+#' 
 #' @return vector of the same dimension as \code{x} containing the ranks
 #' @examples
 #' irank(c(4,3,1,10,7))
@@ -24,9 +37,28 @@
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 	if (na.rm) x <- x[!is.na(x)]
 	if (increasing) {
-		return( omega*colSums(outer(x, x, "<=")) + (1-omega)*colSums(outer(x, x, "<")) + 1 - omega )
+	  ranking <- order(x)
+	  sorted <- x[ranking]
+	  equal_to_next <- c(diff(sorted) == 0, FALSE)
+	  value_changed_at <- which(!equal_to_next)
+	  equal_values_seq_lengths <- diff(c(0, value_changed_at))
+	  
+	  n_higher_or_equal <- rep(value_changed_at, times = equal_values_seq_lengths)
+	  n_equal <- rep(equal_values_seq_lengths, times = equal_values_seq_lengths)
+	  n_higher <- n_higher_or_equal - n_equal
+	  minimum_rank <- n_higher + 1
+	  maximum_rank <- n_higher_or_equal
+	  corrected_ranking <- minimum_rank * omega + maximum_rank * (1-omega)
+	  corrected_ranking[order(ranking)]
+			  #return( omega*colSums(outer(x, x, "<=")) + (1-omega)*colSums(outer(x, x, "<")) + 1 - omega )
 	} else {
-		return( omega*colSums(outer(x, x, ">=")) + (1-omega)*colSums(outer(x, x, ">")) + 1 - omega )
+	  # counts <- as.numeric(table(x))
+	  # local_ranks <- (counts - 1) * omega
+	  # ranks_sorted <- rep(cumsum(counts) + local_ranks, times = counts)
+	  # # restore to original x's order
+	  # sort_perm <- order(x)
+	  # return(ranks_sorted[order(sort_perm)])
+	  return(irank(-x, omega = 1 - omega, increasing = TRUE))
 	}
 }
 
