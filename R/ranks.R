@@ -110,9 +110,7 @@ csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepd
 #' @noRd
 csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
   indices <- process_indices_argument(indices, length(x))
-  L <- rep(NA, length(indices))
-  U <- L
-
+  
   # compute marginal CS for each population indicated by indices
   LU <- sapply(indices, function(i){
     CS <- csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = i, seed = seed)

@@ -110,7 +110,7 @@ reject_or_accept <- function(df, multcorr, coverage){
   ncomp <- nrow(df)
   beta <- switch(multcorr,
                  "Bonferroni" = (1 - coverage) / ncomp,
-                 "Holm" = (1 - coverage) / (ncomp + 1 - (1:ncomp)),
+                 "Holm" = (1 - coverage) / seq(ncomp, 1, by = -1),
                  "none" = 1 - coverage
   )
   
@@ -127,8 +127,8 @@ reject_or_accept <- function(df, multcorr, coverage){
 #' Nminus[j] is the amount of populations, which have significantly larger 
 #' ranking feature that population j
 #' Thus, it's the number of populations that will be confidently higher in ranking
-#' than j
-#' Nplus[j] - smaller
+#' than j, so will have smaller rank
+#' Nplus[j] - smaller, lower, larger
 #' @noRd
 calculate_N_plus_minus <- function(df, cstype, indices){
   if (cstype == "upper" | cstype == "two-sided") {
@@ -162,16 +162,12 @@ convert_N_plus_minus_to_csrank <- function(Nminus, Nplus, p){
 #'
 #' @noRd
 csranks_multinom_marg <- function(x, coverage = 0.95, cstype = "two-sided", multcorr = "Holm", indices = NA, na.rm = FALSE) {
-  
-  L <- rep(NA, length(indices))
-  U <- L
-
+  indices <- process_indices_argument(indices, length(x))
   # compute marginal CS for each category indicated by indices
-  for (i in 1:length(indices)) {
-    CS <- csranks_multinom_simul(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices[i])
-    L[i] <- CS$L
-    U[i] <- CS$U
-  }
-
-  return(list(L = as.integer(L), U = as.integer(U)))
+  LU <- sapply(indices, function(i){
+    CS <- csranks_multinom_simul(x, coverage = coverage, cstype = cstype, indices = i)
+    c(L = CS$L, U = CS$U)
+  })
+  
+  return(list(L = as.integer(LU["L",]), U = as.integer(LU["U",])))
 }
