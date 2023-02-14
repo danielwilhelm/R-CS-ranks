@@ -9,7 +9,9 @@
 #' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.
 #' @param increasing logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. 
 #' In other words, larger values in \code{x} are lower in ranking. Otherwise, large elements receive small ranks. 
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any). 
+#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}.
+#' In other case the output for NAs is NA and for other values it's for extreme
+#' possibilities that NA values are actually in first or last positions of ranking.
 #' 
 #' @details 
 #' \code{omega} value determines, how equal entries in x should be ranked; 
@@ -19,9 +21,11 @@
 #' Those entries could both receive rank 1 or rank 2 or some value in between.
 #'
 #' Suppose, that we want to assign rank to \eqn{n} largest values in an array and they are all equal.
-#' Then the assigned rank is \eqn{1 + (n - 1)\omega}. 
-#' Ranking n equal values, that are not largest, works similarly. See also examples below.
-#' 
+#' Their minimum rank is 1 and maximum is n. 
+#' Then the assigned rank is \eqn{1(1-\omega) + n\omega}. 
+#' Ranking n equal values, that are not largest, works similarly. 
+#' Their rank is given as a weighted average of minimum and maximum ranks.
+#'  
 #' 
 #' @return vector of the same dimension as \code{x} containing the ranks
 #' @examples
@@ -35,28 +39,39 @@
 #' tba
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
-	if (na.rm) x <- x[!is.na(x)]
-	if (increasing) {
-	  ranking <- order(x)
-	  sorted <- x[ranking]
-	  equal_to_next <- c(diff(sorted) == 0, FALSE)
-	  # block is a sequence of equal values
-	  block_ends <- which(!equal_to_next)
-	  block_sizes <- diff(c(0, block_ends))
-	  
-	  # how many populations are higher or equal in ranking?
-	  # Connected to Nminus, Nplus
-	  n_higher_or_equal <- rep(block_ends, times = block_sizes)
-	  n_equal <- rep(block_sizes, times = block_sizes)
-	  n_higher <- n_higher_or_equal - n_equal
-	  minimum_rank <- n_higher + 1
-	  maximum_rank <- n_higher_or_equal
-	  corrected_ranking <- minimum_rank * (1-omega) + maximum_rank * omega
-	  # return in order of original x
-	  corrected_ranking[order(ranking)]
-	} else {
-	  return(irank(-x, omega = omega, increasing = TRUE))
+	if(!increasing){
+	  x <- -x
 	}
+  if (na.rm){
+	  was_NA <- rep(FALSE, sum(is.na(x)))
+  } else {
+    was_NA <- is.na(x)
+  }
+  
+  x <- x[!is.na(x)]
+  n_NAs <- sum(was_NA)
+  
+	ranking <- order(x)
+	sorted <- x[ranking]
+	equal_to_next <- c(diff(sorted) == 0, FALSE)
+	# block is a sequence of equal values
+	block_ends <- which(!equal_to_next)
+	block_sizes <- diff(c(0, block_ends))
+	
+	# how many populations are higher or equal in ranking?
+	# Connected to Nminus, Nplus
+	n_higher_or_equal <- rep(block_ends, times = block_sizes)
+	n_equal <- rep(block_sizes, times = block_sizes)
+	n_higher <- n_higher_or_equal - n_equal
+	minimum_rank <- n_higher + 1
+	maximum_rank <- n_higher_or_equal + n_NAs
+	corrected_ranking <- minimum_rank * (1-omega) + maximum_rank * omega
+	# return in order of original x
+	ranks <- corrected_ranking[order(ranking)]
+	
+	out <- rep(NA, length(x) + n_NAs)
+	out[!was_NA] <- ranks
+	out 
 }
 
 
