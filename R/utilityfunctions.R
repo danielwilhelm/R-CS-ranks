@@ -40,25 +40,22 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 	  ranking <- order(x)
 	  sorted <- x[ranking]
 	  equal_to_next <- c(diff(sorted) == 0, FALSE)
-	  value_changed_at <- which(!equal_to_next)
-	  equal_values_seq_lengths <- diff(c(0, value_changed_at))
+	  # block is a sequence of equal values
+	  block_ends <- which(!equal_to_next)
+	  block_sizes <- diff(c(0, block_ends))
 	  
-	  n_higher_or_equal <- rep(value_changed_at, times = equal_values_seq_lengths)
-	  n_equal <- rep(equal_values_seq_lengths, times = equal_values_seq_lengths)
+	  # how many populations are higher or equal in ranking?
+	  # Connected to Nminus, Nplus
+	  n_higher_or_equal <- rep(block_ends, times = block_sizes)
+	  n_equal <- rep(block_sizes, times = block_sizes)
 	  n_higher <- n_higher_or_equal - n_equal
 	  minimum_rank <- n_higher + 1
 	  maximum_rank <- n_higher_or_equal
-	  corrected_ranking <- minimum_rank * omega + maximum_rank * (1-omega)
+	  corrected_ranking <- minimum_rank * (1-omega) + maximum_rank * omega
+	  # return in order of original x
 	  corrected_ranking[order(ranking)]
-			  #return( omega*colSums(outer(x, x, "<=")) + (1-omega)*colSums(outer(x, x, "<")) + 1 - omega )
 	} else {
-	  # counts <- as.numeric(table(x))
-	  # local_ranks <- (counts - 1) * omega
-	  # ranks_sorted <- rep(cumsum(counts) + local_ranks, times = counts)
-	  # # restore to original x's order
-	  # sort_perm <- order(x)
-	  # return(ranks_sorted[order(sort_perm)])
-	  return(irank(-x, omega = 1 - omega, increasing = TRUE))
+	  return(irank(-x, omega = omega, increasing = TRUE))
 	}
 }
 
