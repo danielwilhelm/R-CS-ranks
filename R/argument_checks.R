@@ -194,7 +194,7 @@ assert_is_one_of <- function(x, name, choices){
 
 assert_has_no_NAs <- function(x, name){
   if(any(is.na(x))){
-    na_indices <- head(which(is.na(x)))
+    na_indices <- utils::head(which(is.na(x)))
     cli::cli_abort("NA values found in {.var {name}} at positions {paste(na_indices, collapse=', ')}.")
   }
 }
