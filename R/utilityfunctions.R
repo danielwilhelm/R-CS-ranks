@@ -117,7 +117,7 @@ createquartiles <- function(x) {
 
 #' Indices utils
 #'
-#' Elements of `matrix` can be accessed by double indices `M[i,j]`
+#' Elements of `matrix` can be accessed by double indices `M[i,j]` or single `M[k]`.
 #' This function allows to switch from the latter kind of indices to the former.
 #'
 #' @noRd
