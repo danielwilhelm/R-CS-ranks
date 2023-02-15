@@ -2,7 +2,7 @@
 #' 
 #' Given estimates of a certain feature for a set of populations,
 #' calculate the integer ranks of populations, i.e. places in ranking done by feature
-#' values. The larger feature value, the higher the place and the lower the integer
+#' values. The larger (or smaller) feature value, the higher the place and the lower the integer
 #' rank (lowest, 1, is the best place).
 #'
 #' @param x vector of values to be ranked
@@ -14,20 +14,19 @@
 #' possibilities that NA values are actually in first or last positions of ranking.
 #' 
 #' @details 
-#' \code{omega} value determines, how equal entries in x should be ranked; 
+#' \code{omega} (\eqn{\omega}) value determines, how equal entries in \code{x} should be ranked; 
 #' in other words how to handle ex aequo cases. If there are none, then the parameter 
 #' does not affect the output of this function. 
-#' For example, let's say, that two largest entries in x are equal.
-#' Those entries could both receive rank 1 or rank 2 or some value in between.
+#' For example, let's say, that \eqn{n} largest entries in \code{x} are equal.
+#' Those entries could receive (minimum) rank 1 or (maximum) rank \eqn{n} or some value in between.
 #'
-#' Suppose, that we want to assign rank to \eqn{n} largest values in an array and they are all equal.
-#' Their minimum rank is 1 and maximum is n. 
-#' Then the assigned rank is \eqn{1(1-\omega) + n\omega}. 
-#' Ranking n equal values, that are not largest, works similarly. 
-#' Their rank is given as a weighted average of minimum and maximum ranks.
-#'  
+#' Suppose, that we want to assign rank to \eqn{n} equal values in an array.
+#' Denote their minimum rank as \eqn{r} and maximum as \eqn{R = r + n - 1}.
+#' Then the assigned rank is an average of 
+#' minimum and maximum rank, weighted by \eqn{\omega}: 
+#' \deqn{r(1-\omega) + R\omega} 
 #' 
-#' @return vector of the same dimension as \code{x} containing the ranks
+#' @return vector of the same length as \code{x} containing the ranks
 #' @examples
 #' irank(c(4,3,1,10,7))
 #' irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
@@ -35,8 +34,6 @@
 #' irank(c(4,4,4,3,1,10,7,7))
 #' irank(c(4,4,4,3,1,10,7,7), omega=1)
 #' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
-#' @section Details:
-#' tba
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 	if(!increasing){
@@ -88,7 +85,11 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' frank(c(4,4,4,3,1,10,7,7), omega=1)
 #' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
 #' @export
-frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, omega, increasing, na.rm) / length(x))
+frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE){
+  if(na.rm)
+    x <- x[!is.na(x)]
+  return(irank(x, omega, increasing, na.rm) / length(x))
+}
 
 
 

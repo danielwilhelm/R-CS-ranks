@@ -17,27 +17,31 @@ frank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
 \item{increasing}{logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. 
 In other words, larger values in \code{x} are lower in ranking. Otherwise, large elements receive small ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}.
+In other case the output for NAs is NA and for other values it's for extreme
+possibilities that NA values are actually in first or last positions of ranking.}
 }
 \value{
-vector of the same dimension as \code{x} containing the ranks
+vector of the same length as \code{x} containing the ranks
 }
 \description{
 Given estimates of a certain feature for a set of populations,
 calculate the integer ranks of populations, i.e. places in ranking done by feature
-values. The larger feature value, the higher the place and the lower the integer
+values. The larger (or smaller) feature value, the higher the place and the lower the integer
 rank (lowest, 1, is the best place).
 }
 \details{
-\code{omega} value determines, how equal entries in x should be ranked; 
+\code{omega} (\eqn{\omega}) value determines, how equal entries in \code{x} should be ranked; 
 in other words how to handle ex aequo cases. If there are none, then the parameter 
 does not affect the output of this function. 
-For example, let's say, that two largest entries in x are equal.
-Those entries could both receive rank 1 or rank 2 or some value in between.
+For example, let's say, that \eqn{n} largest entries in \code{x} are equal.
+Those entries could receive (minimum) rank 1 or (maximum) rank \eqn{n} or some value in between.
 
-Suppose, that we want to assign rank to \eqn{n} largest values in an array and they are all equal.
-Then the assigned rank is \eqn{1 + (n - 1)\omega}. 
-Ranking n equal values, that are not largest, works similarly. See also examples below.
+Suppose, that we want to assign rank to \eqn{n} equal values in an array.
+Denote their minimum rank as \eqn{r} and maximum as \eqn{R = r + n - 1}.
+Then the assigned rank is an average of 
+minimum and maximum rank, weighted by \eqn{\omega}: 
+\deqn{r(1-\omega) + R\omega}
 }
 \section{Functions}{
 \itemize{
@@ -47,11 +51,6 @@ This method returns ranks in form of fractions from [0-1] interval.
 Smaller values (closer to 0) indicate higher rank.
 
 }}
-\section{Details}{
-
-tba
-}
-
 \examples{
 irank(c(4,3,1,10,7))
 irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
