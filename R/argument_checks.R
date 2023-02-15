@@ -99,6 +99,48 @@ process_indices_argument <- function(indices,p){
   indices
 }
 
+check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
+                                   caption, colorbins, horizontal){
+  assert_is_numeric_vector(ranks, "ranks")
+  assert_is_integer(L, "L")
+  assert_is_positive(L, "L")
+  assert_is_integer(U, "U")
+  assert_is_positive(U, "U")
+  assert_is_between(ranks, L, U, "ranks", "L", "U")
+  if(!is.null(popnames)){
+    assert_is_character(popnames, "popnames")
+    assert_length(popnames, "popnames", length(ranks))
+  }
+  if(!is.null(title)){
+    assert_is_character(title, "title")
+    assert_is_single(title, "title")
+  }
+  if(!is.null(subtitle)){
+    assert_is_character(subtitle, "subtitle")
+    assert_is_single(subtitle, "subtitle")
+  }
+  if(!is.null(caption)){
+    assert_is_character(caption, "caption")
+    assert_is_single(caption, "caption")
+  }
+  assert_is_integer(colorbins, "colorbins")
+  assert_is_between(colorbins, 1, length(ranks), "colorbins", "1", "length(ranks)")
+  assert_is_single_boolean(horizontal)
+}
+
+assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){
+  if(!all(lower <= middle)){
+    wrong_index <- which(lower > middle)[1]
+    cli::cli_abort(c("{.var {middle_name}} must be between {.var {lower_name}} and {.var {upper_name}}.",
+                     "x" = "{.var {lower_name}[{wrong_index}]} == {lower[wrong_index]} is larger than {.var {middle_name}[{wrong_index}]} == middle[wrong_index]}."))
+  }
+  if(!all(middle <= upper)){
+    wrong_index <- which(middle > upper)[1]
+    cli::cli_abort(c("{.var {middle_name}} must be between {.var {lower_name}} and {.var {upper_name}}.",
+                     "x" = "{.var {upper_name}[{wrong_index}]} == {upper[wrong_index]} is smaller than {.var {middle_name}[{wrong_index}]} == middle[wrong_index]}."))
+  }
+}
+
 adjust_indices_for_NAs <- function(original_indices, is_not_na){
   # If we are deleting NAs from x, the indices point to different entries (populations) in x than before
   # We have to correct for that
@@ -167,8 +209,12 @@ assert_is_numeric_vector <- function(x, name, na_ok=FALSE){
 }
 
 assert_is_single <- function(x, name){
-  if(length(x) > 1)
-    cli::cli_abort(c("{.var {name}} must be a single number.",
+  assert_length(x, name, 1)
+}
+
+assert_length <- function(x, name, length){
+  if(length(x) != length)
+    cli::cli_abort(c("{.var {name}} must be of length {length}.",
                      "x" = "{.var {name}} is of length {length(x)}."))
 }
 
@@ -190,6 +236,13 @@ assert_is_one_of <- function(x, name, choices){
     cli::cli_abort(c("{.var {name}} must be one of: {paste(choices, collapse=', ')}",
                      "x" = "{.var {name} is {x}}"))
   }
+}
+
+assert_is_character <- function(x, name){
+  assert_is_vector(x, name)
+  if(!is.character(x) || is.na(x))
+    cli::cli_abort(c("{.var {name}} must be a character.",
+                     "x" = "{.var {name}} is of {.cls {typeof(x)}} type."))
 }
 
 assert_has_no_NAs <- function(x, name){

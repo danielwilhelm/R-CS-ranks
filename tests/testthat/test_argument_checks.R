@@ -101,6 +101,12 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
 })
 
 # Low-level assert tests
+test_that("assert_is_between works correctly",{
+  expect_silent(assert_is_between(2:4,1:3,3:5,"x","L","U"))
+  expect_error(assert_is_between(c(2,2,2),1:3,3:5,"x","L","U"))
+  expect_error(assert_is_between(2:4,1:3,c(3,3,3),"x","L","U"))
+})
+
 test_that("assert_is_positive works correctly", {
   expect_silent(assert_is_positive(0.95, "x", TRUE))
   expect_error(assert_is_positive(-1, "x", TRUE))

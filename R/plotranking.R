@@ -34,9 +34,10 @@
 plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = NULL,
                         caption = NULL, colorbins = 1, horizontal = TRUE) {
   # initializations
+  check_plotranking_args(ranks, L, U, popnames, title, subtitle,
+                         caption, colorbins, horizontal)
   cc <- scales::seq_gradient_pal("#66a182", "#d1495b", "Lab")(seq(0, 1, length.out = 4))
   p <- length(ranks)
-  stopifnot(colorbins >= 1 & colorbins <= p)
   if (is.null(popnames)) popnames <- 1:p
   dat <- data.frame(ranks = ranks, L = L, U = U, popnames = popnames)
   coltitle <- ifelse(colorbins == 4, "quartile", "quantile bins")
