@@ -92,3 +92,20 @@ test_that("calculate_scaled_diffs works with 1 bootstrap sample", {
     Z, expected_requested_diffrences,scales)
   expect_equal(actual_Z_diff, expected_Z_diff)
 })
+
+# Compare against master version 0.2.2
+test_that("calculate_scaled_diffs works as master 0.2.2", {
+  variance <- seq(0.1, 0.5, by=0.1)
+  sigmadiff <- sqrt(outer(variance, variance, '+'))
+  I <- expected_partial_I0
+  Z <- matrix(1:5, byrow=TRUE, nrow=1)
+  expected_scaled_diff <- outer(as.vector(Z), as.vector(Z), '-')[I]/sigmadiff[I]
+  
+  reduced_I <- reduce_I(I)
+  requested_diffrences <- reduced_I$requested_diffrences
+  Zdiff_scaled <- calculate_scaled_differences_in_samples(Z, requested_diffrences,
+                                                          sigmadiff[I])
+  expect_equal(Zdiff_scaled[1,], expected_scaled_diff)
+  expect_equal(apply(Zdiff_scaled, 1, max),
+               max(expected_scaled_diff))
+})
