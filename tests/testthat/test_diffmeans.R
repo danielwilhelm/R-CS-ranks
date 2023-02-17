@@ -1,3 +1,19 @@
+# Edge case
+x <- rep(1, 10)
+Sigma <- diag(rep(0.5, 10))
+
+test_that("csdiffmeans returns identical CI for identical input",{
+  out <- csdiffmeans(x, Sigma)
+  expected_L <- matrix(out$L[1,2], nrow = nrow(out$L), ncol = ncol(out$L))
+  diag(expected_L) <- NA
+  expected_U <- matrix(out$U[1,2], nrow = nrow(out$U), ncol = ncol(out$U))
+  diag(expected_U) <- NA
+  
+  expect_equal(out$L, expected_L)
+  expect_equal(out$U, expected_U)
+})
+
+
 ### initialize_I0 ###
 p <- 5
 indices <- c(2,4)
