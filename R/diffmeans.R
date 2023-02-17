@@ -151,7 +151,7 @@ reduce_I <- function(I){
 #' @param scales: numeric of length nrow(requested_differences)
 #' @noRd
 calculate_scaled_differences_in_samples <- function(Z, requested_diffrences, scales){
-  Zdiff <- Z[, requested_diffrences[, 1]] - Z[, requested_diffrences[, 2]]
+  Zdiff <- Z[, requested_diffrences[, 1], drop=FALSE] - Z[, requested_diffrences[, 2], drop=FALSE]
   # Vectorized division goes over rows
   Zdiff_scaled <- t(t(Zdiff) / scales) 
   Zdiff_scaled

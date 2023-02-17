@@ -78,3 +78,17 @@ test_that("calculate_scaled_diffs works", {
     Z, expected_requested_diffrences,scales)
   expect_equal(actual_Z_diff, expected_Z_diff)
 })
+
+# Edge case: 1 bootstrap sample
+Z <- matrix(1:3, byrow=TRUE, nrow=1)
+scales <- c(1,1,2,3)
+expected_Z_diff <- matrix(c((Z[,2] - Z[,1]) / scales[1],
+                            (Z[,1] - Z[,2]) / scales[2],
+                            (Z[,3] - Z[,2]) / scales[3],
+                            (Z[,1] - Z[,3]) / scales[4]),
+                          nrow = 1)
+test_that("calculate_scaled_diffs works with 1 bootstrap sample", {
+  actual_Z_diff <- calculate_scaled_differences_in_samples(
+    Z, expected_requested_diffrences,scales)
+  expect_equal(actual_Z_diff, expected_Z_diff)
+})
