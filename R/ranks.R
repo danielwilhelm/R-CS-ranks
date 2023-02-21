@@ -17,7 +17,12 @@
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).
 #' @param seed seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.
 
-#' @return A list with two items, \code{L} and \code{U} - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+#' @return A \code{csranks} object, which is a list with three items:
+#' \describe{
+#'  \item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
+#'  \item{\code{rank}}{Raw rank estimates using \code{\link{irank}} with default parameters}
+#'  \item{\code{U}}{Upper bounds of the confidence sets.}
+#' }
 
 #' @examples
 #' # Setup example data
@@ -62,12 +67,16 @@ csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = 
                      simul=simul, seed=seed)
   l <- process_csranks_args(x, Sigma, indices, na.rm)
   x <- l$x; Sigma <- l$Sigma; indices <- l$indices
-  
+  x_ranks <- irank(x)[indices]
   if (simul) {
-    return(csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
+    confidence_set <- csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)
   } else {
-    return(csranks_marg(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed))
+    confidence_set <- csranks_marg(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)
   }
+  structure(list(L = confidence_set$L,
+            rank = x_ranks,
+            U = confidence_set$U),
+            class = "csranks")
 }
 
 #' Simultaneous confidence sets for ranks 

@@ -41,7 +41,12 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
 \value{
-A list with two items, \code{L} and \code{U} - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+A \code{csranks} object, which is a list with three items:
+\describe{
+ \item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
+ \item{\code{rank}}{Raw rank estimates using \code{\link{irank}} with default parameters}
+ \item{\code{U}}{Upper bounds of the confidence sets.}
+}
 }
 \description{
 Given estimates and their covariance matrix of a certain feature for a set of populations,

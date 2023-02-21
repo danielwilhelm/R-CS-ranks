@@ -1,4 +1,16 @@
+#' @describeIn plotranking Plot \code{csranks} output
+#' 
+#' @param x An \code{csranks} object, likely produced by \code{\link{csranks}}.
+#' @param ... Other arguments, passed to \code{plotranking}.
+#' @export
+
+plot.csranks <- function(x, ...){
+  plotranking(x$rank, x$L, x$U, ...)
+}
+
 #' Plot ranking with confidence sets
+#' 
+#' Display ranks together with their confidence set bounds.
 #'
 #' @param ranks vector of ranks
 #' @param L vector of lower bounds of confidence sets for the ranks
@@ -14,18 +26,19 @@
 #' @examples
 #' x <- seq(1, 3, length = 10)
 #' V <- diag(rep(0.04, 10))
-#' ranks <- irank(x)
 #' CS <- csranks(x, V)
 #' grid::current.viewport()
-#' plotranking(ranks, CS$L, CS$U)
+#' plot(CS)
+#' # Equivalent: 
+#' # plotranking(CS$rank, CS$L, CS$U)
 #' 
 #' # plotranking returns a ggplot object. It can be customized further:
 #' library(ggplot2)
-#' pl <- plotranking(ranks, CS$L, CS$U)
+#' pl <- plot(CS)
 #' pl + xlab("position in ranking") + ylab("population label") + theme_gray()
 #' 
 #' # horizontal = FALSE uses ggplot2::coord_flip underneath. The x and y axes swap places.
-#' pl <- plotranking(ranks, CS$L, CS$U, horizontal = FALSE)
+#' pl <- plot(CS, horizontal = FALSE)
 #' pl + xlab("position in ranking") + # Note, that xlab refers to vertical axis now
 #'   ylab("population label") + theme_gray()
 #' @export

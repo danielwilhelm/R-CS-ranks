@@ -28,12 +28,16 @@ csranks_multinom <- function(x, coverage = 0.95, cstype = "two-sided", simul = T
   check_csranks_multinom_args(coverage=coverage, cstype=cstype, simul=simul, multcorr=multcorr)
   l <- process_csranks_multinom_args(x, indices, na.rm)
   x <- l$x; indices <- l$indices
-  
+  x_ranks <- irank(x)[indices]
   if (simul) {
-    return(csranks_multinom_simul(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices, na.rm = na.rm))
+    confidence_set <- csranks_multinom_simul(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices, na.rm = na.rm)
   } else {
-    return(csranks_multinom_marg(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices, na.rm = na.rm))
+    confidence_set <- csranks_multinom_marg(x, coverage = coverage, cstype = cstype, multcorr = multcorr, indices = indices, na.rm = na.rm)
   }
+  structure(list(L = confidence_set$L,
+                 rank = x_ranks,
+                 U = confidence_set$U),
+            class = "csranks")
 }
 
 #' Simultaneous Confidence sets for ranks based on multinomial data

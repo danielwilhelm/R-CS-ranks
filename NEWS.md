@@ -1,3 +1,8 @@
+# csranks 0.5.0
+
+* `csranks` now produces `csranks` object. List as before, but with new `rank` element
+* Added `plot.ranking` function
+
 # csranks 0.4.1
 
 * `V` argument (`sd` before 0.4) renamed to `Sigma`

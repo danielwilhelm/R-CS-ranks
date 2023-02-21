@@ -28,3 +28,7 @@ CS_large <- csranks(x, sd)
 test_that("default plotranking works for larger dataset", {
   expect_s3_class(plotranking(Ranks, CS_large$L, CS_large$U), "ggplot")
 })
+
+test_that("S3 method for csranks works", {
+  expect_s3_class(plot(CS), "ggplot")
+})
