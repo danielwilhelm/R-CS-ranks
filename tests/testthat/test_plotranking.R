@@ -10,6 +10,10 @@ test_that("default plotranking returns a ggplot object", {
   expect_s3_class(plotranking(ranks, CS$L, CS$U), "ggplot")
 })
 
+test_that("plotranking accepts popnames as factor", {
+  expect_s3_class(plotranking(ranks, CS$L, CS$U, popnames = factor(popnames)), "ggplot")
+})
+
 test_that("custom plotranking returns a ggplot object", {
   expect_s3_class(plotranking(ranks, CS$L, CS$U, popnames = popnames), "ggplot")
   expect_s3_class(plotranking(ranks, CS$L, CS$U, title = "title"), "ggplot")

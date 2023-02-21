@@ -108,7 +108,7 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_positive(U, "U", na_ok = FALSE)
   assert_is_between(ranks, L, U, "ranks", "L", "U")
   if(!is.null(popnames)){
-    assert_is_character(popnames, "popnames")
+    assert_is_character(popnames, "popnames", factor_ok = TRUE)
     assert_length(popnames, "popnames", length(ranks))
   }
   if(!is.null(title)){
@@ -238,9 +238,9 @@ assert_is_one_of <- function(x, name, choices){
   }
 }
 
-assert_is_character <- function(x, name){
+assert_is_character <- function(x, name, factor_ok = FALSE){
   assert_is_vector(x, name)
-  if(!is.character(x))
+  if(!(is.character(x) || factor_ok && is.factor(x)))
     cli::cli_abort(c("{.var {name}} must be a character.",
                      "x" = "{.var {name}} is of {.cls {typeof(x)}} type."))
   assert_has_no_NAs(x, name)
