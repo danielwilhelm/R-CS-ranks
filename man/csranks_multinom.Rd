@@ -24,7 +24,7 @@ csranks_multinom(
 \item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}.
 Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
-\item{multcorr}{multiplicity correction to be used: \code{Holm} (default), \code{Bonferroni} or \code{none}. See Details section for more.}
+\item{multcorr}{multiplicity correction to be used: \code{Holm} (default) or \code{Bonferroni}. See Details section for more.}
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
@@ -42,7 +42,6 @@ The command implements the procedure for construction of confidence sets for ran
 
 It involves testing multiple hypotheses. The `\code{multcorr}` states, how the 
 p-values should be corrected to control the Family Wise Error Rate (FWER).
-Not applying correction (\code{multcorr=none}) is not advised.
 
 From a practical point of view, \code{multcorr=Holm} takes more time, but usually results
 in tighter (better) confidence sets than \code{multcorr=Bonferroni}.
