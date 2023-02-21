@@ -10,7 +10,7 @@
 
 The `R` package `csranks` implements confidence sets for ranks as in
 [Mogstad, Romano, Shaikh, and Wilhelm
-(2020)](https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf).
+(2023)](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf).
 
 ## Installation
 
