@@ -118,8 +118,8 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
 }
 
 #' Convert information about needed differences
-#' from a boolean matrix to more useful form
-#' @return a list with `needed_variables` - boolean
+#' from a logical matrix to more useful form
+#' @return a list with `needed_variables` - logical
 #' and `requested differences` - matrix with 2 columns. Each row corresponds
 #' to single TRUE entraince in I. Its contents are the indices of the entry.
 #' 

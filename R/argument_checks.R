@@ -2,8 +2,8 @@ check_csranks_args <- function(coverage, cstype, stepdown, R, simul, seed){
   assert_is_single_positive_integer(R, "R")
   assert_is_single_probability(coverage, "coverage")
   assert_is_single_positive_integer(seed, "seed", na_ok=TRUE)
-  assert_is_single_boolean(stepdown, "stepdown")
-  assert_is_single_boolean(simul, "simul")
+  assert_is_single_logical(stepdown, "stepdown")
+  assert_is_single_logical(simul, "simul")
   assert_is_one_of(cstype, "cstype", c("two-sided", "upper", "lower"))
 }
 
@@ -38,7 +38,7 @@ process_csranks_args <- function(x, Sigma, indices, na.rm){
 
 check_csranks_multinom_args <- function(coverage, cstype, simul, multcorr){
   assert_is_single_probability(coverage, "coverage")
-  assert_is_single_boolean(simul, "simul")
+  assert_is_single_logical(simul, "simul")
   assert_is_one_of(cstype, "cstype", c("two-sided", "upper", "lower"))
   assert_is_one_of(multcorr, "multcorr", c("Bonferroni", "Holm"))
 }
@@ -125,7 +125,7 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   }
   assert_is_integer(colorbins, "colorbins")
   assert_is_between(colorbins, 1, length(ranks), "colorbins", "1", "length(ranks)")
-  assert_is_single_boolean(horizontal)
+  assert_is_single_logical(horizontal)
 }
 
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){
@@ -218,11 +218,11 @@ assert_length <- function(x, name, length){
                      "x" = "{.var {name}} is of length {length(x)}."))
 }
 
-assert_is_single_boolean <- function(x, name){
+assert_is_single_logical <- function(x, name){
   assert_is_vector(x, name)
   assert_is_single(x, name)
-  if(!is.logical(x) || is.na(x)) # single NA is a boolean for R. Tri-valued logic
-    cli::cli_abort(c("{.var {name}} must be a single boolean.",
+  if(!is.logical(x) || is.na(x)) # single NA is a logical for R. Tri-valued logic
+    cli::cli_abort(c("{.var {name}} must be a single logical.",
                      "x" = "{.var {name}} is of {.cls {typeof(x)}} type."))
 }
 

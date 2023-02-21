@@ -136,10 +136,10 @@ test_that("assert_is_single works correctly", {
   expect_error(assert_is_single(1:3, "x"))
 })
 
-test_that("assert_is_single_boolean works correctly", {
-  expect_silent(assert_is_single_boolean(TRUE, "x"))
-  expect_error(assert_is_single_boolean(1, "x"))
-  expect_error(assert_is_single_boolean(NA, "x"))
+test_that("assert_is_single_logical works correctly", {
+  expect_silent(assert_is_single_logical(TRUE, "x"))
+  expect_error(assert_is_single_logical(1, "x"))
+  expect_error(assert_is_single_logical(NA, "x"))
 })
 
 test_that("assert_is_one_of works correctly", {
