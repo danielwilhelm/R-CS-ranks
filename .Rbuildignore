@@ -4,3 +4,4 @@
 ^LICENSE\.md$
 ^gitignore$
 ^_pkgdown.yml$
+^data-raw$
