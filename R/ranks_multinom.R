@@ -3,7 +3,7 @@
 #' Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
 #'
 #' @param x vector of counts of successes for each category
-#' @param multcorr multiplicity correction to be used: \code{Holm} (default), \code{Bonferroni} or \code{none}. See Details section for more.
+#' @param multcorr multiplicity correction to be used: \code{Holm} (default) or \code{Bonferroni}. See Details section for more.
 #' @inheritParams csranks
 #' @inherit csranks return
 #' @section Details:
@@ -11,7 +11,6 @@
 #' 
 #' It involves testing multiple hypotheses. The `\code{multcorr}` states, how the 
 #' p-values should be corrected to control the Family Wise Error Rate (FWER).
-#' Not applying correction (\code{multcorr=none}) is not advised.
 #'
 #' From a practical point of view, \code{multcorr=Holm} takes more time, but usually results
 #' in tighter (better) confidence sets than \code{multcorr=Bonferroni}.
@@ -110,8 +109,7 @@ reject_or_accept <- function(df, multcorr, coverage){
   ncomp <- nrow(df)
   beta <- switch(multcorr,
                  "Bonferroni" = (1 - coverage) / ncomp,
-                 "Holm" = (1 - coverage) / seq(ncomp, 1, by = -1),
-                 "none" = 1 - coverage
+                 "Holm" = (1 - coverage) / seq(ncomp, 1, by = -1)
   )
   
   # perform test(s)

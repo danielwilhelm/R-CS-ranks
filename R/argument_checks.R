@@ -40,7 +40,7 @@ check_csranks_multinom_args <- function(coverage, cstype, simul, multcorr){
   assert_is_single_probability(coverage, "coverage")
   assert_is_single_boolean(simul, "simul")
   assert_is_one_of(cstype, "cstype", c("two-sided", "upper", "lower"))
-  assert_is_one_of(multcorr, "multcorr", c("Bonferroni", "Holm", "none"))
+  assert_is_one_of(multcorr, "multcorr", c("Bonferroni", "Holm"))
 }
 
 process_csranks_multinom_args <- function(x, indices, na.rm){
