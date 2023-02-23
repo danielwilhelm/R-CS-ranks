@@ -30,7 +30,7 @@ Naturally, this is a problem, that occurs not only when ranking countries' educa
 
 ## csranks package
 
-´csranks´ is an R-package that addresses uncertainty of estimates of features used to rank populations. It does so by returning not single ranks, but **confidence sets** of ranks. Those confidence sets come in three kinds:
+`csranks` is an R-package that addresses uncertainty of estimates of features used to rank populations. It does so by returning not single ranks, but **confidence sets** of ranks. Those confidence sets come in three kinds:
 
 - *$\tau$-best (worst) ranks*. With high confidence, these contain populations, that are among the top (bottom) $\tau$ ones. That could be an answer to question *Which country has the best education?* (in this case $\tau  = 1$).
 - *marginal populations ranks*. With high confidence, those contain ranks, that a certain population has (individually). A *left-sided* marginal confidence set could answer a question *How many countries have a better education system than mine?*.
@@ -73,7 +73,7 @@ pisa[CS_5best, "jurisdiction"]
 
 We have 12 countries among top 5 countries. That's due to the uncertainty in the data: countries lower in estimated ranking might be among *true* top 5 countries after all. By construction, this set contains all countries, that are among the *true* top 5 (with high confidence) - which naturally means, that it contains more than 5 to not exclude a certain country among the true top 5 by mistake.
 
-This confidence of including in the resulting set every population that should be there is called **controlling the type I error** in statistics. The standard value of this confidence is 95%. One can get smaller sets, if wishes to sacrifice some confidence in return.
+This confidence in including in the resulting set every population that should be there is called **controlling the type I error** in statistics. In package it's reffered to as **coverage**, since the resulting confidence set *covers* the true top 5 countries with a certain, high probability. The standard value of this probability is 95%. One can get smaller sets, if wishes to sacrifice some confidence in return.
 
 Here is a smaller set answering the same question, but with lower confidence:
 
@@ -95,7 +95,9 @@ CS_marg <- csranks(pisa$math_score, math_Sigma, simul=FALSE, indices = uk_i)
 CS_marg
 ```
 
-Based only on the estimates of mean test scores, we would assign the UK 13th position in the ranking. However, due to uncertainty of results, its *true* position could be as high as 8 and as low as 23. 
+Based only on the estimates of mean test scores, we would assign the UK 13th position in the ranking. However, due to uncertainty of results, its *true* position could be as high as 8 and as low as 23. This weakens any inference and decisions done based on this ranking. It turns out, that the PISA score in math for the UK is not so informative. 
+
+Several governments have set national performance targets based on how well the country ranks in the league table. Incorporating the uncertainty of position in the league table could lead to a change of approach to the ranking and of policies based on it. 
 
 ### Simultanous confidence of sets
 
@@ -105,8 +107,9 @@ This is also a good moment to present the `plot` method:
 
 ```{r math_simul, fig.width=7, fig.height=7}
 CS_simul <- csranks(pisa$math_score, math_Sigma, simul=TRUE)
-plot(CS_simul, popnames=pisa$jurisdiction, title="Ranking of OECD Countries by 2018 PISA Math Score", 
-	subtitle="(with 95% simultaneous confidence sets)")
+plot(CS_simul, popnames=pisa$jurisdiction, 
+     title="Ranking of OECD Countries by 2018 PISA Math Score", 
+     subtitle="(with 95% simultaneous confidence sets)")
 ```
 
 We can draw a variety of conclusions. The confidence sets for countries at the top and bottom are tighter than for those in the middle. This means, that the countries at the top are truely at the top (there is significant difference between them and the rest), while the countries in the middle are fairly similar.
@@ -116,3 +119,8 @@ border is 5. Changing the confidence level tightened the set and one could no lo
 
 The confidence set for UK here is larger, than the marginal set obtained in previous chunk. This is, because the simultanous sets must cover all true ranks for all populations of interest at once, while the marginal - only for one population. Thus, with the same level of general confidence, the marginal sets have to account for less possibilities of errors and are tighter than simultanous ones.
 
+## Further reading and references
+
+This package is based on paper Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies. It is available [here](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf).
+
+Check out the documentation of individual functions at package's [website](https://danielwilhelm.github.io/R-CS-ranks/), as well as further examples at package's [Github](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples).
