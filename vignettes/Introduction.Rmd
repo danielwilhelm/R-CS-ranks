@@ -1,0 +1,118 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introductory example
+
+Suppose, that you would like to learn about quality of education across different countries. You could come up with a test, conduct it in different countries, and calculate mean results (say, percentages of correct answers). However, you are not interested in the mean results themselves, but in **ranking** countries according to the quality of offered education. You want to answer questions like:
+
+- *Which country has the best education?*
+- *How many countries have a better education system than mine?*
+- *How good are education systems in the countries of my region?*
+
+Observe, that none of those questions is about the absolute values of test results, but about the order of them.
+
+Now, because the tests were not distributed to every single pupil in every country, but to randomly selected sample of pupils, the obtained mean result is not the mean result of the whole country. There is **uncertainty** connected with those results (usually in a form of standard deviation). Now, this uncertainty may influence the positions of countries in the ranking. For example, if the first place is tightly contested, the actual best country might not be the country with highest mean obtained result, but the one with the second, third, fourth...
+
+Naturally, this is a problem, that occurs not only when ranking countries' education systems according to test results, but when ranking any *populations* (could be counties in the USA, universities in Germany or political parties in Australia) according to any *feature* of interest (like social mobility, staff-to-student ratio, or public support).
+
+## csranks package
+
+´csranks´ is an R-package that addresses uncertainty of estimates of features used to rank populations. It does so by returning not single ranks, but **confidence sets** of ranks. Those confidence sets come in three kinds:
+
+- *$\tau$-best (worst) ranks*. With high confidence, these contain populations, that are among the top (bottom) $\tau$ ones. That could be an answer to question *Which country has the best education?* (in this case $\tau  = 1$).
+- *marginal populations ranks*. With high confidence, those contain ranks, that a certain population has (individually). A *left-sided* marginal confidence set could answer a question *How many countries have a better education system than mine?*.
+- *simultaneous populations ranks*. With high confidence, those contain ranks, that certain populations have (jointly). Such a confidence set could answer a question *How good are education systems in the countries of my region?*.
+
+## Example continued in R
+
+We return to ranking countries by quality of their education systems, according to performance in a given test. PISA study does exactly that: conducts the same set of tests (in mathematics, reading and natural sciences) across countries and publishes mean results along with their standard deviations. The simplified dataset is available in package `csranks`. 
+
+First, load the package `csranks`. Second, load the data and take a quick look at it:
+
+```{r setup}
+library(csranks)
+data(pisa)
+head(pisa)
+```
+
+Consider ranking countries according to their students' achievement in mathematics. The scores in `math_score` are estimates of these achievements. The countries' ranks can be estimated using the function `irank()`:
+
+```{r math_irank}
+math_rank <- irank(pisa$math_score)
+math_rank
+```
+
+`csranks` package is prepared to handle populations, for whom feature values are correlated. It thus expects a *covariance matrix* of estimates. In our case we assume no correlations, so the covariance matrix is diagonal:
+
+```{r math_Sigma}
+math_Sigma <- diag(pisa$math_se^2)
+```
+
+### Best populations
+
+First, we want to find out, which countries score highest (among top 5) in math. One can find it out using `cstaubest`:
+
+```{r math_taubest}
+CS_5best <- cstaubest(pisa$math_score, math_Sigma, tau = 5)
+
+pisa[CS_5best, "jurisdiction"]
+```
+
+We have 12 countries among top 5 countries. That's due to the uncertainty in the data: countries lower in estimated ranking might be among *true* top 5 countries after all. By construction, this set contains all countries, that are among the *true* top 5 (with high confidence) - which naturally means, that it contains more than 5 to not exclude a certain country among the true top 5 by mistake.
+
+This confidence of including in the resulting set every population that should be there is called **controlling the type I error** in statistics. The standard value of this confidence is 95%. One can get smaller sets, if wishes to sacrifice some confidence in return.
+
+Here is a smaller set answering the same question, but with lower confidence:
+
+```{r math_taubest_90}
+CS_5best_90 <- cstaubest(pisa$math_score, math_Sigma, tau = 5, coverage = 0.9)
+
+pisa[CS_5best_90, "jurisdiction"]
+```
+
+The country of Sweden has been excluded; the rest remained in the set.
+
+### Marginal Confidence Sets
+
+Now we would like to know more about a single country of interest - for example, the United Kingdom. We want to know, what's its position in ranking according to math scores.
+
+```{r math_marg}
+uk_i <- which(pisa$jurisdiction == "United Kingdom")
+CS_marg <- csranks(pisa$math_score, math_Sigma, simul=FALSE, indices = uk_i)
+CS_marg
+```
+
+Based only on the estimates of mean test scores, we would assign the UK 13th position in the ranking. However, due to uncertainty of results, its *true* position could be as high as 8 and as low as 23. 
+
+### Simultanous confidence of sets
+
+Finally, we would like to get a general overview of ranking of education systems.
+For that, we can use a simultaneous confidence set for ranks of all populations.
+This is also a good moment to present the `plot` method:
+
+```{r math_simul, fig.width=7, fig.height=7}
+CS_simul <- csranks(pisa$math_score, math_Sigma, simul=TRUE)
+plot(CS_simul, popnames=pisa$jurisdiction, title="Ranking of OECD Countries by 2018 PISA Math Score", 
+	subtitle="(with 95% simultaneous confidence sets)")
+```
+
+We can draw a variety of conclusions. The confidence sets for countries at the top and bottom are tighter than for those in the middle. This means, that the countries at the top are truely at the top (there is significant difference between them and the rest), while the countries in the middle are fairly similar.
+
+This plot also reaffirms results from previous chunks. Indeed, Sweden's confidence set
+border is 5. Changing the confidence level tightened the set and one could no longer say, that Sweden might be among top 5 countries. For the 11 countries above, the sets started at at least 4th rank, so they all could possibly be among the *true* top 5 countries.
+
+The confidence set for UK here is larger, than the marginal set obtained in previous chunk. This is, because the simultanous sets must cover all true ranks for all populations of interest at once, while the marginal - only for one population. Thus, with the same level of general confidence, the marginal sets have to account for less possibilities of errors and are tighter than simultanous ones.
+
