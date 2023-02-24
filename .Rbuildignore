@@ -5,5 +5,6 @@
 ^gitignore$
 ^_pkgdown.yml$
 ^data-raw$
-^examples^
+^examples$
 ^README\.Rmd$
+^docs$
