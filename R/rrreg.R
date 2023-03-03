@@ -1,6 +1,6 @@
-rrreg <- function(Y, X, W=NULL, ...) {
-	RY <- frank(Y, ...)		
-	RX <- frank(X, ...)	 
+rrreg <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE) {
+	RY <- frank(Y, omega=omega, increasing=increasing, na.rm=na.rm)		
+	RX <- frank(X, omega=omega, increasing=increasing, na.rm=na.rm)	 
 	
 	if (any(is.null(W))) {
 		res <- lm(RY ~ RX)
@@ -8,17 +8,20 @@ rrreg <- function(Y, X, W=NULL, ...) {
 		res <- lm(RY ~ RX + W)
 	}
 	rhohat <- coef(summary(res))[2,1]
-	se <- rrregSE(Y, X, W, ...)
+	se <- rrregSE(Y, X, W, omega=omega, increasing=increasing, na.rm=na.rm)
 	return(list(rhohat=rhohat, se=se))
 }
 
-rrregSE <- function(Y, X, W=NULL, ...) return( sqrt(rrregAVar(Y, X, W, ...) / length(Y)) )
+rrregSE <- function(Y, X, W=NULL, omega, increasing, na.rm) 
+  return( sqrt(rrregAVar(Y, X, W, omega=omega, increasing=increasing, na.rm=na.rm) / length(Y)) )
 
-rrregAVar <- function(Y, X, W=NULL, ...) {
-	RYhat <- function(y) mean(Ifn(y, Y, ...))
-	RY <- frank(Y, ...)	
-	RXhat <- function(x) mean(Ifn(x, X, ...))
-	RX <- frank(X, ...)
+#rrreg_se_private <- function()
+
+rrregAVar <- function(Y, X, W=NULL, omega=omega, increasing=increasing, na.rm=na.rm) {
+	RYhat <- function(y) mean(Ifn(y, Y, omega=omega, increasing=increasing, na.rm=na.rm))
+	RY <- frank(Y, omega=omega, increasing=increasing, na.rm=na.rm)	
+	RXhat <- function(x) mean(Ifn(x, X, omega=omega, increasing=increasing, na.rm=na.rm))
+	RX <- frank(X, omega=omega, increasing=increasing, na.rm=na.rm)
 
 	W <- cbind(rep(1,length(Y)),W)
 
@@ -38,11 +41,11 @@ rrregAVar <- function(Y, X, W=NULL, ...) {
 	h1 <- epsilonhat * nuhat
 
 	# construct h2
-	h2fn <- function(xy) mean((Ifn(xy[2],Y,...)-rhohat*Ifn(xy[1],X,...)-c(W%*%betahat)) * nuhat)
+	h2fn <- function(xy) mean((Ifn(xy[2],Y,omega=omega, increasing=increasing, na.rm=na.rm)-rhohat*Ifn(xy[1],X,omega=omega, increasing=increasing, na.rm=na.rm)-c(W%*%betahat)) * nuhat)
 	h2 <- apply(cbind(X,Y), 1, h2fn)
 
 	# construct h3
-	h3fn <- function(x) mean(epsilonhat * (Ifn(x,X,...)-Wgammahat))
+	h3fn <- function(x) mean(epsilonhat * (Ifn(x,X,omega=omega, increasing=increasing, na.rm=na.rm)-Wgammahat))
 	h3 <- sapply(X, h3fn)
 
 	# compute asymptotic variance
@@ -50,6 +53,12 @@ rrregAVar <- function(Y, X, W=NULL, ...) {
 
 	return(sigmahat)
 }
+
+# u: single number; v - vector
+# Returns a vector of length v with following values (for increasing = FALSE):
+# 1 if v[i] > u[i]
+# 0 if v[i] < u[i]
+# 
 
 Ifn <- function(u, v, omega=0, increasing=FALSE, na.rm=FALSE) {
 	if (increasing) {
