@@ -15,9 +15,40 @@ rrreg <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE) {
 rrregSE <- function(Y, X, W=NULL, omega, increasing, na.rm) 
   return( sqrt(rrregAVar(Y, X, W, omega=omega, increasing=increasing, na.rm=na.rm) / length(Y)) )
 
-#rrreg_se_private <- function()
+rrreg_se_private <- function(Y, X, W, omega, increasing, na.rm) {
+  I_Y <- Ifn_vectorized(Y, omega=omega, increasing=increasing, na.rm=na.rm)
+  I_X <- Ifn_vectorized(X, omega=omega, increasing=increasing, na.rm=na.rm)
+  RY <- rowMeans(I_Y)
+  RX <- rowMeans(I_X)
+  
+  W <- cbind(rep(1,length(Y)),W)
+  
+  # first stage
+  res <- lm(RX ~ W-1)
+  Wgammahat <- predict(res)
+  nuhat <- resid(res)
+  gammahat <- coef(res)
+  
+  # outcome equation
+  res <- lm(RY~RX+W-1)
+  rhohat <- coef(res)[1]
+  betahat <- coef(res)[-1]
+  epsilonhat <- resid(res)
+  
+  # construct h-s
+  h1 <- epsilonhat * nuhat
+  
+  h2 <- colMeans((I_Y - rhohat * I_X - c(W %*% betahat)) * nuhat)
+  
+  h3 <- colMeans(epsilonhat * (I_X - Wgammahat))
+  
+  # compute asymptotic variance
+  sigmahat <- mean((h1+h2+h3)^2) / var(nuhat)^2
+  
+  return(sigmahat)
+}
 
-rrregAVar <- function(Y, X, W=NULL, omega=omega, increasing=increasing, na.rm=na.rm) {
+rrregAVar <- function(Y, X, W=NULL, omega, increasing, na.rm) {
 	RYhat <- function(y) mean(Ifn(y, Y, omega=omega, increasing=increasing, na.rm=na.rm))
 	RY <- frank(Y, omega=omega, increasing=increasing, na.rm=na.rm)	
 	RXhat <- function(x) mean(Ifn(x, X, omega=omega, increasing=increasing, na.rm=na.rm))
@@ -41,7 +72,10 @@ rrregAVar <- function(Y, X, W=NULL, omega=omega, increasing=increasing, na.rm=na
 	h1 <- epsilonhat * nuhat
 
 	# construct h2
-	h2fn <- function(xy) mean((Ifn(xy[2],Y,omega=omega, increasing=increasing, na.rm=na.rm)-rhohat*Ifn(xy[1],X,omega=omega, increasing=increasing, na.rm=na.rm)-c(W%*%betahat)) * nuhat)
+	h2fn <- function(xy){
+	  mean((Ifn(xy[2],Y,omega=omega, increasing=increasing, na.rm=na.rm)-
+	          rhohat*Ifn(xy[1],X,omega=omega, increasing=increasing, na.rm=na.rm)-
+	          c(W%*%betahat)) * nuhat)}
 	h2 <- apply(cbind(X,Y), 1, h2fn)
 
 	# construct h3
