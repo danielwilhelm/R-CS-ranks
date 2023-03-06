@@ -128,7 +128,7 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
-process_irank_args <- function(x, omega, increasing, na.rm){
+process_compare_args <- function(x, omega, increasing, na.rm){
   assert_is_numeric_vector(x, "x")
   assert_is_single_logical(na.rm, "na.rm")
   assert_is_single_probability(omega, "omega")
