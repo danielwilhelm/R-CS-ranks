@@ -15,7 +15,7 @@
 #' @return A list with two items: 
 #' \itemize{
 #' \item{\code{rhohat} - the linear coefficient for rank of X.}
-#' \item{\code{se} - Estimated standard error of the regression.}
+#' \item{\code{se} - Estimated standard error of the coefficient rhohat.}
 #' }
 #' @note 
 #' TODO: make it more similar to lm.
