@@ -69,9 +69,6 @@ frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, ome
 #' omega if v[i] == v[j]
 #' For decreasing = FALSE, the `<` and `>` in above definition is swapped.
 #' 
-#' Previous version had two arguments: scalar u and vector v.
-#' However, this function is used only in self-context (u is always in vector v)
-#' And it is used for every u in v
 #' @noRd
 compare <- function(x, omega, increasing, na.rm){
   if(!increasing){
