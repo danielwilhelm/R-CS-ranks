@@ -2,13 +2,11 @@
 % Please edit documentation in R/ranks.R
 \name{csranks}
 \alias{csranks}
-\alias{csranks_simul}
-\alias{csranks_marg}
 \title{Confidence sets for ranks}
 \usage{
 csranks(
   x,
-  sd,
+  Sigma,
   coverage = 0.95,
   cstype = "two-sided",
   stepdown = TRUE,
@@ -18,35 +16,12 @@ csranks(
   na.rm = FALSE,
   seed = NA
 )
-
-csranks_simul(
-  x,
-  sd,
-  coverage = 0.95,
-  cstype = "two-sided",
-  stepdown = TRUE,
-  R = 1000,
-  indices = NA,
-  na.rm = FALSE,
-  seed = NA
-)
-
-csranks_marg(
-  x,
-  sd,
-  coverage = 0.95,
-  cstype = "two-sided",
-  stepdown = TRUE,
-  R = 1000,
-  indices = NA,
-  na.rm = FALSE,
-  seed = NA
-)
 }
 \arguments{
-\item{x}{vector of estimates}
+\item{x}{vector of estimates.}
 
-\item{sd}{vector of standard errors of \code{x}}
+\item{Sigma}{covariance matrix of \code{x}. Note, that it must be covariance matrix
+of feature \bold{means}, not features themselves.}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 
@@ -56,56 +31,65 @@ csranks_marg(
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
-\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}. 
+\item{simul}{logical; if \code{TRUE} (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by \code{indices}.
 Otherwise, for each population indicated in \code{indices} a marginal confidence set is computed.}
 
 \item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).}
 
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
 \value{
-A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in \code{indices}.
+A \code{csranks} object, which is a list with three items:
+\describe{
+ \item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
+ \item{\code{rank}}{Raw rank estimates using \code{\link{irank}} with default parameters}
+ \item{\code{U}}{Upper bounds of the confidence sets.}
+}
 }
 \description{
-Given estimates and their standard errors of a certain feature for a set of populations, 
-calculate confidence sets for the ranks of populations, 
+Given estimates and their covariance matrix of a certain feature for a set of populations,
+calculate confidence sets for the ranks of populations,
 where populations are ranked by the feature values.
 }
-\section{Functions}{
-\itemize{
-\item \code{csranks_simul()}: Simultaneous confidence sets for ranks
-
-This function is called by \code{csranks} when \code{simul=TRUE}.
-
-\item \code{csranks_marg()}: Marginal confidence sets for ranks
-
-This function is called by \code{csranks} when \code{simul=FALSE}.
-
-}}
 \section{Details}{
+
+IMPORTANT: make sure, that the \code{Sigma} is a (perhaps estimated) covariance matrix
+of estimates of feature means across populations, not of features themselves.
+For example, sample of size \eqn{n} of a feature following a standard normal distribution 
+has variance \eqn{\sigma^2=1}, but mean from such sample has variance \eqn{1/n}.
+We refer to the latter.
 
 The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
 Generally, it consists of verification of a large set of hypotheses. After rejection of certain set
-of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that 
+of hypotheses, one can terminate the procedure or keep verifying a smaller set of hypotheses that
 were not rejected so far. The former corresponds to \code{stepdown=FALSE}; the latter to \code{stepdown=TRUE}.
 
 From a practical point of view, \code{stepdown=TRUE} takes more time, but usually results
 in tighter (better) confidence sets.
 
-Parametric bootstrap used to calculate distribution for confidence sets based on the normal distribution with independent populations.
+Parametric bootstrap used to calculate distribution for confidence sets based on the multivariate normal distribution.
 }
 
 \examples{
-x <- seq(1,3,length=10)
-sd <- rep(0.2,10)
-csranks(x, sd)
-csranks_simul(x, sd)
-csranks_marg(x, sd)
+# Setup example data
+n <- 10
+x <- seq(1, 3, length = n)
+Sigma <- matrix(0.001, nrow = n, ncol = n)
+diag(Sigma) <- 0.04
+
+# Run csranks to get confidence sets for ranks of features
+csranks(x, Sigma)
+
+# If you assume that the feature measurements are independent 
+# (or have access only to variances / standard errors estimates),
+# then pass a diagonal covariance matrix.
+Sigma <- diag(rep(0.04, 10))
+csranks(x, Sigma)
 }
 \references{
-Mogstad, Romano, Shaikh, and Wilhelm.
-"Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
-\href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
+Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
+
+\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{link to pdf}
 }

@@ -2,3 +2,9 @@
 ^\.Rproj\.user$
 ^\.github$
 ^LICENSE\.md$
+^gitignore$
+^_pkgdown.yml$
+^data-raw$
+^examples$
+^README\.Rmd$
+^docs$

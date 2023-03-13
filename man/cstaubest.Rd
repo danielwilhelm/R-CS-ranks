@@ -7,7 +7,7 @@
 \usage{
 cstaubest(
   x,
-  sd,
+  Sigma,
   tau = 2,
   coverage = 0.95,
   stepdown = TRUE,
@@ -18,7 +18,7 @@ cstaubest(
 
 cstauworst(
   x,
-  sd,
+  Sigma,
   tau = 2,
   coverage = 0.95,
   stepdown = TRUE,
@@ -28,9 +28,10 @@ cstauworst(
 )
 }
 \arguments{
-\item{x}{vector of estimates}
+\item{x}{vector of estimates.}
 
-\item{sd}{vector of standard errors of \code{x}}
+\item{Sigma}{covariance matrix of \code{x}. Note, that it must be covariance matrix
+of feature \bold{means}, not features themselves.}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
 
@@ -40,7 +41,7 @@ cstauworst(
 
 \item{R}{number of bootstrap replications. Default is 1000.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{sd} (if any).}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).}
 
 \item{seed}{seed for bootstrap random variable draws. If set to \code{NA} (default), then seed is not set.}
 }
@@ -48,7 +49,7 @@ cstauworst(
 logical vector indicating which of the elements of \code{x} are in the confidence set for the tau-best.
 }
 \description{
-Find a set of populations, which belong to tau-best populations according to 
+Find a set of populations, which belong to tau-best populations according to
 some feature with given confidence.
 }
 \section{Functions}{
@@ -61,19 +62,34 @@ Equivalent to calling \code{cstaubest} with \code{-x}.
 }}
 \section{Details}{
 
-The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}. 
-Parametric bootstrap based on the normal distribution with independent populations.
+The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
+Parametric bootstrap based on the multivariate normal distribution.
+
+If \code{na.rm=TRUE} and NAs are present, then results are returned for tau-best (worst)
+populations among those without NA values, i.e. after NA removal.
 }
 
 \examples{
-x <- seq(1,3,length=10)
-sd <- rep(0.2,10)
-cstaubest(x, sd, tau=3)
-cstauworst(x, sd, tau=3)
+# Setup example data
+n <- 10
+x <- seq(1, 3, length = n)
+Sigma <- matrix(0.001, nrow = n, ncol = n)
+diag(Sigma) <- 0.04
+
+# Run csranks to get confidence sets for top 3 populations
+cstaubest(x, Sigma, tau = 3)
+cstauworst(x, Sigma, tau = 3)
+
+# If you assume that the feature measurements are independent, 
+# (or just have access to variances / standard errors)
+# then pass a diagonal covariance matrix.
+Sigma <- diag(rep(0.04, 10))
+cstaubest(x, Sigma, tau = 3)
+cstauworst(x, Sigma, tau = 3)
 
 }
 \references{
-Mogstad, Romano, Shaikh, and Wilhelm.
-"Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries"
-\href{https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf}{CeMMAP Working Paper CWP10/20}
+Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
+
+\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{link to pdf}
 }
