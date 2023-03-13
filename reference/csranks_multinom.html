@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -31,6 +31,16 @@
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/Introduction.html">Introduction</a>
+    </li>
+  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -64,25 +74,7 @@
 <span>  coverage <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  cstype <span class="op">=</span> <span class="st">"two-sided"</span>,</span>
 <span>  simul <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  multcorr <span class="op">=</span> <span class="st">"Bonferroni"</span>,</span>
-<span>  indices <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  na.rm <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">csranks_multinom_simul</span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
-<span>  coverage <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  cstype <span class="op">=</span> <span class="st">"two-sided"</span>,</span>
-<span>  multcorr <span class="op">=</span> <span class="st">"Bonferroni"</span>,</span>
-<span>  indices <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  na.rm <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">csranks_multinom_marg</span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
-<span>  coverage <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  cstype <span class="op">=</span> <span class="st">"two-sided"</span>,</span>
-<span>  multcorr <span class="op">=</span> <span class="st">"Bonferroni"</span>,</span>
+<span>  multcorr <span class="op">=</span> <span class="st">"Holm"</span>,</span>
 <span>  indices <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  na.rm <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -103,12 +95,12 @@
 
 
 <dt>simul</dt>
-<dd><p>logical; if <code>TRUE</code> (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by <code>indices</code>. 
+<dd><p>logical; if <code>TRUE</code> (default), then simultaneous confidence sets are computed, which jointly cover all populations indicated by <code>indices</code>.
 Otherwise, for each population indicated in <code>indices</code> a marginal confidence set is computed.</p></dd>
 
 
 <dt>multcorr</dt>
-<dd><p>multiplicity correction to be used: <code>Bonferroni</code> (default), <code>Holm</code> or <code>none</code>. See Details section for more.</p></dd>
+<dd><p>multiplicity correction to be used: <code>Holm</code> (default) or <code>Bonferroni</code>. See Details section for more.</p></dd>
 
 
 <dt>indices</dt>
@@ -116,32 +108,37 @@ Otherwise, for each population indicated in <code>indices</code> a marginal conf
 
 
 <dt>na.rm</dt>
-<dd><p>logical; if <code>TRUE</code>, then <code>NA</code>'s are removed from <code>x</code> and <code>sd</code> (if any).</p></dd>
+<dd><p>logical; if <code>TRUE</code>, then <code>NA</code>'s are removed from <code>x</code> and <code>Sigma</code> (if any).</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
     
 
-<p>A list with two items, `L` and `U` - lower and upper bounds of the confidence set for ranks indicated in <code>indices</code>.</p>
-    </div>
-    <div id="functions">
-    <h2>Functions</h2>
-    
-<ul><li><p><code>csranks_multinom_simul()</code>: Simultaneous Confidence sets for ranks based on multinomial data</p>
-<p>This function is called by <code>csranks_multinom</code> when <code>simul=TRUE</code>.</p></li>
-<li><p><code>csranks_multinom_marg()</code>: Marginal Confidence sets for ranks based on multinomial data</p>
-<p>This function is called by <code>csranks_multinom</code> when <code>simul=FALSE</code>.</p></li>
-</ul></div>
+<p>A <code>csranks</code> object, which is a list with three items:</p><dl><dt><code>L</code></dt>
+<dd><p>Lower bounds of the confidence sets for ranks indicated in <code>indices</code></p></dd>
+
+ <dt><code>rank</code></dt>
+<dd><p>Raw rank estimates using <code><a href="irank.html">irank</a></code> with default parameters</p></dd>
+
+ <dt><code>U</code></dt>
+<dd><p>Upper bounds of the confidence sets.</p></dd>
+
+
+</dl></div>
     <div id="details">
     <h2>Details</h2>
     
 
 <p>The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.</p>
+<p>It involves testing multiple hypotheses. The `<code>multcorr</code>` states, how the 
+p-values should be corrected to control the Family Wise Error Rate (FWER).</p>
+<p>From a practical point of view, <code>multcorr=Holm</code> takes more time, but usually results
+in tighter (better) confidence sets than <code>multcorr=Bonferroni</code>.</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Bazylik, Mogstad, Romano, Shaikh, and Wilhelm. 
+    <p>Bazylik, Mogstad, Romano, Shaikh, and Wilhelm.
 "Finite-and large-sample inference for ranks using multinomial data with an application to ranking political parties".</p>
     </div>
 
@@ -150,25 +147,16 @@ Otherwise, for each population indicated in <code>indices</code> a marginal conf
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Multinom.html" class="external-link">rmultinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1000</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">csranks_multinom</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 5 4 2 1 1 1 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 7 7 5 4 4 2 1 1 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  8  7  6  5  4  3  2  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  8  7  7  6  5  5  4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  9  7  7  6  4  4  3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="fu">csranks_multinom_simul</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 5 4 2 1 1 1 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  8  7  7  6  5  5  4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="fu">csranks_multinom_marg</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 5 4 4 2 1 1 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  8  7  7  6  4  4  3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "csranks"</span>
 </code></pre></div>
     </div>
   </div>

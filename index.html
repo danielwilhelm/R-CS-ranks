@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -48,6 +48,18 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/Introduction.html">Introduction</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="news/index.html">Changelog</a>
@@ -78,119 +90,89 @@
 </h1></div>
 <!-- badges: start -->
 
+<p>The <code>R</code> package <code>csranks</code> implements confidence sets for ranks as in <a href="http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf" class="external-link">Mogstad, Romano, Shaikh, and Wilhelm (2023)</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install the package <code>devtools</code> if it isn’t already:</p>
+<p>You can install the development version of csranks from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span></code></pre></div>
-<p>Load the package <code>devtools</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">"devtools"</a></span><span class="op">)</span></span></code></pre></div>
-<p>Install the package <code>csranks</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">install_github</span><span class="op">(</span><span class="st">"danielwilhelm/R-CS-ranks"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"danielwilhelm/R-CS-ranks"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example-pisa-ranking">Example: PISA Ranking<a class="anchor" aria-label="anchor" href="#example-pisa-ranking"></a>
 </h2>
 <p>This example illustrates the computation of confidence sets for the ranking of countries according students’ achievements in mathematics. The following dataset contains data from the 2018 Program for International Student Assessment (PISA) study by the Organization for Economic Cooperation and Development (OECD), which can be downloaded at <a href="https://www.oecd.org/pisa/data/" class="external-link uri">https://www.oecd.org/pisa/data/</a>. Students’ achievement is measured by the average mathematics test scores for all 15-year-old students in the study.</p>
 <p>First, load the package <code>csranks</code> and the data:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/danielwilhelm/R-CS-ranks" class="external-link">csranks</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span></code></pre></div>
 <p>The dataframe <code>pisa</code> looks like this:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pisa)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>      jurisdiction science_score science_se reading_score reading_se math_score  math_se</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>        Australia      <span class="fl">502.9646</span>   <span class="fl">1.795398</span>      <span class="fl">502.6317</span>   <span class="fl">1.634343</span>   <span class="fl">491.3600</span> <span class="fl">1.939833</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>          Austria      <span class="fl">489.7804</span>   <span class="fl">2.777395</span>      <span class="fl">484.3926</span>   <span class="fl">2.697472</span>   <span class="fl">498.9423</span> <span class="fl">2.970999</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>          Belgium      <span class="fl">498.7731</span>   <span class="fl">2.229240</span>      <span class="fl">492.8644</span>   <span class="fl">2.321973</span>   <span class="fl">508.0703</span> <span class="fl">2.262662</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>           Canada      <span class="fl">517.9977</span>   <span class="fl">2.153651</span>      <span class="fl">520.0855</span>   <span class="fl">1.799716</span>   <span class="fl">512.0169</span> <span class="fl">2.357476</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>            Chile      <span class="fl">443.5826</span>   <span class="fl">2.415280</span>      <span class="fl">452.2726</span>   <span class="fl">2.643766</span>   <span class="fl">417.4066</span> <span class="fl">2.415888</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>         Colombia      <span class="fl">413.3230</span>   <span class="fl">3.052402</span>      <span class="fl">412.2951</span>   <span class="fl">3.251344</span>   <span class="fl">390.9323</span> <span class="fl">2.989559</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>   Czech Republic      <span class="fl">496.7913</span>   <span class="fl">2.546069</span>      <span class="fl">490.2188</span>   <span class="fl">2.547851</span>   <span class="fl">499.4677</span> <span class="fl">2.460662</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span>          Denmark      <span class="fl">492.6370</span>   <span class="fl">1.937604</span>      <span class="fl">501.1299</span>   <span class="fl">1.795458</span>   <span class="fl">509.3984</span> <span class="fl">1.735002</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span>          Estonia      <span class="fl">530.1080</span>   <span class="fl">1.884569</span>      <span class="fl">523.0170</span>   <span class="fl">1.842242</span>   <span class="fl">523.4146</span> <span class="fl">1.743602</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>         Finland      <span class="fl">521.8846</span>   <span class="fl">2.509515</span>      <span class="fl">520.0787</span>   <span class="fl">2.307102</span>   <span class="fl">507.3014</span> <span class="fl">1.967920</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>          France      <span class="fl">492.9771</span>   <span class="fl">2.223662</span>      <span class="fl">492.6065</span>   <span class="fl">2.320979</span>   <span class="fl">495.4076</span> <span class="fl">2.320214</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>         Germany      <span class="fl">502.9889</span>   <span class="fl">2.911501</span>      <span class="fl">498.2793</span>   <span class="fl">3.025408</span>   <span class="fl">500.0438</span> <span class="fl">2.647083</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>          Greece      <span class="fl">451.6327</span>   <span class="fl">3.139630</span>      <span class="fl">457.4144</span>   <span class="fl">3.621000</span>   <span class="fl">451.3703</span> <span class="fl">3.091228</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>         Hungary      <span class="fl">480.9117</span>   <span class="fl">2.329977</span>      <span class="fl">475.9867</span>   <span class="fl">2.250962</span>   <span class="fl">481.0826</span> <span class="fl">2.319597</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>         Iceland      <span class="fl">475.0241</span>   <span class="fl">1.795502</span>      <span class="fl">473.9743</span>   <span class="fl">1.741511</span>   <span class="fl">495.1874</span> <span class="fl">1.953083</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>         Ireland      <span class="fl">496.1136</span>   <span class="fl">2.214146</span>      <span class="fl">518.0785</span>   <span class="fl">2.244478</span>   <span class="fl">499.6329</span> <span class="fl">2.198621</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>          Israel      <span class="fl">462.1966</span>   <span class="fl">3.618388</span>      <span class="fl">470.4152</span>   <span class="fl">3.670985</span>   <span class="fl">463.0345</span> <span class="fl">3.498563</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>           Italy      <span class="fl">468.0117</span>   <span class="fl">2.429562</span>      <span class="fl">476.2847</span>   <span class="fl">2.438910</span>   <span class="fl">486.5899</span> <span class="fl">2.780046</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>           Japan      <span class="fl">529.1354</span>   <span class="fl">2.593168</span>      <span class="fl">503.8560</span>   <span class="fl">2.670974</span>   <span class="fl">526.9733</span> <span class="fl">2.471475</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>           Korea      <span class="fl">519.0073</span>   <span class="fl">2.802762</span>      <span class="fl">514.0523</span>   <span class="fl">2.940543</span>   <span class="fl">525.9330</span> <span class="fl">3.121394</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="dv">21</span>          Latvia      <span class="fl">487.2506</span>   <span class="fl">1.762796</span>      <span class="fl">478.6987</span>   <span class="fl">1.616856</span>   <span class="fl">496.1263</span> <span class="fl">1.962767</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="dv">22</span>       Lithuania      <span class="fl">482.0670</span>   <span class="fl">1.629237</span>      <span class="fl">475.8735</span>   <span class="fl">1.518276</span>   <span class="fl">481.1912</span> <span class="fl">1.953282</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="dv">23</span>      Luxembourg      <span class="fl">476.7694</span>   <span class="fl">1.220843</span>      <span class="fl">469.9854</span>   <span class="fl">1.125891</span>   <span class="fl">483.4215</span> <span class="fl">1.097632</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="dv">24</span>          Mexico      <span class="fl">419.2047</span>   <span class="fl">2.584009</span>      <span class="fl">420.4689</span>   <span class="fl">2.746279</span>   <span class="fl">408.8015</span> <span class="fl">2.493226</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="dv">25</span>     Netherlands      <span class="fl">503.3838</span>   <span class="fl">2.840622</span>      <span class="fl">484.7837</span>   <span class="fl">2.650864</span>   <span class="fl">519.2310</span> <span class="fl">2.632278</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="dv">26</span>     New Zealand      <span class="fl">508.4907</span>   <span class="fl">2.104634</span>      <span class="fl">505.7273</span>   <span class="fl">2.043143</span>   <span class="fl">494.4897</span> <span class="fl">1.705943</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="dv">27</span>          Norway      <span class="fl">490.4131</span>   <span class="fl">2.282508</span>      <span class="fl">499.4510</span>   <span class="fl">2.171849</span>   <span class="fl">500.9638</span> <span class="fl">2.219045</span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="dv">28</span>          Poland      <span class="fl">511.0356</span>   <span class="fl">2.607236</span>      <span class="fl">511.8557</span>   <span class="fl">2.702458</span>   <span class="fl">515.6479</span> <span class="fl">2.602085</span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="dv">29</span>        Portugal      <span class="fl">491.6773</span>   <span class="fl">2.773163</span>      <span class="fl">491.8008</span>   <span class="fl">2.428931</span>   <span class="fl">492.4874</span> <span class="fl">2.684570</span></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="dv">30</span> Slovak Republic      <span class="fl">464.0476</span>   <span class="fl">2.278188</span>      <span class="fl">457.9840</span>   <span class="fl">2.234129</span>   <span class="fl">486.1649</span> <span class="fl">2.555596</span></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="dv">31</span>        Slovenia      <span class="fl">507.0065</span>   <span class="fl">1.250420</span>      <span class="fl">495.3456</span>   <span class="fl">1.232299</span>   <span class="fl">508.8975</span> <span class="fl">1.363878</span></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="dv">32</span>           Spain      <span class="fl">483.2520</span>   <span class="fl">1.552853</span>            <span class="cn">NA</span>         <span class="cn">NA</span>   <span class="fl">481.3926</span> <span class="fl">1.462418</span></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="dv">33</span>          Sweden      <span class="fl">499.4447</span>   <span class="fl">3.069711</span>      <span class="fl">505.7852</span>   <span class="fl">3.024772</span>   <span class="fl">502.3877</span> <span class="fl">2.654251</span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="dv">34</span>     Switzerland      <span class="fl">495.2763</span>   <span class="fl">3.004997</span>      <span class="fl">483.9294</span>   <span class="fl">3.124322</span>   <span class="fl">515.3147</span> <span class="fl">2.908004</span></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="dv">35</span>          Turkey      <span class="fl">468.2996</span>   <span class="fl">2.013049</span>      <span class="fl">465.6317</span>   <span class="fl">2.171214</span>   <span class="fl">453.5078</span> <span class="fl">2.260407</span></span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="dv">36</span>  United Kingdom      <span class="fl">504.6675</span>   <span class="fl">2.564415</span>      <span class="fl">503.9281</span>   <span class="fl">2.582591</span>   <span class="fl">501.7699</span> <span class="fl">2.564428</span></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="dv">37</span>   United States      <span class="fl">502.3800</span>   <span class="fl">3.317920</span>      <span class="fl">505.3528</span>   <span class="fl">3.568673</span>   <span class="fl">478.2447</span> <span class="fl">3.235444</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   jurisdiction science_score science_se reading_score reading_se math_score</span></span>
+<span><span class="co">#&gt; 1    Australia      502.9646   1.795398      502.6317   1.634343   491.3600</span></span>
+<span><span class="co">#&gt; 2      Austria      489.7804   2.777395      484.3926   2.697472   498.9423</span></span>
+<span><span class="co">#&gt; 3      Belgium      498.7731   2.229240      492.8644   2.321973   508.0703</span></span>
+<span><span class="co">#&gt; 4       Canada      517.9977   2.153651      520.0855   1.799716   512.0169</span></span>
+<span><span class="co">#&gt; 5        Chile      443.5826   2.415280      452.2726   2.643766   417.4066</span></span>
+<span><span class="co">#&gt; 6     Colombia      413.3230   3.052402      412.2951   3.251344   390.9323</span></span>
+<span><span class="co">#&gt;    math_se</span></span>
+<span><span class="co">#&gt; 1 1.939833</span></span>
+<span><span class="co">#&gt; 2 2.970999</span></span>
+<span><span class="co">#&gt; 3 2.262662</span></span>
+<span><span class="co">#&gt; 4 2.357476</span></span>
+<span><span class="co">#&gt; 5 2.415888</span></span>
+<span><span class="co">#&gt; 6 2.989559</span></span></code></pre></div>
 <p>Consider ranking countries according to their students’ achievement in mathematics. The scores in <code>math_score</code> are estimates of these achievements. The countries’ ranks can be estimated using the function <code><a href="reference/irank.html">irank()</a></code>:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>math_rank <span class="ot">&lt;-</span> <span class="fu">irank</span>(math_score)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>math_rank</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a> [<span class="dv">1</span>] <span class="dv">24</span> <span class="dv">18</span> <span class="dv">10</span>  <span class="dv">7</span> <span class="dv">35</span> <span class="dv">37</span> <span class="dv">17</span>  <span class="dv">8</span>  <span class="dv">3</span> <span class="dv">11</span> <span class="dv">20</span> <span class="dv">15</span> <span class="dv">34</span> <span class="dv">30</span> <span class="dv">21</span> <span class="dv">16</span> <span class="dv">32</span> <span class="dv">25</span>  <span class="dv">1</span>  <span class="dv">2</span> <span class="dv">19</span> <span class="dv">29</span> <span class="dv">27</span> <span class="dv">36</span>  <span class="dv">4</span> <span class="dv">22</span> <span class="dv">14</span>  <span class="dv">5</span> <span class="dv">23</span> <span class="dv">26</span>  <span class="dv">9</span> <span class="dv">28</span> <span class="dv">12</span>  <span class="dv">6</span> <span class="dv">33</span> <span class="dv">13</span> <span class="dv">31</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">math_rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/irank.html">irank</a></span><span class="op">(</span><span class="va">math_score</span><span class="op">)</span></span>
+<span><span class="va">math_rank</span></span>
+<span><span class="co">#&gt;  [1] 24 18 10  7 35 37 17  8  3 11 20 15 34 30 21 16 32 25  1  2 19 29 27 36  4</span></span>
+<span><span class="co">#&gt; [26] 22 14  5 23 26  9 28 12  6 33 13 31</span></span></code></pre></div>
 <p>These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets. Explanations and details about the differences of these two confidence sets can be found in Mogstad, Romano, Shaikh, and Wilhelm (2020). The complete R script containing this example, as well as R scripts for PISA rankings by reading and science scores, can be found in the subdirectory <code>examples/</code>.</p>
 <div class="section level3">
 <h3 id="marginal-confidence-sets">Marginal Confidence Sets<a class="anchor" aria-label="anchor" href="#marginal-confidence-sets"></a>
 </h3>
 <p>The marginal confidence sets for the ranks are computed as follows:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_marg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_se</span>, coverage<span class="op">=</span><span class="fl">0.95</span>, simul<span class="op">=</span><span class="cn">FALSE</span>, R<span class="op">=</span><span class="fl">1000</span>, seed<span class="op">=</span><span class="fl">101</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">math_cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">math_se</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">CS_marg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, coverage<span class="op">=</span><span class="fl">0.95</span>, simul<span class="op">=</span><span class="cn">FALSE</span>, R<span class="op">=</span><span class="fl">1000</span>, seed<span class="op">=</span><span class="fl">101</span><span class="op">)</span></span>
 <span><span class="va">math_rankL_marg</span> <span class="op">&lt;-</span> <span class="va">CS_marg</span><span class="op">$</span><span class="va">L</span></span>
 <span><span class="va">math_rankU_marg</span> <span class="op">&lt;-</span> <span class="va">CS_marg</span><span class="op">$</span><span class="va">U</span></span></code></pre></div>
 <p>where <code>math_rankL_marg</code> and <code>math_rankL_marg</code> contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/current.viewport.html" class="external-link">current.viewport</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; viewport[ROOT]</span></span>
 <span></span>
-<span><span class="va">plotmarg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plotranking.html">plotranking</a></span><span class="op">(</span>ranks<span class="op">=</span><span class="va">math_rank</span>, L<span class="op">=</span><span class="va">math_rankL_marg</span>, U<span class="op">=</span><span class="va">math_rankU_marg</span>, </span>
-<span>    popnames<span class="op">=</span><span class="va">jurisdiction</span>, title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
+<span><span class="va">plotmarg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_marg</span>, popnames<span class="op">=</span><span class="va">jurisdiction</span>, title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
 <span>    subtitle<span class="op">=</span><span class="st">"(with 95% marginal confidence sets)"</span>, colorbins<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">plotmarg</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="https://raw.githubusercontent.com/danielwilhelm/R-CS-ranks/master/examples/mathmarg.jpg" alt=""><p class="caption">Ranking of OECD Countries by 2018 PISA Math Score</p>
-</div>
+<span><span class="va">plotmarg</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
 <p>You can then save the graph by</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"mathmarg.pdf"</span>, plot<span class="op">=</span><span class="va">plotmarg</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="simultaneous-confidence-sets">Simultaneous Confidence Sets<a class="anchor" aria-label="anchor" href="#simultaneous-confidence-sets"></a>
 </h3>
 <p>The simultaneous confidence sets for the ranks are computed as follows:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_simul</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_se</span>, coverage<span class="op">=</span><span class="fl">0.95</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, R<span class="op">=</span><span class="fl">1000</span>, seed<span class="op">=</span><span class="fl">101</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CS_simul</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, coverage<span class="op">=</span><span class="fl">0.95</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, R<span class="op">=</span><span class="fl">1000</span>, seed<span class="op">=</span><span class="fl">101</span><span class="op">)</span></span>
 <span><span class="va">math_rankL_simul</span> <span class="op">&lt;-</span> <span class="va">CS_simul</span><span class="op">$</span><span class="va">L</span></span>
 <span><span class="va">math_rankU_simul</span> <span class="op">&lt;-</span> <span class="va">CS_simul</span><span class="op">$</span><span class="va">U</span></span></code></pre></div>
 <p>where <code>math_rankL_simul</code> and <code>math_rankL_simul</code> contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/current.viewport.html" class="external-link">current.viewport</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; viewport[ROOT]</span></span>
 <span></span>
-<span><span class="va">plotsimul</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plotranking.html">plotranking</a></span><span class="op">(</span>ranks<span class="op">=</span><span class="va">math_rank</span>, L<span class="op">=</span><span class="va">math_rankL_simul</span>, U<span class="op">=</span><span class="va">math_rankU_simul</span>, </span>
-<span>    popnames<span class="op">=</span><span class="va">jurisdiction</span>, title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
+<span><span class="va">plotsimul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul</span>, popnames<span class="op">=</span><span class="va">jurisdiction</span>, title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
 <span>    subtitle<span class="op">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span>, colorbins<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">plotsimul</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="https://raw.githubusercontent.com/danielwilhelm/R-CS-ranks/master/examples/mathsimul.jpg" alt=""><p class="caption">Ranking of OECD Countries by 2018 PISA Math Score</p>
-</div>
+<span><span class="va">plotsimul</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
 <p>You can then save the graph by</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"mathsimul.pdf"</span>, plot<span class="op">=</span><span class="va">plotsimul</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -198,7 +180,7 @@
 <div class="section level1">
 <h1 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
 </h1>
-<p><a href="https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf" class="external-link">Mogstad, Romano, Shaikh, and Wilhelm (2020), “Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries”, CeMMAP Working Paper CWP10/20</a></p>
+<p><a href="http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf" class="external-link">Mogstad, Romano, Shaikh, and Wilhelm (2023), “Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries”, forthcoming at Review of Economic Studies</a></p>
 </div>
 
   </div>

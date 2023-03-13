@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -31,6 +31,16 @@
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/Introduction.html">Introduction</a>
+    </li>
+  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -53,6 +63,30 @@
       <small>Source: <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.5.0" id="csranks-050">csranks 0.5.0<a class="anchor" aria-label="anchor" href="#csranks-050"></a></h2>
+<ul><li>
+<code>csranks</code> now produces <code>csranks</code> object. List as before, but with new <code>rank</code> element</li>
+<li>Added <code>plot.ranking</code> function</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.4.1" id="csranks-041">csranks 0.4.1<a class="anchor" aria-label="anchor" href="#csranks-041"></a></h2>
+<ul><li>
+<code>V</code> argument (<code>sd</code> before 0.4) renamed to <code>Sigma</code>
+</li>
+<li>Adding <code>irank</code> and <code>frank</code> functions</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.4.0" id="csranks-040">csranks 0.4.0<a class="anchor" aria-label="anchor" href="#csranks-040"></a></h2>
+<ul><li>
+<code>sd</code> argument renamed to <code>V</code>; now accepts ONLY covariance matrix.</li>
+<li>
+<code>*_marg</code> and <code>*_simul</code> methods removed; use <code>*</code> with <code>simul</code> option.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.3.0" id="csranks-030">csranks 0.3.0<a class="anchor" aria-label="anchor" href="#csranks-030"></a></h2>
+<ul><li>Added possibility of features to be correlated across populations. <code>sd</code> argument now can accept covariance matrix.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.0" id="csranks-020">csranks 0.2.0<a class="anchor" aria-label="anchor" href="#csranks-020"></a></h2>
 <ul><li>Added implementation of confidence sets for ranks based on multinomial data.</li>
