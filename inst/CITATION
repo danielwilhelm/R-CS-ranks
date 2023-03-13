@@ -1,19 +1,9 @@
-citHeader("To cite csranks in publications use:")
-
-citEntry(entry = "techreport",
-  title        = "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries",
-  author       = personList(as.person("Magne Mogstad"),
-                   as.person("Joseph Romano"),
-                   as.person("Azeem Shaikh"),
-                   as.person("Daniel Wilhelm")),
-  year         = "2020",
-  type         = "CeMMAP Working Paper",
-  institution  = "Institute for Fiscal Studies",
-  number       = "CWP10/20",
-  url          = "https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf",
-
-  textVersion  =
-  paste("Magne Mogstad, Joseph Romano, Azeem Shaikh, and Daniel Wilhelm (2020),",
-        "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries,",
-        "CeMMAP Working Paper CWP10/20.")
+bibentry(
+  bibtype = "manual",
+  key = "R-csranks",
+  title = "csranks: Confidence Sets for Ranks",
+  author = c("Daniel Wilhelm", "Pawel Morgen"),
+  note = "https://github.com/danielwilhelm/R-CS-ranks",
+  url = "https://danielwilhelm.github.io/R-CS-ranks",
+  year = "2023"
 )
