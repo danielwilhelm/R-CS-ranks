@@ -1,5 +1,3 @@
-# we want a very simple example
-
 test_that("simple_lmranks works for full correlation", {
   Y <- c(1,2,3)
   X <- c(4,5,6)
@@ -55,7 +53,7 @@ test_that("simple_lmranks works for non-NULL W, fully correlated with RY", {
   X <- 1:5
   omega <- 0.5
   x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
-  W <- y_frank * 0.1 + 5
+  W <- matrix(y_frank * 0.1 + 5, ncol = 1)
   
   m <- lm(y_frank ~ x_frank + W)
   
