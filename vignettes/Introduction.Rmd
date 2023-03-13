@@ -73,7 +73,7 @@ pisa[CS_5best, "jurisdiction"]
 
 We have 12 countries among top 5 countries. That's due to the uncertainty in the data: countries lower in estimated ranking might be among *true* top 5 countries after all. By construction, this set contains all countries, that are among the *true* top 5 (with high confidence) - which naturally means, that it contains more than 5 to not exclude a certain country among the true top 5 by mistake.
 
-This confidence in including in the resulting set every population that should be there is called **controlling the type I error** in statistics. In package it's reffered to as **coverage**, since the resulting confidence set *covers* the true top 5 countries with a certain, high probability. The standard value of this probability is 95%. One can get smaller sets, if wishes to sacrifice some confidence in return.
+This confidence in including in the resulting set every population that should be there is called **controlling the type I error** in statistics. In package it's referred to as **coverage**, since the resulting confidence set *covers* the true top 5 countries with a certain, high probability. The standard value of this probability is 95%. One can get smaller sets, if wishes to sacrifice some confidence in return.
 
 Here is a smaller set answering the same question, but with lower confidence:
 
@@ -99,7 +99,7 @@ Based only on the estimates of mean test scores, we would assign the UK 13th pos
 
 Several governments have set national performance targets based on how well the country ranks in the league table. Incorporating the uncertainty of position in the league table could lead to a change of approach to the ranking and of policies based on it. 
 
-### Simultanous confidence of sets
+### Simultaneous confidence of sets
 
 Finally, we would like to get a general overview of ranking of education systems.
 For that, we can use a simultaneous confidence set for ranks of all populations.
@@ -112,12 +112,12 @@ plot(CS_simul, popnames=pisa$jurisdiction,
      subtitle="(with 95% simultaneous confidence sets)")
 ```
 
-We can draw a variety of conclusions. The confidence sets for countries at the top and bottom are tighter than for those in the middle. This means, that the countries at the top are truely at the top (there is significant difference between them and the rest), while the countries in the middle are fairly similar.
+We can draw a variety of conclusions. The confidence sets for countries at the top and bottom are tighter than for those in the middle. This means, that the countries at the top are truly at the top (there is significant difference between them and the rest), while the countries in the middle are fairly similar.
 
 This plot also reaffirms results from previous chunks. Indeed, Sweden's confidence set
 border is 5. Changing the confidence level tightened the set and one could no longer say, that Sweden might be among top 5 countries. For the 11 countries above, the sets started at at least 4th rank, so they all could possibly be among the *true* top 5 countries.
 
-The confidence set for UK here is larger, than the marginal set obtained in previous chunk. This is, because the simultanous sets must cover all true ranks for all populations of interest at once, while the marginal - only for one population. Thus, with the same level of general confidence, the marginal sets have to account for less possibilities of errors and are tighter than simultanous ones.
+The confidence set for UK here is larger, than the marginal set obtained in previous chunk. This is, because the simultaneous sets must cover all true ranks for all populations of interest at once, while the marginal - only for one population. Thus, with the same level of general confidence, the marginal sets have to account for less possibilities of errors and are tighter than simultaneous ones.
 
 ## Further reading and references
 

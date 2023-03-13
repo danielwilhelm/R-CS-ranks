@@ -6,8 +6,7 @@ Authors@R: c(
     person("Daniel", "Wilhelm", ,"d.wilhelm@ucl.ac.uk", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
   )
-Description: This package implements methods for computing confidence sets for ranks
-	 from Mogstad, Romano, Shaikh, and Wilhelm (2020).
+Description: Confidence sets for ranks from Mogstad, Romano, Shaikh, and Wilhelm (2023).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -22,9 +21,11 @@ Imports:
     scales,
     MASS,
     cli
-Suggests: 
+Suggests:
+    spelling, 
     testthat (>= 2.1.0),
     grid,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Language: en-US
