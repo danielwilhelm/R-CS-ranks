@@ -37,7 +37,10 @@
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
   compares <- compare(x, omega=omega, increasing = increasing, na.rm = na.rm)
-  rowSums(compares) + 1 - omega
+  compares[is.na(compares)] <- omega
+  out <- rowSums(compares) + 1 - omega
+  out[is.na(x)] <- NA
+  out
 }
 
 #' @describeIn irank Compute fractional ranks
