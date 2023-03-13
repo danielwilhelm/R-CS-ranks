@@ -32,6 +32,3 @@ A list with two items:
 Fit a linear model with a single rank response and
 a single rank covariate (and possibly other usual covariates).
 }
-\note{
-TODO: make it more similar to lm.
-}
