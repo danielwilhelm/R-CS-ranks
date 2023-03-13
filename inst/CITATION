@@ -6,14 +6,14 @@ citEntry(entry = "techreport",
                    as.person("Joseph Romano"),
                    as.person("Azeem Shaikh"),
                    as.person("Daniel Wilhelm")),
-  year         = "2020",
-  type         = "CeMMAP Working Paper",
-  institution  = "Institute for Fiscal Studies",
-  number       = "CWP10/20",
-  url          = "https://www.ucl.ac.uk/~uctpdwi/papers/cwp1020.pdf",
+  year         = "2023",
+  type         = "!CeMMAP Working Paper",
+  institution  = "!Institute for Fiscal Studies",
+  number       = "!CWP10/20",
+  url          = "http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf",
 
   textVersion  =
-  paste("Magne Mogstad, Joseph Romano, Azeem Shaikh, and Daniel Wilhelm (2020),",
+  paste("Magne Mogstad, Joseph Romano, Azeem Shaikh, and Daniel Wilhelm (2023),",
         "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries,",
-        "CeMMAP Working Paper CWP10/20.")
+        "forthcoming at Review of Economic Studies.")
 )
