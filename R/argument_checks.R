@@ -128,6 +128,45 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
+check_irank_args <- function(x, omega, increasing, na.rm){
+  assert_is_numeric_vector(x, "x", na_ok = TRUE)
+  assert_is_single_probability(omega, "omega")
+  assert_is_single_logical(increasing, "increasing")
+  assert_is_single_logical(na.rm, "na.rm")
+}
+
+process_simple_lmranks_args <- function(Y, X, W, omega, increasing, na.rm){
+  check_irank_args(Y, omega, increasing, na.rm)
+  assert_is_numeric_vector(X, "Y", na_ok = TRUE)
+  if (any(is.null(W))) {
+    W <- matrix(rep(1,length(Y)), ncol = 1)
+  } else {
+    if(!is.matrix(W)){
+      msg <- c("{.var W} must be a numeric matrix or NULL.",
+               "x" = "{.var W} is of {.cls {class(W)}} class.")
+      if(is.vector(W) && is.numeric(W))
+        msg["i"] <- "Did you provide only a single covariate as a vector? If so, use a matrix with one column."
+      
+      cli::cli_abort(msg)
+    }
+    W <- cbind(rep(1,nrow(W)),W)
+  }
+  assert_equal_length(Y, X, W, names = c("Y, X, W"))
+  M <- cbind(Y, X, W)
+  na_vec <- apply(M, 1, function(v) any(is.na(v)))
+  if(na.rm){
+    Y <- Y[!na_vec]
+    X <- X[!na_vec]
+    W <- W[!na_vec,,drop=FALSE]
+  } else if(any(na_vec)){
+    na_indices <- utils::head(which(na_vec))
+    cli::cli_abort("NA values found in {.var Y}, {.var X} or {.var W} at positions {paste(na_indices, collapse=', ')}.")
+  }
+  return(list(Y = Y,
+              X = X,
+              W = W))
+}
+
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){
   if(!all(lower <= middle)){
     wrong_index <- which(lower > middle)[1]
@@ -204,7 +243,7 @@ assert_is_integer <- function(x, name, na_ok=FALSE){
 assert_is_numeric_vector <- function(x, name, na_ok=FALSE){
   assert_is_vector(x, name)
   if(!(is.numeric(x) || all(is.na(x)) && na_ok))
-    cli::cli_abort(c("{.var {name}} must be a single number.",
+    cli::cli_abort(c("{.var {name}} must be a numeric vector.",
                      "x" = "{.var {name}} is of {.cls {typeof(x)}} type."))
 }
 
@@ -216,6 +255,22 @@ assert_length <- function(x, name, length){
   if(length(x) != length)
     cli::cli_abort(c("{.var {name}} must be of length {length}.",
                      "x" = "{.var {name}} is of length {length(x)}."))
+}
+
+assert_equal_length <- function(..., names){
+  args <- list(...)
+  lengths <- sapply(args, function(v){
+    if(is.matrix(v))
+      nrow(v)
+    else
+      length(v)
+  })
+  is_equal <- lengths[1] == lengths
+  if(!all(is_equal)){
+    i <- which(!is_equal)[1]
+    cli::cli_abort(c("{.var {names}} must be of equal length.",
+                     "x" = "{.var {names[i]}} is of length {lengths[i]}, but {.var {names[1]}} is of length {lengths[1]}."))
+  }
 }
 
 assert_is_single_logical <- function(x, name){

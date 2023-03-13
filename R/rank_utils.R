@@ -36,6 +36,7 @@
 #' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
+  check_irank_args(x, omega, increasing, na.rm)
   if (na.rm) x <- x[!is.na(x)]
   compares <- compare(x, omega=omega, increasing = increasing, na.rm = na.rm)
   compares[is.na(compares)] <- omega
