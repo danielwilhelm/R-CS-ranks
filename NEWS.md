@@ -1,3 +1,10 @@
+# csranks 1.1.0
+
+* Added `simple_lmranks` function for linear modelling of ranks using single rank
+covariate and possibly other, "usual" covariates
+* Added a helper function `simple_lmranks_rho_se` for calculating and extracting just
+the standard error of regression coefficient rho
+
 # csranks 1.0.0
 
 * Release!
