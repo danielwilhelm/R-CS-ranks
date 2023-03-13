@@ -17,6 +17,17 @@
 #' \item{\code{rhohat} - the linear coefficient for rank of X.}
 #' \item{\code{se} - Estimated standard error of the coefficient rhohat.}
 #' }
+#' 
+#' @examples
+#' Y <- c(3,1,2,4,5)
+#' y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
+#' X <- 1:5
+#' omega <- 0.5
+#' x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
+#' W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
+#'
+#' simple_lmranks(Y, X, W)
+#' 
 #' @importFrom stats lm predict resid coef var
 #' @export
 simple_lmranks <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE) {
@@ -54,7 +65,9 @@ simple_lmranks <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE)
 	return(list(rhohat=rhohat, se=se))
 }
 
-rrregSE <- function(Y, X, W=NULL, omega, increasing, na.rm){
+#' @describeIn simple_lmranks Calculate the standard error of rank regression coefficient
+
+simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
   lmranks_outcome <- simple_lmranks(Y, X, W=W, omega=omega, increasing=increasing, na.rm=na.rm)
   return(lmranks_outcome$se)
 }

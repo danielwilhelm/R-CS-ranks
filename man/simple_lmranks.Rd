@@ -2,9 +2,19 @@
 % Please edit documentation in R/rrreg.R
 \name{simple_lmranks}
 \alias{simple_lmranks}
+\alias{simple_lmranks_rho_se}
 \title{Linear model for ranks}
 \usage{
 simple_lmranks(Y, X, W = NULL, omega = 0, increasing = FALSE, na.rm = FALSE)
+
+simple_lmranks_rho_se(
+  Y,
+  X,
+  W = NULL,
+  omega = 0,
+  increasing = FALSE,
+  na.rm = FALSE
+)
 }
 \arguments{
 \item{Y}{Numeric vector. Based on it, ranks for response will be constructed
@@ -31,4 +41,20 @@ A list with two items:
 \description{
 Fit a linear model with a single rank response and
 a single rank covariate (and possibly other usual covariates).
+}
+\section{Functions}{
+\itemize{
+\item \code{simple_lmranks_rho_se()}: Calculate the standard error of rank regression coefficient
+
+}}
+\examples{
+Y <- c(3,1,2,4,5)
+y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
+X <- 1:5
+omega <- 0.5
+x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
+W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
+
+simple_lmranks(Y, X, W)
+
 }
