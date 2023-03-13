@@ -39,13 +39,13 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
   LInv <- function(I, beta, fn){
     reduced_I <- reduce_I(I)
     needed_variables <- reduced_I$needed_variables
-    requested_diffrences <- reduced_I$requested_diffrences
+    requested_differences <- reduced_I$requested_differences
     # Marginal distribution of MVTNormal is MVTNormal 
     # with correct block of covariance matrix
     needed_cov_mat <- cov_mat[needed_variables, needed_variables]
     Z <- MASS::mvrnorm(R, mu = rep(0, nrow(needed_cov_mat)),
                        Sigma = needed_cov_mat)
-    Zdiff_scaled <- calculate_scaled_differences_in_samples(Z, requested_diffrences,
+    Zdiff_scaled <- calculate_scaled_differences_in_samples(Z, requested_differences,
                                                             sigmadiff[I])
     bootstrap_estimates <- apply(Zdiff_scaled, 1, fn)
     quantile(bootstrap_estimates, probs=beta)
@@ -95,7 +95,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
 }
 
 
-#' Calculate standard deviations of diffrences in an MVTNormal distribution
+#' Calculate standard deviations of differences in an MVTNormal distribution
 #' @param cov_mat a covariance matrix of multivariate normal distribution
 #' @return matrix pxp with standard deviations of differences of variables
 #' @noRd
@@ -129,17 +129,17 @@ initialize_I0 <- function(p, indices, stepdown, cstype){
 #'               FALSE, FALSE, FALSE), byrow = TRUE, ncol = 3)
 #' r <- reduce_I(I)
 #' r$needed_variables # c(FALSE, TRUE, TRUE)
-#' r$requested_diffrences # matrix(c(2,3), ncol = 2)
+#' r$requested_differences # matrix(c(2,3), ncol = 2)
 #' @noRd
 reduce_I <- function(I){
   needed_variables <- sapply(1:nrow(I), function(i){
     any(I[i,]) || any(I[,i])
   })
   needed_I <- I[needed_variables, needed_variables]
-  requested_diffrences <- get_double_from_single_indices(which(needed_I), 
+  requested_differences <- get_double_from_single_indices(which(needed_I), 
                                                          nrow(needed_I))
   list(needed_variables = needed_variables,
-       requested_diffrences = requested_diffrences)
+       requested_differences = requested_differences)
 }
 
 #' @param Z sample from mvt normal with observations in rows
@@ -150,8 +150,8 @@ reduce_I <- function(I){
 #' And then scale them with
 #' @param scales: numeric of length nrow(requested_differences)
 #' @noRd
-calculate_scaled_differences_in_samples <- function(Z, requested_diffrences, scales){
-  Zdiff <- Z[, requested_diffrences[, 1], drop=FALSE] - Z[, requested_diffrences[, 2], drop=FALSE]
+calculate_scaled_differences_in_samples <- function(Z, requested_differences, scales){
+  Zdiff <- Z[, requested_differences[, 1], drop=FALSE] - Z[, requested_differences[, 2], drop=FALSE]
   # Vectorized division goes over rows
   Zdiff_scaled <- t(t(Zdiff) / scales) 
   Zdiff_scaled

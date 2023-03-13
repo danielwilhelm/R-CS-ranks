@@ -82,8 +82,8 @@ which_pairs_are_compared <- function(p, indices, cstype){
 calculate_pairwise_p_values <- function(x, which_pairs){
   l <- reduce_I(which_pairs)
   # H0 - under null hypothesis
-  H0_smaller <- as.integer(l$requested_diffrences[,1])
-  H0_larger <- as.integer(l$requested_diffrences[,2])
+  H0_smaller <- as.integer(l$requested_differences[,1])
+  H0_larger <- as.integer(l$requested_differences[,2])
   
   x_parwise_sums <- outer(x, x, "+")
   relevant_parwise_sums <- as.vector(x_parwise_sums[which_pairs])
