@@ -4,7 +4,7 @@ bibentry(
   title = "csranks: Confidence Sets for Ranks",
   author = c("Daniel Wilhelm", "Pawel Morgen"),
   note = "https://github.com/danielwilhelm/R-CS-ranks",
-  url = "https://danielwilhelm.github.io/R-CS-ranks",
+  url = "https://danielwilhelm.github.io/R-CS-ranks/",
   year = "2023"
 )
 
