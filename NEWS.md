@@ -1,7 +1,7 @@
 # csranks 1.0.0
 
 * Release!
-* `irank` now raises error if NAs present and na.rm=FALSE
+* `irank` now raises error if NAs present and `na.rm`=FALSE
 
 # csranks 0.5.0
 
