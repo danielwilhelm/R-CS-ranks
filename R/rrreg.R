@@ -31,16 +31,12 @@
 #' @importFrom stats lm predict resid coef var
 #' @export
 simple_lmranks <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE) {
+  l <- process_simple_lmranks_args(Y, X, W, omega, increasing, na.rm)
+  X <- l$X; Y <- l$Y; W <- l$W
   I_Y <- compare(Y, omega=omega, increasing=increasing, na.rm=na.rm)
   I_X <- compare(X, omega=omega, increasing=increasing, na.rm=na.rm)
   RY <- (rowSums(I_Y) + 1 - omega) / length(Y)
   RX <- (rowSums(I_X) + 1 - omega) / length(X)
-  
-	if (any(is.null(W))) {
-		W <- matrix(rep(1,length(Y)), ncol = 1)
-	} else {
-	  W <- cbind(rep(1,length(Y)),W)
-	}
   
   RX_by_Ws <- lm(RX ~ W-1)
   Wgammahat <- predict(RX_by_Ws)

@@ -112,6 +112,37 @@ test_that("`x` argument is handled correctly in process_compare_args",{
                                   na.rm = TRUE),
                -x)
 })
+# simple_lmranks
+test_that("`W` argument is handled correctly by process_simple_lmranks_args", {
+  Y <- 1:10
+  X <- 1:10
+  W <- matrix(1:10, ncol = 1)
+  expected_W <- cbind(rep(1, 10), W)
+  expect_equal(process_simple_lmranks_args(Y, X, W, 0.4, FALSE, FALSE),
+               list(Y = Y, X = X, W = expected_W))
+  expect_equal(process_simple_lmranks_args(Y, X, NULL, 0.4, FALSE, FALSE),
+               list(Y = Y, X = X, W = expected_W[,1,drop=FALSE]))
+  expect_error(process_simple_lmranks_args(Y, X, as.vector(W), 0.4, FALSE, FALSE))
+  expect_error(process_simple_lmranks_args(Y, X, "W", 0.4, FALSE, FALSE))
+})
+
+test_that("NAs are handled correctly by process_simple_lmranks_args", {
+  Y <- c(1:4, NA, 6:10)
+  X <- c(1:3, NA, 5:10)
+  W <- matrix(c(1:5, NA, 7:10), ncol = 1)
+  expected_l <- list(Y = c(1:3, 7:10),
+                     X = c(1:3, 7:10),
+                     W = matrix(c(rep(1, 7),
+                                1:3, 7:10), ncol = 2))
+  expected_l_default_W <- list(Y = c(1:3, 6:10),
+                               X = c(1:3, 6:10),
+                               W = matrix(rep(1, 8), ncol = 1))
+  expect_error(process_simple_lmranks_args(Y, X, W, 0.4, FALSE, na.rm = FALSE))
+  expect_equal(process_simple_lmranks_args(Y, X, W, 0.4, FALSE, na.rm = TRUE),
+               expected_l)
+  expect_equal(process_simple_lmranks_args(Y, X, NULL, 0.4, FALSE, na.rm = TRUE),
+               expected_l_default_W)
+})
 
 # Low-level assert tests
 test_that("assert_is_between works correctly",{
@@ -147,6 +178,14 @@ test_that("assert_is_numeric_vector works correctly", {
 test_that("assert_is_single works correctly", {
   expect_silent(assert_is_single(1, "x"))
   expect_error(assert_is_single(1:3, "x"))
+})
+
+test_that("assert_equal_length works correctly", {
+  x <- 1:10
+  y <- 1:10
+  z <- 1:10
+  expect_silent(assert_equal_length(x, y, z, names = c("x", "y", "z")))
+  expect_error(assert_equal_length(x, y[1:9], z, names = c("x", "y", "z")))
 })
 
 test_that("assert_is_single_logical works correctly", {

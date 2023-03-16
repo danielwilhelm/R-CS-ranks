@@ -235,6 +235,22 @@ assert_length <- function(x, name, length){
                      "x" = "{.var {name}} is of length {length(x)}."))
 }
 
+assert_equal_length <- function(..., names){
+  args <- list(...)
+  lengths <- sapply(args, function(v){
+    if(is.matrix(v))
+      nrow(v)
+    else
+      length(v)
+  })
+  is_equal <- lengths[1] == lengths
+  if(!all(is_equal)){
+    i <- which(!is_equal)[1]
+    cli::cli_abort(c("{.var {names}} must be of equal length.",
+                     "x" = "{.var {names[i]}} is of length {lengths[i]}, but {.var {names[1]}} is of length {lengths[1]}."))
+  }
+}
+
 assert_is_single_logical <- function(x, name){
   assert_is_vector(x, name)
   assert_is_single(x, name)
