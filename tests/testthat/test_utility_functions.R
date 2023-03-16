@@ -29,16 +29,7 @@ test_that("irank works for unsorted input", {
 
 test_that("irank without na.rm handles NAs", {
   x <- c(1,3,4,4,4,7,7,10, NA, NA, NA)
-  expected_irank_om0 <- c(8,7,4,4,4,2,2,1,NA,NA,NA)
-  expected_irank_om1 <- c(11,10,9,9,9,6,6,4,NA,NA,NA)
-  expected_irank_om0.5 <- c(9.5,8.5,6.5,6.5,6.5,4,4,2.5,NA,NA,NA)
-  
-  expect_equal(irank(x, omega = 0),
-               expected_irank_om0)
-  expect_equal(irank(x, omega = 1),
-               expected_irank_om1)
-  expect_equal(irank(x, omega = 0.5),
-               expected_irank_om0.5)
+  expect_error(irank(x))
 })
 
 test_that("irank with na.rm handles NAs", {

@@ -100,6 +100,19 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
   expect_error(process_indices_argument(2:11, 10))
 })
 
+test_that("`x` argument is handled correctly in process_irank_args",{
+  x <- c(1,3,4,4,4,7,7,10)
+  omega <- 0.4
+  expect_error(process_irank_args(c(x, NA), omega=omega, increasing=TRUE,
+                                  na.rm = FALSE))
+  expect_equal(process_irank_args(c(x, NA), omega=omega, increasing=TRUE,
+                                  na.rm = TRUE),
+               x)
+  expect_equal(process_irank_args(x, omega=omega, increasing=FALSE,
+                                  na.rm = TRUE),
+               -x)
+})
+
 # Low-level assert tests
 test_that("assert_is_between works correctly",{
   expect_silent(assert_is_between(2:4,1:3,3:5,"x","L","U"))

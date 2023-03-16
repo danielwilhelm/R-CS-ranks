@@ -36,20 +36,8 @@
 #' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
-    check_irank_args(x, omega, increasing, na.rm)
-	if(!increasing){
-	  x <- -x
-	}
-  if (na.rm){
-	  was_NA <- rep(FALSE, sum(is.na(x)))
-  } else {
-    was_NA <- is.na(x)
-  }
-  
-  x <- x[!is.na(x)]
-  n_NAs <- sum(was_NA)
-  
-	ranking <- order(x)
+  x <- process_irank_args(x, omega, increasing, na.rm)
+  ranking <- order(x)
 	sorted <- x[ranking]
 	equal_to_next <- c(diff(sorted) == 0, FALSE)
 	# block is a sequence of equal values
@@ -62,14 +50,12 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 	n_equal <- rep(block_sizes, times = block_sizes)
 	n_higher <- n_higher_or_equal - n_equal
 	minimum_rank <- n_higher + 1
-	maximum_rank <- n_higher_or_equal + n_NAs
+	maximum_rank <- n_higher_or_equal
 	corrected_ranking <- minimum_rank * (1-omega) + maximum_rank * omega
 	# return in order of original x
 	ranks <- corrected_ranking[order(ranking)]
 	
-	out <- rep(NA, length(x) + n_NAs)
-	out[!was_NA] <- ranks
-	out 
+	ranks
 }
 
 
@@ -87,9 +73,8 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
 #' @export
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE){
-  if(na.rm)
-    x <- x[!is.na(x)]
-  return(irank(x, omega, increasing, na.rm) / length(x))
+  l <- sum(!is.na(x))
+  return(irank(x, omega, increasing, na.rm) / l)
 }
 
 
