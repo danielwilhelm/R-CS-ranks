@@ -128,6 +128,13 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
+check_irank_args <- function(x, omega, increasing, na.rm){
+  assert_is_numeric_vector(x, "x", na_ok = TRUE)
+  assert_is_single_probability(omega, "omega")
+  assert_is_single_logical(increasing, "increasing")
+  assert_is_single_logical(na.rm, "na.rm")
+}
+
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){
   if(!all(lower <= middle)){
     wrong_index <- which(lower > middle)[1]
@@ -204,7 +211,7 @@ assert_is_integer <- function(x, name, na_ok=FALSE){
 assert_is_numeric_vector <- function(x, name, na_ok=FALSE){
   assert_is_vector(x, name)
   if(!(is.numeric(x) || all(is.na(x)) && na_ok))
-    cli::cli_abort(c("{.var {name}} must be a single number.",
+    cli::cli_abort(c("{.var {name}} must be a numeric vector.",
                      "x" = "{.var {name}} is of {.cls {typeof(x)}} type."))
 }
 
