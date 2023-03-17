@@ -1,13 +1,16 @@
 Package: csranks
 Type: Package
 Title: Confidence Sets for Ranks
-Version: 0.5.0
+Version: 1.0.0
 Authors@R: c(
     person("Daniel", "Wilhelm", ,"d.wilhelm@ucl.ac.uk", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
   )
-Description: This package implements methods for computing confidence sets for ranks
-	 from Mogstad, Romano, Shaikh, and Wilhelm (2020).
+Description: Construct confidence sets for positions of populations in a ranking 
+    based on values of a certain feature and their estimation errors. 
+    Both simultaneous and marginal CS are available, as well as 
+    CS with populations occupying top-n positions in the ranking.
+    Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -22,9 +25,11 @@ Imports:
     scales,
     MASS,
     cli
-Suggests: 
+Suggests:
+    spelling, 
     testthat (>= 2.1.0),
     grid,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Language: en-US
