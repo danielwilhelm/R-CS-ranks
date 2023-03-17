@@ -72,8 +72,7 @@ test_that("compare handles NAs", {
   ), byrow = TRUE, ncol = 8)
   expect_equal(compare(x, omega = 0.4, increasing = TRUE, na.rm = TRUE),
                expected_compare_na.rmT)
-  expect_equal(compare(x, omega = 0.4, increasing = TRUE, na.rm = FALSE),
-               expected_compare_na.rmF)
+  expect_error(compare(x, omega = 0.4, increasing = TRUE, na.rm = FALSE))
 })
 
 ### irank ###
