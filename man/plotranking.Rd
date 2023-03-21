@@ -60,7 +60,7 @@ CS <- csranks(x, V)
 grid::current.viewport()
 plot(CS)
 # Equivalent: 
-# plotranking(CS$rank, CS$L, CS$U)
+plotranking(CS$rank, CS$L, CS$U)
 
 # plotranking returns a ggplot object. It can be customized further:
 library(ggplot2)
