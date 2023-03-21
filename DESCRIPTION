@@ -10,7 +10,7 @@ Description: Construct confidence sets for positions of populations in a ranking
     based on values of a certain feature and their estimation errors. 
     Both simultaneous and marginal confidence sets are available, as well as 
     confidence sets with populations occupying top-n positions in the ranking.
-    Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023).
+    Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023)<doi:10.1093/restud/rdad006>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

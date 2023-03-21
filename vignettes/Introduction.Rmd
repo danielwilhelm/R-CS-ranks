@@ -121,6 +121,6 @@ The confidence set for UK here is larger, than the marginal set obtained in prev
 
 ## Further reading and references
 
-This package is based on paper Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies. It is available [here](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf).
+This package is based on paper Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies. It is available in [pdf format](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf) and it's DOI is [10.1093/restud/rdad006](https://doi.org/10.1093/restud/rdad006).
 
 Check out the documentation of individual functions at package's [website](https://danielwilhelm.github.io/R-CS-ranks/), as well as further examples at package's [Github](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples).
