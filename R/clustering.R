@@ -1,28 +1,40 @@
+library(MASS)
 
-computeT <- function(X) return(max(computeTSj(X)))
+computeT <- function(X, Sigma=NA, studentize=TRUE) return(max(computeTSj(X, Sigma=Sigma, studentize=studentize)))
 
-computeTSj <- function(X) {
+computeTSj <- function(X, Sigma=NA, studentize=TRUE) {
+	stopifnot( !(any(is.na(Sigma)) & studentize) )
+
 	X.sorted <- sort(X, decreasing=TRUE)
-	p <- length(X)
-	diff <- X.sorted[1:(p-1)] - X.sorted[2:p]
-	return(diff)
+	p <- length(X)	
+	
+	if (studentize) {
+		fn <- function(j) {
+			sigmaij <- sqrt( outer(diag(Sigma)[1:j], diag(Sigma)[(j+1):p], '+') - 2*Sigma[1:j,(j+1):p] )
+			return( min(outer(X.sorted[1:j], X.sorted[(j+1):p], '-') / sigmaij) )
+		}
+		TSj <- sapply(1:(p-1), fn)
+	} else {
+		TSj <- X.sorted[1:(p-1)] - X.sorted[2:p]
+	}
+	return(TSj)	
 }
 
-clusterRanks <- function(X, Sigma, R=1000, alpha=0.05) {
+clusterRanks <- function(X, Sigma, R=1000, alpha=0.05, studentize=TRUE) {
 
 	p <- length(X)
 	stopifnot(dim(Sigma)==c(p,p))
 
 	# compute T
-	T <- computeT(X)
+	T <- computeT(X, Sigma=Sigma, studentize=studentize)
 
 	# compute critical value
 	Z <- mvrnorm(n=R, mu=rep(0,p), Sigma=Sigma)
-	Tstar <- apply(Z, 1, computeT)
+	Tstar <- apply(Z, 1, computeT, Sigma=Sigma, studentize=studentize)
 	cval <- quantile(Tstar, prob=1-alpha)
 
 	# collect rejections
-	TSj <- computeTSj(X)
+	TSj <- computeTSj(X, Sigma=Sigma, studentize=studentize)
 	rej <- TSj > cval
 
 	# create clusters
