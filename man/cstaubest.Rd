@@ -91,5 +91,6 @@ cstauworst(x, Sigma, tau = 3)
 \references{
 Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
 
-\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{link to pdf}
+\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{pdf link}
+\doi{10.1093/restud/rdad006}
 }
