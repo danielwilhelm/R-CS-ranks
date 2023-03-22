@@ -67,3 +67,55 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
   lmranks_outcome <- simple_lmranks(Y, X, W=W, omega=omega, increasing=increasing, na.rm=na.rm)
   return(lmranks_outcome$se)
 }
+
+
+#' formula allows to mark rank regressors with r()
+#' It has to evaluated correctly
+lmranks <- function(formula, data, subset, #weights?
+                    # TODO: na.action, 
+                    method = "qr", model = TRUE, x = FALSE, qr = TRUE,
+                    singular.ok = TRUE, constrasts = NULL, offset = offset,
+                    omega=0, na.rm=FALSE, ...){
+  process_lmranks_formula(formula)
+  # I would gladly move that to separate function, if not for non standard evaluation
+  original_call <- match.call() # for the final output
+  lm_call <- match.call()       # to be sent to lm(); it will handle missing arguments etc
+  lm_call[[1]] <- quote(stats::lm)
+  lm_call$omega <- NULL              # remove local parameters
+  lm_call$na.rm <- NULL
+  rank_env <- new.env(parent = parent.frame()) # From this environment lm will take the definition of r()
+  r <- function(x, increasing=FALSE) x
+  body(r) <- bquote({
+    csranks::frank(x, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
+  })
+  assign("r", r, envir = rank_env)
+  # It will mask "r" objects from higher frames inside lm, but not modify them
+  
+  main_model <- eval(lm_call, rank_env)
+  # Correct the output
+  main_model$call <- original_call
+  
+  class(main_model) <- c("lmranks", class(main_model))
+  # Phew.
+  main_model
+}
+
+process_lmranks_formula <- function(formula){
+  # for now: one rank regressor, one rank outcome, no interactions
+  formula_terms <- terms(formula, specials="r", allowDotAsName = TRUE)
+  rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
+  response_variable_index <- attr(formula_terms, "response")
+  if(length(response_variable_index) != 1 && !response_variable_index %in% rank_variables_indices || length(rank_variables_indices) != 2){
+    cli::cli_abort("In formula there must be exactly one ranked response and exactly one ranked regressor.")
+  }
+  regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
+  variable_table <- attr(formula_terms, "factors")
+  rank_regressor_occurances <- variable_table[regressor_variable_index,]
+  occured_exactly_once <- sum(rank_regressor_occurances == 1) == 1 && sum(rank_regressor_occurances == 0) == (length(rank_regressor_occurances) - 1)
+  if(!occured_exactly_once){
+    cli::cli_abort("In formula, the ranked regressor must occur exactly once. No interactions are supported.")
+  }
+}
+
+
+
