@@ -6,11 +6,13 @@ computeTSj <- function(X, Sigma=NA, studentize=TRUE) {
 	stopifnot( !(any(is.na(Sigma)) & studentize) )
 
 	X.sorted <- sort(X, decreasing=TRUE)
+	ind <- order(X, decreasing=TRUE)
+	Sigma.sorted <- Sigma[ind, ind]
 	p <- length(X)	
 	
 	if (studentize) {
 		fn <- function(j) {
-			sigmaij <- sqrt( outer(diag(Sigma)[1:j], diag(Sigma)[(j+1):p], '+') - 2*Sigma[1:j,(j+1):p] )
+			sigmaij <- sqrt( outer(diag(Sigma.sorted)[1:j], diag(Sigma.sorted)[(j+1):p], '+') - 2*Sigma.sorted[1:j,(j+1):p] )
 			return( min(outer(X.sorted[1:j], X.sorted[(j+1):p], '-') / sigmaij) )
 		}
 		TSj <- sapply(1:(p-1), fn)
