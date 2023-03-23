@@ -68,9 +68,59 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
   return(lmranks_outcome$se)
 }
 
-
-#' formula allows to mark rank regressors with r()
-#' It has to evaluated correctly
+#' Linear model for ranks
+#' 
+#' Fit a linear model with a single rank response and
+#' a single rank covariate (and possibly other usual covariates).
+#' 
+#' @param formula An object of class "\code{\link{formula}}": a symbolic description
+#' of the model to be fitted. Exactly like the formula for linear model except that
+#' rank terms, \code{r()}, can be added to specify that the linear predictor depends on ranks of predictors
+#' and to specify a rank response. See Details.
+#' @inheritParams stats::lm
+#' @param omega as in \code{\link{frank}}.
+#' 
+#' @details 
+#' This function is useful in case when relationship not between variables themselves, but their rank
+#' (or, put differently, their ECDF value) is of interest. The variables to be ranked
+#' (both dependent and independent) can be marked with \code{r()}. 
+#' 
+#' The \code{r()} is a private alias for \code{\link{frank}} and can accept 
+#' \code{increasing} argument. However, \code{omega} argument must be specified globally 
+#' (as a specification of rank definition) in the call to \code{lmranks}.
+#' 
+#' Currently, only models with single rank response, single rank covariate and
+#' (possibly) other usual covariates is available.
+#' 
+#' 
+#' @return 
+#' An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
+#' See the \code{\link{lm}} documentation for more.
+#' 
+#' A number of methods defined for \code{lm} does not yield theoretically correct 
+#' results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
+#' Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
+#' for the rank models is not theoretically developed.
+#' 
+#' @seealso 
+#' \code{\link{lm}} For details about other arguments; \code{\link{frank}}.
+#' 
+#' @examples 
+#' Y <- c(3,1,2,4,5)
+#' y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
+#' X <- 1:5
+#' omega <- 0.5
+#' x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
+#' W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
+#'
+#' lmranks(r(Y) ~ r(X) + W)
+#' # equivalent:
+#' lm(y_frank ~ x_frank + W)
+#' 
+#' data(mtcars)
+#' lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
+#' 
+#' @export
 lmranks <- function(formula, data, subset, 
                     weights, # TODO?
                     na.action, #TODO?
