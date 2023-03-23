@@ -1,7 +1,7 @@
 Package: csranks
 Type: Package
 Title: Confidence Sets for Ranks
-Version: 1.0.1
+Version: 1.0.1.9000
 Authors@R: c(
     person("Daniel", "Wilhelm", ,"d.wilhelm@ucl.ac.uk", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
