@@ -1,8 +1,6 @@
 # correct already:
 # coerce, dummy.coef, family, formula, kappa, model.frame, model.matrix,
 # nobs, print, qr, residuals, show, update, effects
-
-# probably correct:
 # alias, hatvalues
 
 #' @export
@@ -71,77 +69,77 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
 
 #' @export
 confint.lmranks <- function(object, parm, level = 0.95, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Calculation of covariances between coefficients is not yet theoretically clear.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Calculation of covariances between coefficients is not yet theoretically clear."))
 }
 
 #' @export
 vcov.lmranks <- function(object, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Calculation of covariances between coefficients is not yet theoretically clear.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Calculation of covariances between coefficients is not yet theoretically clear."))
 }
 
 #' @export
 predict.lmranks <- function(object, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Predicting a rank of a regressor is not clear.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Predicting a rank of a regressor is not clear."))
 }
 
 #' @export
 cooks.distance.lmranks <- function(model, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then."))
 }
 
 #' @export
 dfbeta.lmranks <- function(model, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then."))
 }
 
 #' @export
 dfbetas.lmranks <- function(model, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then."))
 }
 
 #' @export
 influence.lmranks <- function(model, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then."))
 }
 
 #' @export
 rstudent.lmranks <- function(model, ...){
-  cli::cli_abort("This method returns incorrect results.",
-                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                 "i" = "Deleting and observation changes values of ranks in (in)dependent values. Standard *smart* method breaks down then."))
 }
 
 #' @export
 extractAIC.lmranks <- function(model, ...){
-  cli::cli_warn("NAs returned.",
-                 "i" = "The notion of effective degrees of freedom for rank models is not clear.")
+  cli::cli_warn(c("NAs returned.",
+                 "i" = "The notion of effective degrees of freedom for rank models is not clear."))
   c(NA, NA)
 }
 
 #' @export
 add1.lmranks <- function(object, scope, ...){
-  cli::cli_warn("NAs returned.",
-                 "i" = "The notion of effective degrees of freedom for rank models is not clear.")
+  cli::cli_warn(c("NAs returned.",
+                 "i" = "The notion of effective degrees of freedom for rank models is not clear."))
   NextMethod()
 }
 
 #' @export
 drop1.lmranks <- function(object, scope, ...){
-  cli::cli_abort("NAs returned.",
-                 "i" = "The notion of effective degrees of freedom for rank models is not clear.")
+  cli::cli_abort(c("NAs returned.",
+                 "i" = "The notion of effective degrees of freedom for rank models is not clear."))
   NextMethod()
 }
 
 #' @export
 sigma.lmranks <- function(object, ...){
-  cli::cli_warn("NA returned.",
-                "i" = "The notion of effective degrees of freedom for rank models is not clear.")
+  cli::cli_warn(c("NA returned.",
+                "i" = "The notion of effective degrees of freedom for rank models is not clear."))
   return(NA)
 }
 
