@@ -94,7 +94,7 @@ lmranks <- function(formula, data, subset, #weights?
   main_model <- eval(lm_call, rank_env)
   # Correct the output
   main_model$call <- original_call
-  
+  main_model$df.residual <- NA
   class(main_model) <- c("lmranks", class(main_model))
   # Phew.
   main_model
