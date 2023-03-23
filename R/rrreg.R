@@ -71,8 +71,9 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 
 #' formula allows to mark rank regressors with r()
 #' It has to evaluated correctly
-lmranks <- function(formula, data, subset, #weights?
-                    # TODO: na.action, 
+lmranks <- function(formula, data, subset, 
+                    weights, # TODO?
+                    na.action, #TODO?
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE,
                     singular.ok = TRUE, constrasts = NULL, offset = offset,
                     omega=0, na.rm=FALSE, ...){
@@ -83,6 +84,10 @@ lmranks <- function(formula, data, subset, #weights?
   lm_call[[1]] <- quote(stats::lm)
   lm_call$omega <- NULL              # remove local parameters
   lm_call$na.rm <- NULL
+  if(!is.null(lm_call$weights))
+    cli::cli_abort("{.var weights} argument is not yet supported. ")
+  if(!is.null(lm_call$na.action))
+    cli::cli_abort("{.var na.action} argument is not yet supported.")
   rank_env <- new.env(parent = parent.frame()) # From this environment lm will take the definition of r()
   r <- function(x, increasing=FALSE) x
   body(r) <- bquote({
