@@ -1,3 +1,5 @@
+### simple_lmranks ###
+
 test_that("simple_lmranks works for full correlation", {
   Y <- c(1,2,3)
   X <- c(4,5,6)
@@ -78,3 +80,58 @@ test_that("simple_lmranks works for non-NULL W, fully correlated with RY", {
   expect_equal(actual$rhohat, expected_rho)
   expect_equal(actual$se, expected_se)
 })
+
+### lmranks ###
+
+test_that("process_lmranks_formula catches illegal formulas", {
+  expect_error(process_lmranks_formula(y ~ x + w))
+  expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
+  expect_error(process_lmranks_formula(y ~ r(x) + w))
+  expect_error(process_lmranks_formula(r(y) ~ x + w))
+  expect_error(process_lmranks_formula(r(y) ~ r(x) * w))
+  expect_error(process_lmranks_formula(r(y) ~ r(x) + r(x):w + w))
+  
+  expect_silent(process_lmranks_formula(r(y) ~ r(x) + w))
+})
+
+test_that("lmranks and lm provide coherent results", {
+  Y <- c(3,1,2,4,5)
+  y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
+  X <- 1:5
+  omega <- 0.5
+  x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
+  W <- c(1,3,2,5,4)
+  
+  rank_m <- lmranks(r(Y) ~ r(X) + W)
+  raw_rank_m <- unclass(rank_m)
+  raw_rank_m$call <- as.character(raw_rank_m$call)
+  raw_rank_m$terms <- NULL
+  attr(raw_rank_m$model, "terms") <- NULL
+
+  m <- lm(y_frank ~ x_frank + W)
+  expected_m <- unclass(m)
+  expected_m$df.residual <- NA
+  expected_m$call <- as.character(str2lang("lmranks(r(Y) ~ r(X) + W)"))
+  expected_m$terms <- NULL
+  attr(expected_m$model, "terms") <- NULL 
+  names(expected_m$coefficients)[2] <- "r(X)"
+  names(expected_m$effects)[2] <- "r(X)"
+  dimnames(expected_m$qr$qr)[[2]][2] <- "r(X)"
+  colnames(expected_m$model)[1:2] <- c("r(Y)", "r(X)")
+  
+  expect_equal(raw_rank_m, expected_m)
+})
+
+test_that("omega argument works", {
+  Y <- c(4,4,4,3,1,10,7,7)
+  y_frank <- c(0.6, 0.6, 0.6, 0.875, 1, 0.125, 0.3, 0.3)
+  X <- 1:8
+  omega <- 0.5
+  x_frank <- c(1.0, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125)
+  W <- matrix(c(1,4,3,2,5,8,7,6), ncol = 1)
+  
+  rank_m <- lmranks(r(Y) ~ r(X) + W, omega = 0.4, y = TRUE)
+  names(rank_m$y) <- NULL
+  expect_equal(rank_m$y, y_frank)
+})
+
