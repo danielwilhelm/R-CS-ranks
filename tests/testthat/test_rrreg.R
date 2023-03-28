@@ -94,6 +94,34 @@ test_that("process_lmranks_formula catches illegal formulas", {
   expect_silent(process_lmranks_formula(r(y) ~ r(x) + w))
 })
 
+test_that("process_lmranks_formula returns correct indices", {
+  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w),
+               1)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x)),
+               3)
+  expect_equal(process_lmranks_formula(r(y) ~ w + z + w:z + r(x)),
+               3)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x) - z),
+               2)
+})
+
+test_that("prepare_lm_call works", {
+  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data)")
+  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")
+  expect_equal(prepare_lm_call(input_call),
+               expected_call)
+  
+  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, omega=omega)")
+  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")
+  expect_equal(prepare_lm_call(input_call),
+               expected_call)
+  
+  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, na.rm=na.rm)")
+  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")
+  expect_equal(prepare_lm_call(input_call),
+               expected_call)
+})
+
 test_that("lmranks and lm provide coherent results", {
   Y <- c(3,1,2,4,5)
   y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
@@ -107,6 +135,8 @@ test_that("lmranks and lm provide coherent results", {
   raw_rank_m$call <- as.character(raw_rank_m$call)
   raw_rank_m$terms <- NULL
   attr(raw_rank_m$model, "terms") <- NULL
+  raw_rank_m$omega <- NULL
+  raw_rank_m$rank_terms_indices <- NULL
 
   m <- lm(y_frank ~ x_frank + W)
   expected_m <- unclass(m)

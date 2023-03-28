@@ -314,7 +314,7 @@ assert_has_no_NAs <- function(x, name){
 }
 
 assert_is_vector <- function(x, name){
-  if(!is.atomic(x))
+  if(!is.atomic(x) || !is.vector(x) && !is.factor(x))
     cli::cli_abort(c("{.var {name}} must be a vector.",
                      "x" = "{.var {name}} is of {.cls {class(x)}} class."))
 }
