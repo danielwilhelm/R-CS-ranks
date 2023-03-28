@@ -76,6 +76,10 @@ and to specify a rank response. See Details.}
 An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
 See the \code{\link{lm}} documentation for more.
 
+Additionally, it has an \code{omega} entry, corresponding to \code{omega} argument,
+and a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
+of \code{terms(formula)}, which correspond to ranked covariates.
+
 A number of methods defined for \code{lm} does not yield theoretically correct 
 results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
 Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
