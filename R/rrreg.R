@@ -97,6 +97,10 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
 #' See the \code{\link{lm}} documentation for more.
 #' 
+#' Additionally, it has an \code{omega} entry, corresponding to \code{omega} argument,
+#' and a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
+#' of \code{terms(formula)}, which correspond to ranked covariates.
+#' 
 #' A number of methods defined for \code{lm} does not yield theoretically correct 
 #' results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
 #' Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
@@ -122,52 +126,59 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' 
 #' @export
 lmranks <- function(formula, data, subset, 
-                    weights, # TODO?
-                    na.action, #TODO?
+                    weights, 
+                    na.action, # TODO?
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE,
                     singular.ok = TRUE, constrasts = NULL, offset = offset,
                     omega=0, na.rm=FALSE, ...){
   rank_terms_indices <- process_lmranks_formula(formula)
-  # I would gladly move that to separate function, if not for non standard evaluation
   original_call <- match.call() # for the final output
-  lm_call <- match.call()       # to be sent to lm(); it will handle missing arguments etc
-  lm_call[[1]] <- quote(stats::lm)
-  lm_call$omega <- NULL              # remove local parameters
-  lm_call$na.rm <- NULL
-  lm_call$y <- expr(TRUE)
-  if(!is.null(lm_call$weights))
-    cli::cli_abort("{.var weights} argument is not yet supported. ")
-  if(!is.null(lm_call$na.action))
-    cli::cli_abort("{.var na.action} argument is not yet supported.")
-  rank_env <- new.env(parent = parent.frame()) # From this environment lm will take the definition of r()
-  r <- function(x, increasing=FALSE) x
-  body(r) <- bquote({
-    csranks::frank(x, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
-  })
-  assign("r", r, envir = rank_env)
+  lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
+  # From this environment lm will take the definition of r()
+  rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
   # It will mask "r" objects from higher frames inside lm, but not modify them
+  # It is also inheriting from parent.frame, so evaluations of all other expressions
+  # will be taken from there
   
+  # Call (evaluate) lm
   main_model <- eval(lm_call, rank_env)
+  
   # Correct the output
   main_model$call <- original_call
   main_model$df.residual <- NA
   main_model$rank_terms_indices <- rank_terms_indices
   main_model$omega <- omega
   class(main_model) <- c("lmranks", class(main_model))
+  
   # Phew.
-  main_model
+  return(main_model)
 }
 
+#' Check validity of passed formula and indentify ranked terms
+#' 
+#' For now only formulas with one rank regressor and one rank outcome are allowed.
+#' Additionally, the rank regressor cannot be part of interactions.
+#'
+#' @return An integer vector with indices of entries of \code{terms.labels} attribute
+#' of \code{terms(formula)}, which correspond to ranked covariates.
+#' @noRd
 process_lmranks_formula <- function(formula){
-  # Identify marked terms
-  # for now: one rank regressor, one rank outcome, no interactions
   formula_terms <- terms(formula, specials="r",
                          keep.order = TRUE,
                          allowDotAsName = TRUE)
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
   response_variable_index <- attr(formula_terms, "response")
-  if(length(response_variable_index) != 1 && !response_variable_index %in% rank_variables_indices || length(rank_variables_indices) != 2){
-    cli::cli_abort("In formula there must be exactly one ranked response and exactly one ranked regressor.")
+  if(length(response_variable_index) != 1){
+    cli::cli_abort(c("In formula there must be exactly one ranked response and exactly one ranked regressor.",
+                     "x" = "There are multiple or no responses."))
+  }
+  if(!response_variable_index %in% rank_variables_indices){
+    cli::cli_abort(c("In formula there must be exactly one ranked response and exactly one ranked regressor.",
+                   "x" = "The response is not ranked."))
+  }
+  if(length(rank_variables_indices) != 2){
+    cli::cli_abort(c("In formula there must be exactly one ranked response and exactly one ranked regressor.",
+                   "x" = "There are multiple or no ranked regressors."))
   }
   regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
   variable_table <- attr(formula_terms, "factors")
@@ -177,9 +188,32 @@ process_lmranks_formula <- function(formula){
     cli::cli_abort("In formula, the ranked regressor must occur exactly once. No interactions are supported.")
   }
   
-  # return the index of (unordered) term.labels corresponding to rank variable
-  which(rank_regressor_occurances == 1)
+  rank_terms_names <- names(rank_regressor_occurances)[rank_regressor_occurances == 1]
+  rearranged_formula_terms <- terms(formula, allowDotAsName = TRUE, 
+                                    keep.order = FALSE) # default used later inside lm
+  which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
 }
 
+prepare_lm_call <- function(lm_call){
+  lm_call[[1]] <- quote(stats::lm)
+  lm_call$omega <- NULL              # remove local parameters
+  lm_call$na.rm <- NULL
+  if(!is.null(lm_call$weights))
+    cli::cli_abort("{.var weights} argument is not yet supported. ")
+  if(!is.null(lm_call$na.action))
+    cli::cli_abort("{.var na.action} argument is not yet supported.")
+  lm_call
+}
 
-
+create_env_to_interpret_r_mark <- function(omega, na.rm){
+  # Important: the base env for the new env
+  # is the grandparent env of `this` function's env
+  # i.e. parent of this function's caller's env
+  rank_env <- new.env(parent = parent.frame(2))
+  r <- function(x, increasing=FALSE) x
+  body(r) <- bquote({
+    csranks::frank(x, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
+  })
+  assign("r", r, envir = rank_env)
+  return(rank_env)
+}
