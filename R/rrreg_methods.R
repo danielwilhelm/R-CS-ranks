@@ -75,7 +75,7 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
 calculate_rank_coef_std <- function(object){
   if(length(object$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
   
-  rank_column_index <- which(object$assign == object$rank_terms_indices)
+  rank_column_index <- which(object$assign %in% object$rank_terms_indices)
   if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
   RX <- model.matrix(object)[,rank_column_index]
   W <- model.matrix(object)[,-rank_column_index]
