@@ -84,6 +84,7 @@ test_that("simple_lmranks works for non-NULL W, fully correlated with RY", {
 ### lmranks ###
 
 test_that("process_lmranks_formula catches illegal formulas", {
+  expect_error(process_lmranks_formula("y ~ x + w"))
   expect_error(process_lmranks_formula(y ~ x + w))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
   expect_error(process_lmranks_formula(y ~ r(x) + w))

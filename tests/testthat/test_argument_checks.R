@@ -112,6 +112,7 @@ test_that("`x` argument is handled correctly in process_compare_args",{
                                   na.rm = TRUE),
                -x)
 })
+
 # simple_lmranks
 test_that("`W` argument is handled correctly by process_simple_lmranks_args", {
   Y <- 1:10

@@ -154,15 +154,26 @@ lmranks <- function(formula, data, subset,
   return(main_model)
 }
 
-#' Check validity of passed formula and indentify ranked terms
+#' Check validity of passed formula and identify ranked terms
 #' 
 #' For now only formulas with one rank regressor and one rank outcome are allowed.
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
 #' @return An integer vector with indices of entries of \code{terms.labels} attribute
 #' of \code{terms(formula)}, which correspond to ranked covariates.
+#' 
+#' @note 
+#' * It allows to pass r(W), where W is a matrix. This is caught later in frank.
+#' In order to catch this here, we would have to know
+#' * It allows to pass r(.). This is again caught later with error ". not defined".
+#' Same error occurs in lm(y ~ x + log(.), data=data). Acceptable.
+#' 
 #' @noRd
 process_lmranks_formula <- function(formula){
+  if(!inherits(formula, "formula")){
+    cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
+                   "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."))
+  }
   formula_terms <- terms(formula, specials="r",
                          keep.order = TRUE,
                          allowDotAsName = TRUE)

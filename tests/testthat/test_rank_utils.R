@@ -1,4 +1,10 @@
 ### compare ###
+test_that("compare returns error for matrix input", {
+  # This behavior ensures, that user cannot pass r(MATRIX) in lmranks
+  expect_error(process_compare_args(matrix(1:12, ncol = 3),
+                                    omega=omega, increasing=TRUE,
+                                    na.rm = FALSE))
+})
 
 test_that("compare works for sorted input", {
   x <- c(1,3,4,4,4,7,7,10)
