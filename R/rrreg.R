@@ -127,13 +127,14 @@ lmranks <- function(formula, data, subset,
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE,
                     singular.ok = TRUE, constrasts = NULL, offset = offset,
                     omega=0, na.rm=FALSE, ...){
-  process_lmranks_formula(formula)
+  rank_terms_indices <- process_lmranks_formula(formula)
   # I would gladly move that to separate function, if not for non standard evaluation
   original_call <- match.call() # for the final output
   lm_call <- match.call()       # to be sent to lm(); it will handle missing arguments etc
   lm_call[[1]] <- quote(stats::lm)
   lm_call$omega <- NULL              # remove local parameters
   lm_call$na.rm <- NULL
+  lm_call$y <- expr(TRUE)
   if(!is.null(lm_call$weights))
     cli::cli_abort("{.var weights} argument is not yet supported. ")
   if(!is.null(lm_call$na.action))
@@ -150,14 +151,19 @@ lmranks <- function(formula, data, subset,
   # Correct the output
   main_model$call <- original_call
   main_model$df.residual <- NA
+  main_model$rank_terms_indices <- rank_terms_indices
+  main_model$omega <- omega
   class(main_model) <- c("lmranks", class(main_model))
   # Phew.
   main_model
 }
 
 process_lmranks_formula <- function(formula){
+  # Identify marked terms
   # for now: one rank regressor, one rank outcome, no interactions
-  formula_terms <- terms(formula, specials="r", allowDotAsName = TRUE)
+  formula_terms <- terms(formula, specials="r",
+                         keep.order = TRUE,
+                         allowDotAsName = TRUE)
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
   response_variable_index <- attr(formula_terms, "response")
   if(length(response_variable_index) != 1 && !response_variable_index %in% rank_variables_indices || length(rank_variables_indices) != 2){
@@ -170,6 +176,9 @@ process_lmranks_formula <- function(formula){
   if(!occured_exactly_once){
     cli::cli_abort("In formula, the ranked regressor must occur exactly once. No interactions are supported.")
   }
+  
+  # return the index of (unordered) term.labels corresponding to rank variable
+  which(rank_regressor_occurances == 1)
 }
 
 

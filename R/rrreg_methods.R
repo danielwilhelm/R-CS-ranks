@@ -1,18 +1,11 @@
 # correct already:
 # coerce, dummy.coef, family, formula, kappa, model.frame, model.matrix,
 # nobs, print, qr, residuals, show, update, effects
-# alias, hatvalues
+# alias, hatvalues, proj, case.names, variable.names, labels
 
 #' @export
 logLik.lmranks <- function(object, ...){
-  cli::cli_warn("This method might not return correct results.")
-  NextMethod()
-}
-
-#' @export
-proj.lmranks <- function(object, ...){
-  cli::cli_warn("This method might not return correct results.")
-  NextMethod()
+  cli::cli_abort("This method does not return correct results.")
 }
 
 #' @export
@@ -39,32 +32,76 @@ anova.lmranks <- function(object, ...){
   NextMethod()
 }
 
-#' @export
-case.names.lmranks <- function(object, ...){
-  cli::cli_warn("This method might not return correct results")
-  NextMethod()
-}
-
-#' @export
-labels.lmranks <- function(object, ...){
-  cli::cli_warn("This method might not return correct results")
-  NextMethod()
-}
-
-#' @export
-variable.names.lmranks <- function(object, ...){
-  cli::cli_warn("This method might not return correct results")
-  NextMethod()
-}
-
+#' Summarizing fits of linear models for ranks
+#' 
+#' Summary method for class "\code{lmranks}". It returns theoretically valid standard
+#' errors
 #' @export
 summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, ...){
   if(correlation || symbolic.cor){
     cli::cli_abort("{.var correlation} and {.var symbolic.cor} are not yet implemented for {.class lmranks}.")
   }
   # call summary.lm
+  object$df.residual <- nrow(object$model) - ncol(object$model)
   outcome <- NextMethod()
+  object$df.residual <- NA
+  
+  # Mark what is unknown (for now)
+  outcome$coefficients[,2:4] <- NA
+  outcome$sigma <- NA
+  # This one causes errors in print.summary.lm
+  # If needed, we could Ctrl-C Ctrl-V and adapt the method
+  #outcome$df <- c(NA, nrow(object$model) - ncol(object$model), NA)
+  outcome$fstatistic <- NULL
+  # Remember to handle this, once fstatistic is known
+  outcome$adj.r.squared <- NA
+  outcome$cov.unscaled <- matrix(NA, nrow = nrow(outcome$cov.unscaled),
+                                 ncol = ncol(outcome$cov.unscaled))
+  
+  rank_predictor_index <- which(object$assign %in% object$rank_terms_indices)
+  rank_predictor_se <- calculate_rank_coef_std(object)
+  outcome$coefficients[rank_predictor_index, 2] <- rank_predictor_se
+  outcome$coefficients[rank_predictor_index, 3] <- 
+    outcome$coefficients[rank_predictor_index, 1] / outcome$coefficients[rank_predictor_index, 2]
+  outcome$coefficients[rank_predictor_index, 4] <- 2*pnorm(-abs(outcome$coefficients[rank_predictor_index, 3]))
+  
+  outcome$cov.unscaled[rank_predictor_index, rank_predictor_index] <- rank_predictor_se^2
+  cli::cli_warn(c("The number of residual degrees of freedom is not correct.", 
+                "Also, z-value, not t-value, since the distribution used for p-value calculation is standard normal."))
+  class(outcome) <- c("summary.lmranks", class(outcome))
   outcome
+}
+
+calculate_rank_coef_std <- function(object){
+  if(length(object$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
+  
+  rank_column_index <- which(object$assign == object$rank_terms_indices)
+  if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
+  RX <- model.matrix(object)[,rank_column_index]
+  W <- model.matrix(object)[,-rank_column_index]
+  RY <- model.response(model.frame(object))
+  I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  
+  RX_by_Ws <- lm(RX ~ W-1)
+  Wgammahat <- fitted.values(RX_by_Ws)
+  nuhat <- resid(RX_by_Ws)
+  gammahat <- coef(RX_by_Ws)
+  
+  rhohat <- coef(object)[rank_column_index]
+  betahat <- coef(object)[-rank_column_index]
+  epsilonhat <- resid(object)
+  
+  h1 <- epsilonhat * nuhat
+  
+  # vectorized `-` and `*` goes over rows
+  h2 <- colMeans((t(I_Y - rhohat * I_X) - c(W %*% betahat)) * nuhat)
+  
+  h3 <- colMeans(epsilonhat * (t(I_X) - Wgammahat))
+  
+  sigmahat <- mean((h1+h2+h3)^2) / var(nuhat)^2
+  se <- sqrt(sigmahat / length(RY))
+  return(se)
 }
 
 #' @export

@@ -38,6 +38,7 @@
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
   compares <- compare(x, omega=omega, increasing = increasing, na.rm = na.rm)
   out <- rowSums(compares) + 1 - omega
+  names(out) <- names(x)
   out
 }
 
