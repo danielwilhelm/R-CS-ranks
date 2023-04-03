@@ -123,6 +123,57 @@ test_that("prepare_lm_call works", {
                expected_call)
 })
 
+test_that("create_env_to_interpret_r_mark has a correct parent env", {
+  expected_parent_env <- new.env()
+  caller_env <- new.env(parent = expected_parent_env)
+  assign("wrapper", 
+         function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
+                                                               na.rm=na.rm)},
+         envir = expected_parent_env)
+  created_env <- eval(quote(wrapper(0.4, FALSE)), envir = expected_parent_env)
+  expect_reference(parent.env(created_env), expected_parent_env)
+})
+
+test_that("create_env_to_interpret_r_mark has correct contents", {
+  expected_env_contents <- list(.r_predict = FALSE,
+                                .r_cache = list(),
+                                r = function(x, increasing=TRUE){})
+  
+  created_env <- create_env_to_interpret_r_mark(omega=0.4,na.rm=FALSE)
+  actual_env_contents <- as.list(created_env, all.names = TRUE)
+  expect_equal(names(actual_env_contents), 
+               names(expected_env_contents))
+  expect_equal(actual_env_contents[c(".r_predict", ".r_cache")],
+               expected_env_contents[c(".r_predict", ".r_cache")])
+  expect_true(is.function(actual_env_contents[['r']]))
+})
+
+test_that("create_env_to_interpret_r_mark's r function behaves correctly in fitting", {
+  x_1 <- c(4,4,4,3,1,10,7,7)
+  expected_r_output <- c(0.6, 0.6, 0.6, 0.875, 1, 0.125, 0.3, 0.3)
+  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
+                                                               na.rm=na.rm)}
+  created_env <- wrapper(0.4, FALSE)
+  actual_r_output <- eval(quote(r(x_1)), created_env)
+  expect_equal(actual_r_output, expected_r_output)
+})
+
+test_that("create_env_to_interpret_r_mark's r function behaves correctly in prediction", {
+  x_1 <- c(4,4,4,3,1,10,7,7)
+  x_pred <- c(0,1,2,3,4,5,7,8,10,11)
+  expected_r_output <- c(8.5, 8, 7.5, 7, 5, 3.5, 2.5, 1.5, 1, 0.5) / 8
+  
+  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
+                                                                   na.rm=na.rm)}
+  created_env <- wrapper(0.5, FALSE)
+  
+  assign(".r_cache", list(x_pred = x_1), envir = created_env)
+  assign(".r_predict", TRUE, envir = created_env)
+  
+  actual_r_output <- eval(quote(r(x_pred)), created_env)
+  expect_equal(actual_r_output, expected_r_output)
+})
+
 test_that("lmranks and lm provide coherent results", {
   Y <- c(3,1,2,4,5)
   y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)

@@ -216,10 +216,45 @@ prepare_lm_call <- function(lm_call){
   lm_call
 }
 
+#' Create environment to interpret lmranks formula
+#' 
+#' A formula in lmranks has the ranked variables (regressors and response) marked
+#' `r()`. A way to interpret this mark is needed. In R for this purpose we have
+#' *environments* and *non-standard evaluation*.
+#' 
+#' For all intents and purposes it is enough to know, which variables have been marked
+#' (that's known from `process_lmranks_formula` output) 
+#' and values of ranks - that's done by treating `r()` as regular function and 
+#' evaluating it in an environment containing its correct definition. 
+#' 
+#' One difficulty is that the `r()` must return different values depending on whether
+#' the linear model is being fitted or used for prediction. In *both* cases we want
+#' to use fitting (training) data. For prediction, it is stored in cache.
+#' 
+#' Everytime the `lmranks` is called, a new environment of this kind is created 
+#' and "carried along" with an `lmranks` object (accessible with `environment(model$terms)`).
+#' 
+#' The advantage of this solution is better reuse of `lm.fit` and `predict.lm`.
+#' 
+#' @return an R environment, used later to call the `lm` function in it.
+#' In total, it has 3 elements: 
+#' - `r`, the correct definition of `r` function, a call to frank_against 
+#' with preprocessed, correct arguments.
+#' - `.r_cache`, a list with values saved for possible prediction later.
+#' - `.r_predict`, a logical indicating whether we are in fitting (FALSE) or prediction mode.
+#' In fitting mode, input data will be used for ranking and will be saved in cache;
+#' in prediction mode, the data in cache will be used.
+#' 
+#' Its parent environment is the parent frame of the caller of this function.
+#' In the primary use case it is the environment of caller of `lmranks`.
+#' In this way we ensure correct evaluation of other formula terms and variables. 
+#' 
+#' @seealso 
+#' [H. Wickham, Advanced R, Environments chapter](https://adv-r.hadley.nz/environments.html)
+#' [environment()]
+#' [csranks::frank_against()], [csranks:::compare]
+#' @noRd
 create_env_to_interpret_r_mark <- function(omega, na.rm){
-  # Important: the base env for the new env
-  # is the grandparent env of `this` function's env
-  # i.e. parent of this function's caller's env
   rank_env <- new.env(parent = parent.frame(2))
   r <- function(x, increasing=FALSE) x
   body(r) <- bquote({
