@@ -36,7 +36,12 @@
 #' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
-  compares <- compare(x, omega=omega, increasing = increasing, na.rm = na.rm)
+  irank_against(x, x, omega=omega, increasing=increasing, na.rm=na.rm)
+}
+
+#' @export
+irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
+  compares <- compare(x, v, omega=omega, increasing=increasing, na.rm=na.rm)
   out <- rowSums(compares) + 1 - omega
   names(out) <- names(x)
   out
@@ -57,36 +62,35 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' @export
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, omega, increasing, na.rm) / length(x))
 
+#' @export
+frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE) 
+  return(irank_against(x, v, omega, increasing, na.rm) / length(v))
 #' Comparator function
 #' 
 #' @inheritParams irank
-#' @return Matrix M of size `length(x)`, `length(x)`. For increasing = FALSE M[i,j] = 
-#' 1 if v[i] < v[j]
-#' 0 if v[i] > v[j]
-#' omega if v[i] == v[j]
+#' @return Matrix M of size `length(x)`, `length(v)`. For increasing = FALSE M[i,j] = 
+#' 1 if x[i] < v[j]
+#' 0 if x[i] > v[j]
+#' omega if x[i] == v[j]
 #' For decreasing = FALSE, the `<` and `>` in above definition is swapped.
 #' 
 #' @noRd
-compare <- function(x, omega, increasing, na.rm){
-  x <- process_compare_args(x, omega, increasing, na.rm)
+compare <- function(x, v=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
+  l <- process_compare_args(x, v, omega, increasing, na.rm)
+  x <- l$x; v <- l$v
+  ranking <- order(v)
   
-  ranking <- order(x)
-  sorted <- x[ranking]
-  equal_to_next <- c(diff(sorted) == 0, FALSE)
-  # block is a sequence of equal values
-  # In the outcome matrix for sorted values, those are blocks on diagonal
-  block_ends <- which(!equal_to_next)
-  block_starts <- c(1, block_ends[-length(block_ends)] + 1)
+  n_higher_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
+  n_higher <- findInterval(x, v[ranking], left.open = TRUE)
+  n_equal <- n_higher_or_equal - n_higher
+  out_for_sorted_v <- t(apply(cbind(n_higher, n_equal), MARGIN = 1, function(n_s){
+    c(rep(1, n_s[1]),
+      rep(omega, n_s[2]),
+      rep(0, length(v) - n_s[1] - n_s[2]))
+  }))
   
-  out_for_sorted <- matrix(0, nrow = length(x), ncol = length(x))
-  out_for_sorted[lower.tri(out_for_sorted)] <- 1
-  for(i in 1:length(block_ends)){
-    out_for_sorted[block_starts[i]:block_ends[i],
-                   block_starts[i]:block_ends[i]] <- omega
-  }
-  
-  # return in order of original x
+  # return in order of original v
   original_order <- order(ranking)
-  out <- out_for_sorted[original_order,original_order]
+  out <- out_for_sorted_v[,original_order]
   out
 }

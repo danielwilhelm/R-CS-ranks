@@ -117,9 +117,16 @@ vcov.lmranks <- function(object, ...){
 }
 
 #' @export
-predict.lmranks <- function(object, ...){
-  cli::cli_abort(c("This method returns incorrect results.",
-                 "i" = "Predicting a rank of a regressor is not clear."))
+predict.lmranks <- function(object, newdata, se.fit = FALSE, scale = NULL, 
+                            df = Inf, interval = "none", level = 0.95, type = "response",
+                            terms = NULL, na.action = na.pass, pred.var = res.var/weights,
+                            weights = 1, ...){
+
+  rank_env <- environment(object$terms)
+  assign(".r_predict", TRUE, rank_env)
+  out <- NextMethod()
+  assign(".r_predict", FALSE, rank_env)
+  out
 }
 
 #' @export

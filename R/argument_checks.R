@@ -142,7 +142,7 @@ process_simple_lmranks_args <- function(Y, X, W, omega, increasing, na.rm){
                W)
   }
   assert_equal_length(Y, X, W, names = c("Y", "X", "W"))
-  process_compare_args(Y, omega, increasing, na.rm)
+  process_compare_args(Y, Y, omega, increasing, na.rm)
   
   is_na = is.na(Y) | is.na(X) | apply(W, 1, function(v) any(is.na(v)))
   if(!na.rm && any(is_na)){
@@ -155,21 +155,28 @@ process_simple_lmranks_args <- function(Y, X, W, omega, increasing, na.rm){
   list(Y=Y, X=X, W=W)
 }
 
-process_compare_args <- function(x, omega, increasing, na.rm){
+process_compare_args <- function(x, v, omega, increasing, na.rm){
   assert_is_numeric_vector(x, "x")
+  if(is.null(v))
+    v <- x
+  else
+    assert_is_numeric_vector(v, "v")
   assert_is_single_logical(na.rm, "na.rm")
   assert_is_single_probability(omega, "omega")
   assert_is_single_logical(increasing, "increasing")
-  if(!na.rm)
+  if(!na.rm){
+    assert_has_no_NAs(v, "v")
     assert_has_no_NAs(x, "x")
-  else
+  } else {
+    v <- v[!is.na(v)]
     x <- x[!is.na(x)]
-  
+  }  
   if(!increasing){
+    v <- -v
     x <- -x
   }
   
-  return(x)
+  return(list(x=x, v=v))
 }
 
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){

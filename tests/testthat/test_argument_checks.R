@@ -103,14 +103,14 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
 test_that("`x` argument is handled correctly in process_compare_args",{
   x <- c(1,3,4,4,4,7,7,10)
   omega <- 0.4
-  expect_error(process_compare_args(c(x, NA), omega=omega, increasing=TRUE,
+  expect_error(process_compare_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
                                   na.rm = FALSE))
-  expect_equal(process_compare_args(c(x, NA), omega=omega, increasing=TRUE,
+  expect_equal(process_compare_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
                                   na.rm = TRUE),
-               x)
-  expect_equal(process_compare_args(x, omega=omega, increasing=FALSE,
+               list(x=x, v=x))
+  expect_equal(process_compare_args(x, v=NULL, omega=omega, increasing=FALSE,
                                   na.rm = TRUE),
-               -x)
+               list(x=-x, v=-x))
 })
 
 # simple_lmranks

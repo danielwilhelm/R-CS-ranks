@@ -56,6 +56,84 @@ test_that("compare works for unsorted input", {
                expected_compare_om1)
 })
 
+test_that("`v` argument in compare works", {
+  v <- c(4, 3, 4, 4, 7, 7, 10, 1)
+  x <- c(0,1,2,3,4,5,7,8,10,11)
+  expected_compare_om0.4 <- matrix(c(
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    0.0, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    0.4, 1.0, 0.4, 0.4, 0.0, 0.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 0.4, 0.4, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.4, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+  ), byrow = TRUE, ncol = 8)
+  expected_compare_om0 <- expected_compare_om0.4
+  expected_compare_om0[expected_compare_om0 == 0.4] <- 0
+  expected_compare_om1 <- expected_compare_om0.4
+  expected_compare_om1[expected_compare_om1 == 0.4] <- 1
+  
+  expect_equal(compare(x, v, omega = 0, increasing = TRUE, na.rm = FALSE),
+               expected_compare_om0)
+  expect_equal(compare(x, v, omega = 0.4, increasing = TRUE, na.rm = FALSE),
+               expected_compare_om0.4)
+  expect_equal(compare(x, v, omega = 1, increasing = TRUE, na.rm = FALSE),
+               expected_compare_om1)
+})
+
+test_that("`increasing` argument works", {
+  x <- c(-4, -3, -4, -4, -7, -7, -10, -1)
+  expected_compare_om0.4 <- matrix(c(
+    0.4, 1.0, 0.4, 0.4, 0.0, 0.0, 0.0, 1.0,
+    0.0, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    0.4, 1.0, 0.4, 0.4, 0.0, 0.0, 0.0, 1.0,
+    0.4, 1.0, 0.4, 0.4, 0.0, 0.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 0.4, 0.4, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 0.4, 0.4, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.4, 1.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4
+  ), byrow = TRUE, ncol = 8)
+  expected_compare_om0 <- expected_compare_om0.4
+  expected_compare_om0[expected_compare_om0 == 0.4] <- 0
+  expected_compare_om1 <- expected_compare_om0.4
+  expected_compare_om1[expected_compare_om1 == 0.4] <- 1
+  
+  expect_equal(compare(x, omega = 0, increasing = FALSE, na.rm = FALSE),
+               expected_compare_om0)
+  expect_equal(compare(x, omega = 0.4, increasing = FALSE, na.rm = FALSE),
+               expected_compare_om0.4)
+  expect_equal(compare(x, omega = 1, increasing = FALSE, na.rm = FALSE),
+               expected_compare_om1)
+  
+  v <- x
+  x <- c(0,-1,-2,-3,-4,-5,-7,-8,-10,-11)
+  expected_compare_om0.4 <- matrix(c(
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    0.0, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    0.4, 1.0, 0.4, 0.4, 0.0, 0.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 0.4, 0.4, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.4, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+  ), byrow = TRUE, ncol = 8)
+  expected_compare_om0 <- expected_compare_om0.4
+  expected_compare_om0[expected_compare_om0 == 0.4] <- 0
+  expected_compare_om1 <- expected_compare_om0.4
+  expected_compare_om1[expected_compare_om1 == 0.4] <- 1
+  expect_equal(compare(x, v, omega = 0, increasing = FALSE, na.rm = FALSE),
+               expected_compare_om0)
+  expect_equal(compare(x, v, omega = 0.4, increasing = FALSE, na.rm = FALSE),
+               expected_compare_om0.4)
+  expect_equal(compare(x, v, omega = 1, increasing = FALSE, na.rm = FALSE),
+               expected_compare_om1)
+})
+
 test_that("compare handles NAs", {
   x <- c(4, 3, 4, NA, 7, 7, NA, 1)
   expected_compare_na.rmT <- matrix(c(
@@ -111,3 +189,18 @@ test_that("irank works for unsorted input", {
                expected_irank_om0.5)
 })
 
+test_that("irank_against works", {
+  v <- c(1,3,4,4,4,7,7,10)
+  x <- c(0,1,2,3,4,5,7,8,10,11)
+  expected_irank <- c(8.5, 8, 7.5, 7, 5, 3.5, 2.5, 1.5, 1, 0.5)
+  expect_equal(irank_against(x, v, omega = 0.5),
+               expected_irank)
+})
+
+test_that("frank_against works", {
+  v <- c(1,3,4,4,4,7,7,10)
+  x <- c(0,1,2,3,4,5,7,8,10,11)
+  expected_irank <- c(8.5, 8, 7.5, 7, 5, 3.5, 2.5, 1.5, 1, 0.5) / 8
+  expect_equal(frank_against(x, v, omega = 0.5),
+               expected_irank)
+})

@@ -223,8 +223,21 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   rank_env <- new.env(parent = parent.frame(2))
   r <- function(x, increasing=FALSE) x
   body(r) <- bquote({
-    csranks::frank(x, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
+    predict <- get(".r_predict", envir = environment(r), inherits=FALSE)
+    cache <- get(".r_cache", envir = environment(r), inherits=FALSE)
+    var_name <- as.character(substitute(x))
+    if(!predict){
+      cache[[var_name]] <- x
+      assign(".r_cache", cache, envir = environment(r))
+    }
+    else if(is.null(cache[[var_name]]))
+      cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
+    v <- cache[[var_name]]
+    csranks::frank_against(x, v, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
   })
+  environment(r) <- rank_env
   assign("r", r, envir = rank_env)
+  assign(".r_cache", list(), envir = rank_env)
+  assign(".r_predict", FALSE, envir = rank_env)
   return(rank_env)
 }
