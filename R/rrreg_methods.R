@@ -55,17 +55,15 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   outcome$fstatistic <- NULL
   # Remember to handle this, once fstatistic is known
   outcome$adj.r.squared <- NA
+  cov_matrix <- vcov(object)
   outcome$cov.unscaled <- matrix(NA, nrow = nrow(outcome$cov.unscaled),
                                  ncol = ncol(outcome$cov.unscaled))
   
-  rank_predictor_index <- which(object$assign %in% object$rank_terms_indices)
-  rank_predictor_se <- calculate_rank_coef_std(object)
-  outcome$coefficients[rank_predictor_index, 2] <- rank_predictor_se
+  outcome$coefficients[rank_predictor_index, 2] <- sqrt(diag(cov_matrix))
   outcome$coefficients[rank_predictor_index, 3] <- 
     outcome$coefficients[rank_predictor_index, 1] / outcome$coefficients[rank_predictor_index, 2]
   outcome$coefficients[rank_predictor_index, 4] <- 2*pnorm(-abs(outcome$coefficients[rank_predictor_index, 3]))
   
-  outcome$cov.unscaled[rank_predictor_index, rank_predictor_index] <- rank_predictor_se^2
   cli::cli_warn(c("The number of residual degrees of freedom is not correct.", 
                 "Also, z-value, not t-value, since the distribution used for p-value calculation is standard normal."))
   class(outcome) <- c("summary.lmranks", class(outcome))
@@ -106,14 +104,64 @@ calculate_rank_coef_std <- function(object){
 
 #' @export
 confint.lmranks <- function(object, parm, level = 0.95, ...){
-  cli::cli_abort(c("This method returns incorrect results.",
-                 "i" = "Calculation of covariances between coefficients is not yet theoretically clear."))
+  # As is the case with confint.lm, this method returns *marginal* CIs for coefficients
+  # not simultaneous
+  if(missing(parm))
+    confint.default(object=object, level=level, ...)
+  else
+    confint.default(object=object, parm=parm, level=level, ...)
 }
 
 #' @export
 vcov.lmranks <- function(object, ...){
-  cli::cli_abort(c("This method returns incorrect results.",
-                 "i" = "Calculation of covariances between coefficients is not yet theoretically clear."))
+  if(length(object$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
+  
+  rank_column_index <- which(object$assign %in% object$rank_terms_indices)
+  if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
+  RX <- model.matrix(object)[,rank_column_index]
+  W <- model.matrix(object)[,-rank_column_index]
+  RY <- model.response(model.frame(object))
+  I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  
+  rhohat <- coef(object)[rank_column_index]
+  betahat <- coef(object)[-rank_column_index]
+  epsilonhat <- resid(object)
+  
+  psi_W_sample <- sapply(1:ncol(W), function(i){
+    W_minus_l <- W[,-i]
+    W_l <- W[,i]
+    proj_model <- lm(W_l ~ RX + W_minus_l - 1)
+    
+    v_l_hat <- resid(proj_model)
+    delta_l_hat <- coef(proj_model)[-1]
+    tau_l_hat <- coef(proj_model)[1]
+    
+    g_l_1 <- epsilonhat * v_l_hat
+    g_l_2 <- colMeans((t(I_Y - rhohat * I_X) - c(W %*% betahat)) * v_l_hat)
+    g_l_3 <- colMeans(epsilonhat * (W_l - tau_l_hat * t(I_X) - 
+                                      W_minus_l %*% delta_l_hat))
+    (g_l_1 + g_l_2 + g_l_3) / var(v_l_hat)
+  })
+  
+  RX_by_Ws <- lm(RX ~ W-1)
+  Wgammahat <- fitted.values(RX_by_Ws)
+  nuhat <- resid(RX_by_Ws)
+  gammahat <- coef(RX_by_Ws)
+  
+  h1 <- epsilonhat * nuhat
+  
+  # vectorized `-` and `*` goes over rows
+  h2 <- colMeans((t(I_Y - rhohat * I_X) - c(W %*% betahat)) * nuhat)
+  
+  h3 <- colMeans(epsilonhat * (t(I_X) - Wgammahat))
+  
+  psi_sample <- matrix(nrow = length(RY), ncol=ncol(W) + 1)
+  psi_sample[,rank_column_index] <- (h1 + h2 + h3)/var(nuhat)
+  psi_sample[,-rank_column_index] <- t(psi_W_sample)
+  
+  sigmahat <- (t(psi_sample) %*% psi_sample) / (nrow(psi_sample) ^ 2)
+  return(sigmahat)
 }
 
 #' @export
