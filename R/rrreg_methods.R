@@ -35,7 +35,7 @@ anova.lmranks <- function(object, ...){
 #' Summarizing fits of linear models for ranks
 #' 
 #' Summary method for class "\code{lmranks}". It returns theoretically valid standard
-#' errors
+#' errors.
 #' @export
 summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, ...){
   if(correlation || symbolic.cor){
@@ -181,7 +181,7 @@ add1.lmranks <- function(object, scope, ...){
 
 #' @export
 drop1.lmranks <- function(object, scope, ...){
-  cli::cli_abort(c("NAs returned.",
+  cli::cli_warn(c("NAs returned.",
                  "i" = "The notion of effective degrees of freedom for rank models is not clear."))
   NextMethod()
 }

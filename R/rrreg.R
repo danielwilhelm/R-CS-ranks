@@ -92,6 +92,12 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' Currently, only models with single rank response, single rank covariate and
 #' (possibly) other usual covariates is available.
 #' 
+#' @section Warning:
+#' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
+#' recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
+#' The ranks will be calculated correctly, but their transformation will be treated later in \code{lm} as a regular
+#' regressor. This means, that the corresponding regression coefficient will be calculated correctly,
+#' but the standard errors, statistics etc. will not. 
 #' 
 #' @return 
 #' An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
@@ -104,10 +110,10 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' A number of methods defined for \code{lm} does not yield theoretically correct 
 #' results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
 #' Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
-#' for the rank models is not theoretically developed.
+#' for the rank models is not theoretically established.
 #' 
 #' @seealso 
-#' \code{\link{lm}} For details about other arguments; \code{\link{frank}}.
+#' \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
 #' 
 #' @examples 
 #' Y <- c(3,1,2,4,5)
@@ -118,7 +124,8 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
 #'
 #' lmranks(r(Y) ~ r(X) + W)
-#' # equivalent:
+#' # naive version with same regression coefficients, but incorrect 
+#' # standard errors and statistics:
 #' lm(y_frank ~ x_frank + W)
 #' 
 #' data(mtcars)
@@ -164,7 +171,7 @@ lmranks <- function(formula, data, subset,
 #' 
 #' @note 
 #' * It allows to pass r(W), where W is a matrix. This is caught later in frank.
-#' In order to catch this here, we would have to know
+#' In order to catch this here, we would have to know what W is.
 #' * It allows to pass r(.). This is again caught later with error ". not defined".
 #' Same error occurs in lm(y ~ x + log(.), data=data). Acceptable.
 #' 
@@ -218,7 +225,7 @@ prepare_lm_call <- function(lm_call){
 
 #' Create environment to interpret lmranks formula
 #' 
-#' A formula in lmranks has the ranked variables (regressors and response) marked
+#' A formula in lmranks has the ranked variables (regressors and response) marked with
 #' `r()`. A way to interpret this mark is needed. In R for this purpose we have
 #' *environments* and *non-standard evaluation*.
 #' 

@@ -83,7 +83,7 @@ of \code{terms(formula)}, which correspond to ranked covariates.
 A number of methods defined for \code{lm} does not yield theoretically correct 
 results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
 Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
-for the rank models is not theoretically developed.
+for the rank models is not theoretically established.
 }
 \description{
 Fit a linear model with a single rank response and
@@ -101,6 +101,15 @@ The \code{r()} is a private alias for \code{\link{frank}} and can accept
 Currently, only models with single rank response, single rank covariate and
 (possibly) other usual covariates is available.
 }
+\section{Warning}{
+
+Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
+recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
+The ranks will be calculated correctly, but their transformation will be treated later in \code{lm} as a regular
+regressor. This means, that the corresponding regression coefficient will be calculated correctly,
+but the standard errors, statistics etc. will not.
+}
+
 \examples{
 Y <- c(3,1,2,4,5)
 y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
@@ -110,7 +119,8 @@ x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
 W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
 
 lmranks(r(Y) ~ r(X) + W)
-# equivalent:
+# naive version with same regression coefficients, but incorrect 
+# standard errors and statistics:
 lm(y_frank ~ x_frank + W)
 
 data(mtcars)
@@ -118,5 +128,5 @@ lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
 
 }
 \seealso{
-\code{\link{lm}} For details about other arguments; \code{\link{frank}}.
+\code{\link{lm}} for details about other arguments; \code{\link{frank}}.
 }
