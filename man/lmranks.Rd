@@ -107,7 +107,10 @@ Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not
 recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
 The ranks will be calculated correctly, but their transformation will be treated later in \code{lm} as a regular
 regressor. This means, that the corresponding regression coefficient will be calculated correctly,
-but the standard errors, statistics etc. will not.
+but the standard errors, statistics etc. will not. 
+
+\code{r}, \code{.r_predict} and \code{.r_cache} are special expressions, used
+internally to interpret \code{r} mark correctly. Do not use them in \code{formula}.
 }
 
 \examples{

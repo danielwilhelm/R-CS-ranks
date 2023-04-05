@@ -52,7 +52,7 @@ test_that("predict works for new data", {
                expected_prediction)
 })
 
-test_that("summary works for simplest fit", {
-  mod <- lmranks(r(mpg) ~ r(cyl) - 1, data=mtcars)
+test_that("summary does not raise errors", {
+  mod <- lmranks(r(mpg) ~ r(cyl) + disp, data=mtcars)
   expect_silent(summary(mod))
 })

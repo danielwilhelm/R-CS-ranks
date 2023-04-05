@@ -106,6 +106,13 @@ test_that("process_lmranks_formula returns correct indices", {
                2)
 })
 
+test_that("process_lmranks_formula returns correct index for simplest fit", {
+  expect_equal(process_lmranks_formula(r(y) ~ r(x) - 1),
+               1)
+  expect_equal(process_lmranks_formula(r(y) ~ r(x)),
+               1)
+})
+
 test_that("prepare_lm_call works", {
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data)")
   expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")

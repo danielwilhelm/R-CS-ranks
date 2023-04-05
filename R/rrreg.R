@@ -99,6 +99,9 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' regressor. This means, that the corresponding regression coefficient will be calculated correctly,
 #' but the standard errors, statistics etc. will not. 
 #' 
+#' \code{r}, \code{.r_predict} and \code{.r_cache} are special expressions, used
+#' internally to interpret \code{r} mark correctly. Do not use them in \code{formula}.
+#' 
 #' @return 
 #' An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
 #' See the \code{\link{lm}} documentation for more.
@@ -155,6 +158,7 @@ lmranks <- function(formula, data, subset,
   main_model$df.residual <- NA
   main_model$rank_terms_indices <- rank_terms_indices
   main_model$omega <- omega
+  main_model$ranked_response <- TRUE
   class(main_model) <- c("lmranks", class(main_model))
   
   # Phew.
@@ -206,7 +210,7 @@ process_lmranks_formula <- function(formula){
     cli::cli_abort("In formula, the ranked regressor must occur exactly once. No interactions are supported.")
   }
   
-  rank_terms_names <- names(rank_regressor_occurances)[rank_regressor_occurances == 1]
+  rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
   rearranged_formula_terms <- terms(formula, allowDotAsName = TRUE, 
                                     keep.order = FALSE) # default used later inside lm
   which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
@@ -282,4 +286,10 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   assign(".r_cache", list(), envir = rank_env)
   assign(".r_predict", FALSE, envir = rank_env)
   return(rank_env)
+}
+
+#' @export
+slotsFromS3.lmranks <- function(object){
+  cli::cli_warn("This method might not return correct results.")
+  NextMethod()
 }
