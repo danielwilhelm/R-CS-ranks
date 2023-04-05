@@ -86,35 +86,21 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
 #' @export
 vcov.lmranks <- function(object, ...){
   l <- get_and_separate_regressors(object)
-  RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
+  RX <- l$RX
   RY <- model.response(model.frame(object))
   I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
   I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
   
-  psi_W_sample <- sapply(1:ncol(W), function(l){
-    W_minus_l <- W[,-l,drop=FALSE]
-    W_l <- W[,l,drop=FALSE]
-    proj_model <- lm(W_l ~ RX + W_minus_l - 1)
-    proj_model$rank_terms_indices <- 1
-    proj_model$ranked_response <- FALSE
-    
+  psi_sample <- sapply(1:length(coef(object)), function(i){
+    proj_model <- get_projection_model(object, i)
     g_l_1 <- calculate_g_l_1(object, proj_model)
     g_l_2 <- calculate_g_l_2(object, proj_model, I_X=I_X, I_Y=I_Y)
     g_l_3 <- calculate_g_l_3(object, proj_model, I_X=I_X)
     (g_l_1 + g_l_2 + g_l_3) / var(resid(proj_model))
   })
-  
-  proj_model <- lm(RX ~ W-1)
-  proj_model$rank_terms_indices <- numeric(0)
-  proj_model$ranked_response <- TRUE
-  h1 <- calculate_g_l_1(object, proj_model)
-  h2 <- calculate_g_l_2(object, proj_model, I_X=I_X, I_Y=I_Y)
-  h3 <- calculate_g_l_3(object, proj_model, I_X=I_X)
-  psi_ranked_sample <- (h_1 + h_2 + h_3) / var(resid(proj_model))
-  
-  psi_sample <- matrix(nrow = length(RY), ncol=length(coef(model)))
-  psi_sample[,rank_column_index] <- psi_ranked_sample
-  psi_sample[,-rank_column_index] <- t(psi_W_sample)
+  # psi_sample is of shape n_coefficients x n_observations.
+  # transpose for standard representation in statistics
+  psi_sample <- t(psi_sample)
   
   sigmahat <- (t(psi_sample) %*% psi_sample) / (nrow(psi_sample) ^ 2)
   return(sigmahat)
@@ -129,6 +115,24 @@ get_and_separate_regressors <- function(model){
   return(list(RX=RX,
               W=W,
               rank_column_index = rank_column_index))
+}
+
+get_projection_model <- function(original_model, projected_regressor_index){
+  l <- get_and_separate_regressors(original_model)
+  RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
+  if(projected_regressor_index %in% rank_column_index){
+    proj_model <- lm(RX ~ W-1)
+    proj_model$rank_terms_indices <- numeric(0)
+    proj_model$ranked_response <- TRUE  
+  } else {
+    l <- projected_regressor_index - sum(projected_regressor_index > rank_column_index)
+    W_minus_l <- W[,-l,drop=FALSE]
+    W_l <- W[,l]
+    proj_model <- lm(W_l ~ RX + W_minus_l - 1)
+    proj_model$rank_terms_indices <- 1
+    proj_model$ranked_response <- FALSE
+  }
+  return(proj_model)
 }
 
 calculate_g_l_1 <- function(original_model, proj_model){
@@ -146,8 +150,13 @@ calculate_g_l_2 <- function(original_model, proj_model, I_X, I_Y){
 
 calculate_g_l_3 <- function(original_model, proj_model, I_X){
   epsilonhat <- resid(original_model)
+  if(proj_model$ranked_response){
   ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
     proj_model, I_Y=I_X)
+  } else {
+    ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
+      proj_model, I_X=I_X)
+  }
   return(colMeans(epsilonhat * ineq_resids))
 }
 
