@@ -107,14 +107,20 @@ vcov.lmranks <- function(object, ...){
 }
 
 get_and_separate_regressors <- function(model){
-  if(length(object$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
-  rank_column_index <- which(object$assign %in% object$rank_terms_indices)
+  if(length(model$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
+  rank_column_index <- which(model$assign %in% model$rank_terms_indices)
   if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
-  RX <- model.matrix(object)[,rank_column_index]
-  W <- model.matrix(object)[,-rank_column_index,drop=FALSE]
+  if(length(rank_column_index) > 0){
+    W <- model.matrix(model)[,-rank_column_index,drop=FALSE]
+    RX <- model.matrix(model)[,rank_column_index]
+  } else {
+    W <- model.matrix(model)
+    attr(W, "assign") <- NULL
+    RX <- integer(0)
+  }
   return(list(RX=RX,
               W=W,
-              rank_column_index = rank_column_index))
+              rank_column_index=rank_column_index))
 }
 
 get_projection_model <- function(original_model, projected_regressor_index){
@@ -128,7 +134,10 @@ get_projection_model <- function(original_model, projected_regressor_index){
     l <- projected_regressor_index - sum(projected_regressor_index > rank_column_index)
     W_minus_l <- W[,-l,drop=FALSE]
     W_l <- W[,l]
-    proj_model <- lm(W_l ~ RX + W_minus_l - 1)
+    if(ncol(W_minus_l) > 0)
+      proj_model <- lm(W_l ~ RX + W_minus_l - 1)
+    else
+      proj_model <- lm(W_l ~ RX - 1)
     proj_model$rank_terms_indices <- 1
     proj_model$ranked_response <- FALSE
   }
@@ -162,9 +171,9 @@ calculate_g_l_3 <- function(original_model, proj_model, I_X){
 
 replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
     model, I_X=NULL, I_Y=NULL){
-  l <- get_and_separate_regressors(object)
+  l <- get_and_separate_regressors(model)
   RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
-  RY <- model.response(model.frame(object))
+  RY <- model.response(model.frame(model))
   has_ranked_regressors <- length(rank_column_index) > 0
   has_ranked_response <- model$ranked_response
   rhohat <- coef(model)[rank_column_index]
