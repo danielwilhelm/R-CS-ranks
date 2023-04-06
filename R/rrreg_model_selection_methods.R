@@ -5,7 +5,7 @@ logLik.lmranks <- function(object, ...){
 
 #' @export
 anova.lmranks <- function(object, ...){
-  cli::cli_warn("This method might not return correct results.")
+  cli::cli_abort("This method might not return correct results.")
   NextMethod()
 }
 
