@@ -321,7 +321,13 @@ assert_has_no_NAs <- function(x, name){
 }
 
 assert_is_vector <- function(x, name){
+  AsIs_index <- which(class(x) == "AsIs")
+  original_x_class <- class(x)
+  if(length(AsIs_index) > 0){
+    class(x) <- class(x)[-AsIs_index]
+  }
   if(!is.atomic(x) || !is.vector(x) && !is.factor(x))
     cli::cli_abort(c("{.var {name}} must be a vector.",
                      "x" = "{.var {name}} is of {.cls {class(x)}} class."))
+  class(x) <- original_x_class
 }

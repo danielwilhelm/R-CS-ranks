@@ -51,3 +51,9 @@ test_that("predict works for new data", {
   expect_equal(predict(model, new_data),
                expected_prediction)
 })
+
+test_that("predict works for complicated response", {
+  model <- lmranks(r(log(mpg)) ~ r(I(disp ^ 2)) + cyl + hp, data = mtcars)
+  expect_equal(predict(model, mtcars),
+               model$fitted.values)
+})

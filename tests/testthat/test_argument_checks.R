@@ -210,3 +210,7 @@ test_that("assert_is_vector works correctly", {
   expect_silent(assert_is_vector(1:4, "x"))
   expect_error(assert_is_vector(list(1:4), "x"))
 })
+
+test_that("assert_is_vector accepts I() object", {
+  expect_silent(assert_is_vector(I(1:5), "x"))
+})

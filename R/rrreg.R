@@ -271,7 +271,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   body(r) <- bquote({
     predict <- get(".r_predict", envir = environment(r), inherits=FALSE)
     cache <- get(".r_cache", envir = environment(r), inherits=FALSE)
-    var_name <- as.character(substitute(x))
+    var_name <- paste0(as.character(substitute(x)), collapse = "")
     if(!predict){
       cache[[var_name]] <- x
       assign(".r_cache", cache, envir = environment(r))
