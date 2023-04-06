@@ -9,8 +9,8 @@
 #' errors.
 #' @export
 summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, ...){
-  if(correlation || symbolic.cor){
-    cli::cli_abort("{.var correlation} and {.var symbolic.cor} are not yet implemented for {.class lmranks}.")
+  if(symbolic.cor){
+    cli::cli_abort("{.var symbolic.cor} are not yet implemented for {.class lmranks}.")
   }
   # call summary.lm
   object$df.residual <- nrow(object$model) - ncol(object$model)
@@ -30,11 +30,12 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   outcome$cov.unscaled <- matrix(NA, nrow = nrow(outcome$cov.unscaled),
                                  ncol = ncol(outcome$cov.unscaled))
   
-  outcome$coefficients[rank_predictor_index, 2] <- sqrt(diag(cov_matrix))
-  outcome$coefficients[rank_predictor_index, 3] <- 
-    outcome$coefficients[rank_predictor_index, 1] / outcome$coefficients[rank_predictor_index, 2]
-  outcome$coefficients[rank_predictor_index, 4] <- 2*pnorm(-abs(outcome$coefficients[rank_predictor_index, 3]))
+  outcome$coefficients[, 2] <- sqrt(diag(cov_matrix))
+  outcome$coefficients[, 3] <- outcome$coefficients[, 1] / outcome$coefficients[, 2]
+  outcome$coefficients[, 4] <- 2*pnorm(-abs(outcome$coefficients[, 3]))
   
+  if(correlation)
+    outcome$correlation <- cov2cor(cov_matrix)
   cli::cli_warn(c("The number of residual degrees of freedom is not correct.", 
                 "Also, z-value, not t-value, since the distribution used for p-value calculation is standard normal."))
   class(outcome) <- c("summary.lmranks", class(outcome))
@@ -98,9 +99,6 @@ vcov.lmranks <- function(object, ...){
     g_l_3 <- calculate_g_l_3(object, proj_model, I_X=I_X)
     (g_l_1 + g_l_2 + g_l_3) / var(resid(proj_model))
   })
-  # psi_sample is of shape n_coefficients x n_observations.
-  # transpose for standard representation in statistics
-  psi_sample <- t(psi_sample)
   
   sigmahat <- (t(psi_sample) %*% psi_sample) / (nrow(psi_sample) ^ 2)
   return(sigmahat)
@@ -177,16 +175,21 @@ replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
   has_ranked_regressors <- length(rank_column_index) > 0
   has_ranked_response <- model$ranked_response
   rhohat <- coef(model)[rank_column_index]
-  betahat <- coef(model)[-rank_column_index]
+  if(length(rank_column_index) > 0)
+    betahat <- coef(model)[-rank_column_index]
+  else
+    betahat <- coef(model)
   
+  predictor <- as.vector(W %*% betahat)
   if(has_ranked_regressors && has_ranked_response){
-    return(t(I_Y) - t(I_X * rhohat) - W %*% betahat)
+    return(t(I_Y) - t(I_X * rhohat) - predictor)
   } else if(has_ranked_response && !has_ranked_regressors){
-    return(t(I_Y) - W %*% betahat)
+    return(t(I_Y) - predictor)
   } else if(has_ranked_regressors && !has_ranked_response){
-    return(RY - t(I_X * rhohat) - W %*% betahat)
+    return(RY - t(I_X * rhohat) - predictor)
   } else {
-    return(resid(model))
+    return(matrix(rep(RY - predictor, times = length(RY)),
+                  byrow = TRUE, nrow = length(RY)))
   }
 }
 
