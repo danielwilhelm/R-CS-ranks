@@ -26,7 +26,7 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   outcome$fstatistic <- NULL
   # Remember to handle this, once fstatistic is known
   outcome$adj.r.squared <- NA
-  cov_matrix <- vcov(object)
+  cov_matrix <- vcov(object, complete=FALSE)
   outcome$cov.unscaled <- matrix(NA, nrow = nrow(outcome$cov.unscaled),
                                  ncol = ncol(outcome$cov.unscaled))
   
@@ -85,7 +85,7 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
 }
 
 #' @export
-vcov.lmranks <- function(object, ...){
+vcov.lmranks <- function(object, complete = TRUE, ...){
   l <- get_and_separate_regressors(object)
   RX <- l$RX
   RY <- model.response(model.frame(object))
@@ -93,6 +93,9 @@ vcov.lmranks <- function(object, ...){
   I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
   
   psi_sample <- sapply(1:length(coef(object)), function(i){
+    if(is.na(coef(object))[i]){
+      return(rep(NA, length(RY)))
+    }
     proj_model <- get_projection_model(object, i)
     g_l_1 <- calculate_g_l_1(object, proj_model)
     g_l_2 <- calculate_g_l_2(object, proj_model, I_X=I_X, I_Y=I_Y)
@@ -101,6 +104,10 @@ vcov.lmranks <- function(object, ...){
   })
   
   sigmahat <- (t(psi_sample) %*% psi_sample) / (nrow(psi_sample) ^ 2)
+  if(!complete){
+    sigmahat <- sigmahat[!is.na(coef(object)),
+                         !is.na(coef(object))]
+  }
   return(sigmahat)
 }
 
@@ -180,7 +187,7 @@ replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
   else
     betahat <- coef(model)
   
-  predictor <- as.vector(W %*% betahat)
+  predictor <- as.vector(W[,!is.na(betahat), drop=FALSE] %*% betahat[!is.na(betahat)])
   if(has_ranked_regressors && has_ranked_response){
     return(t(I_Y) - t(I_X * rhohat) - predictor)
   } else if(has_ranked_response && !has_ranked_regressors){

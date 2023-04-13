@@ -12,6 +12,28 @@ test_that("vcov passes shallow checks", {
   expect_true(all(vals$values> 0))
 })
 
+test_that("vcov works for singular model matrix", {
+  data(mtcars)
+  W <- cbind(mtcars$disp, mtcars$disp)
+  mod <- lmranks(r(mpg) ~ r(cyl) + W, data=mtcars)
+  cov_mat <- vcov(mod)
+  
+  expect_true(all(!is.na(cov_mat[1:3, 1:3])))
+  expect_true(all(is.na(cov_mat[4,])))
+  expect_true(all(is.na(cov_mat[,4])))
+})
+
+test_that("vcov works for singular model matrix, complete=FALSE", {
+  data(mtcars)
+  W <- cbind(mtcars$disp, mtcars$disp)
+  mod <- lmranks(r(mpg) ~ r(cyl) + W, data=mtcars)
+  cov_mat <- vcov(mod, complete=FALSE)
+  
+  expect_true(all(!is.na(cov_mat)))
+  expect_equal(c(nrow(cov_mat), ncol(cov_mat)),
+               c(3,3))
+})
+
 test_that("get_and_separate_regressors works",{
   data(mtcars)
   model_1 <- lm(mpg ~ disp + cyl + hp, data=mtcars)
@@ -208,31 +230,6 @@ test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works
 })
 
 test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for ranked response, usual regressors", {
-  data(mtcars)
-  RY <- frank(mtcars$mpg)
-  I_Y <- compare(mtcars$mpg)
-  W <- as.matrix(mtcars[, c("disp", "hp")])
-  W <- cbind(rep(1, nrow(W)),
-             W)
-  original_model <- lm(RY ~ W - 1)
-  original_model$rank_terms_indices <- integer(0)
-  original_model$ranked_response <- TRUE
-  
-  coefs <- coef(original_model)
-  predictor <- W %*% coefs
-  expected_resid <- sapply(1:length(RY), function(j){
-    I_Y[,j] - predictor[j]
-  })
-  expected_resid <- t(expected_resid)
-  
-  expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-    original_model, I_Y = I_Y
-  ), expected_resid)
-  
-})
-
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
           for usual response, ranked regressors", {
     data(mtcars)
     RX <- frank(mtcars$cyl)
@@ -258,7 +255,7 @@ test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works
 })
 
 test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for usual response, ranked regressors", {
+          for ranked response, ranked regressors", {
     data(mtcars)
     RX <- frank(mtcars$cyl)
     I_X <- compare(mtcars$cyl)
@@ -281,4 +278,30 @@ test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works
     expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
       original_model, I_X = I_X, I_Y = I_Y
     ), expected_resid)
+})
+
+test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
+          for singular fit", {
+  data(mtcars)
+  RX <- frank(mtcars$cyl)
+  I_X <- compare(mtcars$cyl)
+  RY <- frank(mtcars$mpg)
+  I_Y <- compare(mtcars$mpg)
+  W <- cbind(mtcars[, c("hp")],mtcars[, c("hp")])
+  W <- cbind(rep(1, nrow(W)),
+             W)
+  original_model <- lm(RY ~ RX + W - 1)
+  original_model$rank_terms_indices <- 1
+  original_model$ranked_response <- TRUE
+  
+  coefs <- coef(original_model)
+  predictor <- W[,-3] %*% coefs[c(2:3)]
+  expected_resid <- sapply(1:length(RY), function(j){
+    I_Y[,j] - coefs[1] * I_X[,j] - predictor[j]
+  })
+  expected_resid <- t(expected_resid)
+  
+  expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
+    original_model, I_X = I_X, I_Y = I_Y
+  ), expected_resid)
 })
