@@ -1,6 +1,6 @@
 test_that("summary does not raise errors", {
   mod <- lmranks(r(mpg) ~ r(cyl) + disp, data=mtcars)
-  expect_silent(summary(mod))
+  expect_warning(summary(mod), "degrees of freedom")
 })
 
 test_that("vcov passes shallow checks", {
@@ -9,7 +9,7 @@ test_that("vcov passes shallow checks", {
   
   expect_true(isSymmetric(V))
   vals <- eigen(V, only.values = TRUE)
-  expect_true(all(vals > 0))
+  expect_true(all(vals$values> 0))
 })
 
 test_that("get_and_separate_regressors works",{
