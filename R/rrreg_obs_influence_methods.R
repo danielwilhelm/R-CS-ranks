@@ -1,6 +1,7 @@
 #' @export
 rstandard.lmranks <- function(model, ...){
-  cli::cli_warn("This method might not return correct results.")
+  cli::cli_abort(c("This method returns incorrect results.",
+                   "i" = "The notion of prediction standard error is not theoretically developped yet."))
   NextMethod()
 }
 

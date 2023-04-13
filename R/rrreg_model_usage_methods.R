@@ -1,7 +1,7 @@
 #' @export
 simulate.lmranks <- function(object, nsim = 1, seed = NULL, ...){
-  cli::cli_warn("This method might not return correct results.")
-  NextMethod()
+  cli::cli_abort(c("This method does not return correct results.",
+                 i = "The notion of prediction standard error is not theoretically developped yet."))
 }
 
 #' @export
@@ -13,7 +13,7 @@ predict.lmranks <- function(object, newdata, se.fit = FALSE, scale = NULL,
   if(se.fit || !is.null(scale) || !is.infinite(df) || interval != "none" || 
      type != "response"){
     cli::cli_error(c("Only {.var object}, {.var newdata} and {.var na.action} arguments are currently suppoerted.",
-                   "i" = "Currently, only basic prediction is supported, wihtout calculation of standard error, confidence intervals, or per-term breakdown."))
+                   "i" = "Currently, only basic prediction is supported, without calculation of standard error, confidence intervals, or per-term breakdown."))
   }
   
   rank_env <- environment(object$terms)
@@ -24,7 +24,8 @@ predict.lmranks <- function(object, newdata, se.fit = FALSE, scale = NULL,
 }
 
 #' @export
-plot.lmranks <- function(x,...){
-  cli::cli_warn("Some plots are not correct.")
-  NextMethod()
+plot.lmranks <- function(x,which = 1,...){
+  if(length(which) != 1 || which != 1)
+    cli::cli_abort('For now, only basic "residuals against fitted" plot is supported.')
+  NextMethod(which = which)
 }
