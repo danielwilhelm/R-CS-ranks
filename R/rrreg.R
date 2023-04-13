@@ -1,13 +1,13 @@
 #' Linear model for ranks
 #' 
 #' Fit a linear model with a single rank response and
-#' a single rank covariate (and possibly other usual covariates).
+#' a single rank regressor (and possibly other usual regressors).
 #'
 #' @param Y Numeric vector. Based on it, ranks for response will be constructed
 #' and used as final response in the linear model.
-#' @param X Numeric vector. Based on it, ranks for this covariate will be constructed
-#' and used as final covariate in the linear model.
-#' @param W Matrix. Other covariates to include in the model. Should not include an intercept column.
+#' @param X Numeric vector. Based on it, ranks for this regressor will be constructed
+#' and used as final regressor in the linear model.
+#' @param W Matrix. Other regressors to include in the model. Should not include an intercept column.
 #' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See \code{\link{frank}} for details.
 #' @param increasing logical; if \code{TRUE}, then large elements in \code{X} and \code{Y} receive a large rank. Otherwise, large elements receive small ranks. 
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{X} and \code{Y} (if any). 
@@ -71,15 +71,23 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' Linear model for ranks
 #' 
 #' Fit a linear model with a single rank response and
-#' a single rank covariate (and possibly other usual covariates).
+#' a single rank regressor (and possibly other usual regressors).
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
-#' rank terms, \code{r()}, can be added to specify that the linear predictor depends on ranks of predictors
+#' rank terms, \code{r()}, can be added to specify that the linear regressor depends on ranks of regressors
 #' and to specify a rank response. See Details.
+#' @param subset an optional vector specifying a subset of observations to be used 
+#' in the fitting process. The ranks will be calculated using full data. 
+#' (See additional details about how this argument interacts with data-dependent 
+#' bases in the ‘Details’ section of the \code{\link{model.frame}} documentation.)
+#' @param weights currently not supported.
 #' @inheritParams stats::lm
 #' @param omega as in \code{\link{frank}}.
-#' 
+#' @param na.rm If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
+#' are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
+#' For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na.action}.
+#'
 #' @details 
 #' This function is useful in case when relationship not between variables themselves, but their rank
 #' (or, put differently, their ECDF value) is of interest. The variables to be ranked
@@ -89,8 +97,15 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' \code{increasing} argument. However, \code{omega} argument must be specified globally 
 #' (as a specification of rank definition) in the call to \code{lmranks}.
 #' 
-#' Currently, only models with single rank response, single rank covariate and
-#' (possibly) other usual covariates is available.
+#' As a consequence of the order, in which model.frame applies operations, \code{subset} 
+#' and \code{na.action} are applied after evaluation of \code{r()}. This means, that
+#' 1) the ranks will be calculated using full data. In order to calculate them on subsetted data,
+#' one may subset the data outside of lm and pass it simply as new \code{data} argument.
+#' 2) \code{na.action} will not handle NA values in ranked regressors. This means,
+#' that they have to be handled separately by the user.
+#' 
+#' Currently, only models with single rank response, single rank regressor and
+#' (possibly) other usual regressors is available.
 #' 
 #' @section Warning:
 #' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
@@ -108,7 +123,7 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' 
 #' Additionally, it has an \code{omega} entry, corresponding to \code{omega} argument,
 #' and a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
-#' of \code{terms(formula)}, which correspond to ranked covariates.
+#' of \code{terms(formula)}, which correspond to ranked regressors.
 #' 
 #' A number of methods defined for \code{lm} does not yield theoretically correct 
 #' results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
@@ -137,7 +152,7 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' @export
 lmranks <- function(formula, data, subset, 
                     weights, 
-                    na.action, # TODO?
+                    na.action, 
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE,
                     singular.ok = TRUE, constrasts = NULL, offset = offset,
                     omega=0, na.rm=FALSE, ...){
@@ -171,13 +186,14 @@ lmranks <- function(formula, data, subset,
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
 #' @return An integer vector with indices of entries of \code{terms.labels} attribute
-#' of \code{terms(formula)}, which correspond to ranked covariates.
+#' of \code{terms(formula)}, which correspond to ranked regressors.
 #' 
 #' @note 
 #' * It allows to pass r(W), where W is a matrix. This is caught later in frank.
 #' In order to catch this here, we would have to know what W is.
 #' * It allows to pass r(.). This is again caught later with error ". not defined".
 #' Same error occurs in lm(y ~ x + log(.), data=data). Acceptable.
+#' * It will not detect func(r(expr)). 
 #' 
 #' @noRd
 process_lmranks_formula <- function(formula){
@@ -222,8 +238,6 @@ prepare_lm_call <- function(lm_call){
   lm_call$na.rm <- NULL
   if(!is.null(lm_call$weights))
     cli::cli_abort("{.var weights} argument is not yet supported. ")
-  if(!is.null(lm_call$na.action))
-    cli::cli_abort("{.var na.action} argument is not yet supported.")
   lm_call
 }
 
@@ -242,7 +256,7 @@ prepare_lm_call <- function(lm_call){
 #' the linear model is being fitted or used for prediction. In *both* cases we want
 #' to use fitting (training) data. For prediction, it is stored in cache.
 #' 
-#' Everytime the `lmranks` is called, a new environment of this kind is created 
+#' Every time the `lmranks` is called, a new environment of this kind is created 
 #' and "carried along" with an `lmranks` object (accessible with `environment(model$terms)`).
 #' 
 #' The advantage of this solution is better reuse of `lm.fit` and `predict.lm`.
@@ -271,6 +285,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   body(r) <- bquote({
     predict <- get(".r_predict", envir = environment(r), inherits=FALSE)
     cache <- get(".r_cache", envir = environment(r), inherits=FALSE)
+    was_na <- is.na(x)
     var_name <- paste0(as.character(substitute(x)), collapse = "")
     if(!predict){
       cache[[var_name]] <- x
@@ -279,7 +294,9 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
     else if(is.null(cache[[var_name]]))
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     v <- cache[[var_name]]
-    csranks::frank_against(x, v, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
+    out <- rep(NA, length(was_na))
+    out[!was_na] <- csranks::frank_against(x, v, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
+    out
   })
   environment(r) <- rank_env
   assign("r", r, envir = rank_env)

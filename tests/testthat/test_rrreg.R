@@ -240,6 +240,16 @@ test_that("create_env_to_interpret_r_mark's r function behaves correctly in pred
   expect_equal(actual_r_output, expected_r_output)
 })
 
+test_that("create_env_to_interpret_r_mark's r function handles NA", {
+  x_1 <- c(4,4,NA,4,3,NA,1,10,7,7)
+  expected_r_output <- c(0.6, 0.6, NA, 0.6, 0.875, NA, 1, 0.125, 0.3, 0.3)
+  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
+                                                                   na.rm=na.rm)}
+  created_env <- wrapper(0.4, TRUE)
+  actual_r_output <- eval(quote(r(x_1)), created_env)
+  expect_equal(actual_r_output, expected_r_output)
+})
+
 test_that("omega argument works", {
   Y <- c(4,4,4,3,1,10,7,7)
   y_frank <- c(0.6, 0.6, 0.6, 0.875, 1, 0.125, 0.3, 0.3)

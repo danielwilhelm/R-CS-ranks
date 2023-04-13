@@ -60,11 +60,18 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 #' frank(c(4,4,4,3,1,10,7,7), omega=1)
 #' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
 #' @export
-frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) return(irank(x, omega, increasing, na.rm) / length(x))
+frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) 
+  return(frank_against(x, x, omega, increasing, na.rm))
 
 #' @export
-frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE) 
-  return(irank_against(x, v, omega, increasing, na.rm) / length(v))
+frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
+  if(na.rm){
+    l <- sum(!is.na(v))
+  } else
+    l <- length(v)
+  out <- irank_against(x, v, omega, increasing, na.rm)
+  return(out / l)
+} 
 #' Comparator function
 #' 
 #' @inheritParams irank

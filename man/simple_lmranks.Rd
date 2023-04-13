@@ -20,10 +20,10 @@ simple_lmranks_rho_se(
 \item{Y}{Numeric vector. Based on it, ranks for response will be constructed
 and used as final response in the linear model.}
 
-\item{X}{Numeric vector. Based on it, ranks for this covariate will be constructed
-and used as final covariate in the linear model.}
+\item{X}{Numeric vector. Based on it, ranks for this regressor will be constructed
+and used as final regressor in the linear model.}
 
-\item{W}{Matrix. Other covariates to include in the model. Should not include an intercept column.}
+\item{W}{Matrix. Other regressors to include in the model. Should not include an intercept column.}
 
 \item{omega}{numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See \code{\link{frank}} for details.}
 
@@ -40,7 +40,7 @@ A list with two items:
 }
 \description{
 Fit a linear model with a single rank response and
-a single rank covariate (and possibly other usual covariates).
+a single rank regressor (and possibly other usual regressors).
 }
 \section{Functions}{
 \itemize{
