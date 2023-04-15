@@ -8,5 +8,5 @@
 }
 \description{
 Summary method for class "\code{lmranks}". It returns theoretically valid standard
-errors.
+errors, in comparison to naively running \code{summary(lm(...))}.
 }

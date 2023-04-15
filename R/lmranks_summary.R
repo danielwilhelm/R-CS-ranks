@@ -6,7 +6,7 @@
 #' Summarizing fits of linear models for ranks
 #' 
 #' Summary method for class "\code{lmranks}". It returns theoretically valid standard
-#' errors.
+#' errors, in comparison to naively running \code{summary(lm(...))}.
 #' @export
 summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, ...){
   if(symbolic.cor){
