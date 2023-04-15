@@ -122,7 +122,7 @@ lmranks <- function(formula, data, subset,
 #' Check validity of passed formula and identify ranked terms
 #' 
 #' For now only formulas with (at most) one rank regressor are allowed.
-#' The outcome can be both ranked and usual.
+#' The outcome can be either ranked or usual, continuous.
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
 #' @return Alist with two entries:
@@ -251,4 +251,11 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
 slotsFromS3.lmranks <- function(object){
   cli::cli_warn("This method might not return correct results.")
   NextMethod()
+}
+
+#' @export
+plot.lmranks <- function(x,which = 1,...){
+  if(length(which) != 1 || which != 1)
+    cli::cli_abort('For now, only basic "residuals against fitted" plot is supported.')
+  NextMethod(which = which)
 }

@@ -22,10 +22,3 @@ predict.lmranks <- function(object, newdata, se.fit = FALSE, scale = NULL,
   assign(".r_predict", FALSE, rank_env)
   out
 }
-
-#' @export
-plot.lmranks <- function(x,which = 1,...){
-  if(length(which) != 1 || which != 1)
-    cli::cli_abort('For now, only basic "residuals against fitted" plot is supported.')
-  NextMethod(which = which)
-}

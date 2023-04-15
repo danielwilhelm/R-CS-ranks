@@ -30,10 +30,4 @@ drop1.lmranks <- function(object, scope, ...){
   NextMethod()
 }
 
-#' @export
-plot.lmranks <- function(x,...){
-  cli::cli_warn("Some plots are not correct.")
-  NextMethod()
-}
-
 # AIC, BIC
