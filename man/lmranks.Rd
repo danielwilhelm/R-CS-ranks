@@ -104,8 +104,8 @@ one may subset the data outside of lm and pass it simply as new \code{data} argu
 2) \code{na.action} will not handle NA values in ranked regressors. This means,
 that they have to be handled separately by the user.
 
-Currently, only models with single rank response, single rank regressor and
-(possibly) other usual regressors is available.
+Currently, only models at most one rank regressor are available. The single 
+response might be either ranked or continuous.
 }
 \section{Warning}{
 

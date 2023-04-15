@@ -2,76 +2,6 @@
 #' 
 #' Fit a linear model with a single rank response and
 #' a single rank regressor (and possibly other usual regressors).
-#'
-#' @param Y Numeric vector. Based on it, ranks for response will be constructed
-#' and used as final response in the linear model.
-#' @param X Numeric vector. Based on it, ranks for this regressor will be constructed
-#' and used as final regressor in the linear model.
-#' @param W Matrix. Other regressors to include in the model. Should not include an intercept column.
-#' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See \code{\link{frank}} for details.
-#' @param increasing logical; if \code{TRUE}, then large elements in \code{X} and \code{Y} receive a large rank. Otherwise, large elements receive small ranks. 
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{X} and \code{Y} (if any). 
-
-#' @return A list with two items: 
-#' \itemize{
-#' \item{\code{rhohat} - the linear coefficient for rank of X.}
-#' \item{\code{se} - Estimated standard error of the coefficient rhohat.}
-#' }
-#' 
-#' @examples
-#' Y <- c(3,1,2,4,5)
-#' y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
-#' X <- 1:5
-#' omega <- 0.5
-#' x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
-#' W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
-#'
-#' simple_lmranks(Y, X, W)
-#' 
-#' @importFrom stats lm predict resid coef var
-#' @export
-simple_lmranks <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE) {
-  l <- process_simple_lmranks_args(Y, X, W, omega, increasing, na.rm)
-  X <- l$X; Y <- l$Y; W <- l$W
-  I_Y <- compare(Y, omega=omega, increasing=increasing, na.rm=na.rm)
-  I_X <- compare(X, omega=omega, increasing=increasing, na.rm=na.rm)
-  RY <- (rowSums(I_Y) + 1 - omega) / length(Y)
-  RX <- (rowSums(I_X) + 1 - omega) / length(X)
-  
-  RX_by_Ws <- lm(RX ~ W-1)
-  Wgammahat <- predict(RX_by_Ws)
-  nuhat <- resid(RX_by_Ws)
-  gammahat <- coef(RX_by_Ws)
-  
-  res <- lm(RY~RX+W-1)
-  rhohat <- coef(res)[1]
-  betahat <- coef(res)[-1]
-  epsilonhat <- resid(res)
-  
-  h1 <- epsilonhat * nuhat
-  
-  # vectorized `-` and `*` goes over rows
-  h2 <- colMeans((t(I_Y - rhohat * I_X) - c(W %*% betahat)) * nuhat)
-  
-  h3 <- colMeans(epsilonhat * (t(I_X) - Wgammahat))
-  
-  sigmahat <- mean((h1+h2+h3)^2) / var(nuhat)^2
-  se <- sqrt(sigmahat / length(Y))
-  names(rhohat) <- NULL
-	return(list(rhohat=rhohat, se=se))
-}
-
-#' @describeIn simple_lmranks Calculate the standard error of rank regression coefficient
-
-simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
-  lmranks_outcome <- simple_lmranks(Y, X, W=W, omega=omega, increasing=increasing, na.rm=na.rm)
-  return(lmranks_outcome$se)
-}
-
-#' Linear model for ranks
-#' 
-#' Fit a linear model with a single rank response and
-#' a single rank regressor (and possibly other usual regressors).
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
@@ -104,8 +34,8 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' 2) \code{na.action} will not handle NA values in ranked regressors. This means,
 #' that they have to be handled separately by the user.
 #' 
-#' Currently, only models with single rank response, single rank regressor and
-#' (possibly) other usual regressors is available.
+#' Currently, only models at most one rank regressor are available. The single 
+#' response might be either ranked or continuous.
 #' 
 #' @section Warning:
 #' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
@@ -150,6 +80,8 @@ simple_lmranks_rho_se <- function(Y, X, W=NULL, omega=0, increasing=FALSE, na.rm
 #' lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
 #' 
 #' @export
+#' @importFrom stats coef lm resid predict var
+#' 
 lmranks <- function(formula, data, subset, 
                     weights, 
                     na.action, 
@@ -159,6 +91,12 @@ lmranks <- function(formula, data, subset,
   l <- process_lmranks_formula(formula)
   rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
   original_call <- match.call() # for the final output
+  if(length(rank_terms_indices) == 0 && !ranked_response){
+    cli::cli_warn("{.var lmranks} called with no ranked terms. Using regular lm...")
+    lm_call <- prepare_lm_call(original_call, check_weights = FALSE)
+    out <- eval(lm_call, parent.frame())
+    return(out)
+  }
   lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
   # From this environment lm will take the definition of r()
   rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
@@ -187,8 +125,11 @@ lmranks <- function(formula, data, subset,
 #' The outcome can be both ranked and usual.
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
-#' @return An integer vector with indices of entries of \code{terms.labels} attribute
+#' @return Alist with two entries:
+#' - `rank_terms_indices`, integer vector with indices of entries of \code{terms.labels} attribute
 #' of \code{terms(formula)}, which correspond to ranked regressors.
+#' This vector might be empty, which indicates no ranked regressors.
+#' - `ranked_response`, logical.
 #' 
 #' @note 
 #' * It allows to pass r(W), where W is a matrix. This is caught later in frank.
@@ -209,8 +150,6 @@ process_lmranks_formula <- function(formula){
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
   response_variable_index <- attr(formula_terms, "response")
   regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
-  # TODO: handle the case of non-ranked response and regressors
-  # return regular lm then
   if(length(regressor_variable_index) > 1){
     cli::cli_abort(c("In formula there may be at most one ranked regressor.",
                    "x" = "There are multiple ranked regressors."))
@@ -235,11 +174,11 @@ process_lmranks_formula <- function(formula){
   }
 }
 
-prepare_lm_call <- function(lm_call){
+prepare_lm_call <- function(lm_call, check_weights = TRUE){
   lm_call[[1]] <- quote(stats::lm)
   lm_call$omega <- NULL              # remove local parameters
   lm_call$na.rm <- NULL
-  if(!is.null(lm_call$weights))
+  if(check_weights && !is.null(lm_call$weights))
     cli::cli_abort("{.var weights} argument is not yet supported. ")
   lm_call
 }

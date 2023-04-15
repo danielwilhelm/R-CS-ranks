@@ -93,7 +93,7 @@ test_that("get_projection_model works for ranked target", {
                expected_model)
 })
 
-test_that("get_projection_model works for usual target", {
+test_that("get_projection_model works for usual target with ranked regressor present", {
   data(mtcars)
   original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars)
   
@@ -106,6 +106,42 @@ test_that("get_projection_model works for usual target", {
   rownames(W_minus_l) <- rownames(mtcars)
   expected_model <- lm(W_l ~ RX + W_minus_l - 1)
   expected_model$rank_terms_indices <- 1
+  expected_model$ranked_response <- FALSE
+  
+  expect_equal(get_projection_model(original_model, 2),
+               expected_model)
+})
+
+test_that("get_projection_model works for usual target with ranked regressor present", {
+  data(mtcars)
+  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars)
+  
+  RX <- frank(mtcars$disp)
+  names(RX) <- rownames(mtcars)
+  W_l <- mtcars$cyl
+  names(W_l) <- rownames(mtcars)
+  W_minus_l <- as.matrix(mtcars[,"hp"])
+  colnames(W_minus_l) <- "hp"
+  rownames(W_minus_l) <- rownames(mtcars)
+  expected_model <- lm(W_l ~ RX + W_minus_l - 1)
+  expected_model$rank_terms_indices <- 1
+  expected_model$ranked_response <- FALSE
+  
+  expect_equal(get_projection_model(original_model, 2),
+               expected_model)
+})
+
+test_that("get_projection_model works with no ranked regressors", {
+  data(mtcars)
+  original_model <- lmranks(r(mpg) ~ disp + cyl + hp - 1, data=mtcars)
+  
+  W_l <- mtcars$cyl
+  names(W_l) <- rownames(mtcars)
+  W_minus_l <- as.matrix(mtcars[,c("disp", "hp")])
+  colnames(W_minus_l) <- c("disp", "hp")
+  rownames(W_minus_l) <- rownames(mtcars)
+  expected_model <- lm(W_l ~ W_minus_l - 1)
+  expected_model$rank_terms_indices <- integer(0)
   expected_model$ranked_response <- FALSE
   
   expect_equal(get_projection_model(original_model, 2),
@@ -143,6 +179,27 @@ test_that("get_projection_model works for model with 1 usual regressor", {
   
   expect_equal(get_projection_model(original_model, 1),
                expected_model)
+})
+
+test_that("calculate_g_l_3 works for no ranked regressors case", {
+  data(mtcars)
+  RY <- frank(mtcars$mpg)
+  I_X <- NULL
+  W <- as.matrix(mtcars[, c("cyl", "hp")])
+  W <- cbind(rep(1, nrow(W)),
+             W)
+  
+  original_model <- lmranks(r(mpg) ~ cyl + hp, data=mtcars)
+  W_l <- W[,2]
+  W_minus_l <- W[,-2]
+  proj_model <- lm(W_l ~ W_minus_l - 1)
+  proj_model$rank_terms_indices <- integer(0)
+  proj_model$ranked_response <- FALSE
+  
+  expected_out <- rep(0, nrow(mtcars))
+  
+  expect_equal(calculate_g_l_3(original_model, proj_model, I_X=I_X),
+               expected_out)
 })
 
 test_that("calculate_g_l_3 works for proj_model with ranked response", {

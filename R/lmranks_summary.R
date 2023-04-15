@@ -42,38 +42,6 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   outcome
 }
 
-calculate_rank_coef_std <- function(object){
-  if(length(object$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
-  
-  rank_column_index <- which(object$assign %in% object$rank_terms_indices)
-  if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
-  RX <- model.matrix(object)[,rank_column_index]
-  W <- model.matrix(object)[,-rank_column_index]
-  RY <- model.response(model.frame(object))
-  I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
-  I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
-  
-  RX_by_Ws <- lm(RX ~ W-1)
-  Wgammahat <- fitted.values(RX_by_Ws)
-  nuhat <- resid(RX_by_Ws)
-  gammahat <- coef(RX_by_Ws)
-  
-  rhohat <- coef(object)[rank_column_index]
-  betahat <- coef(object)[-rank_column_index]
-  epsilonhat <- resid(object)
-  
-  h1 <- epsilonhat * nuhat
-  
-  # vectorized `-` and `*` goes over rows
-  h2 <- colMeans((t(I_Y - rhohat * I_X) - c(W %*% betahat)) * nuhat)
-  
-  h3 <- colMeans(epsilonhat * (t(I_X) - Wgammahat))
-  
-  sigmahat <- mean((h1+h2+h3)^2) / var(nuhat)^2
-  se <- sqrt(sigmahat / length(RY))
-  return(se)
-}
-
 #' @export
 confint.lmranks <- function(object, parm, level = 0.95, ...){
   # As is the case with confint.lm, this method returns *marginal* CIs for coefficients
@@ -89,7 +57,7 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   l <- get_and_separate_regressors(object)
   RX <- l$RX
   RY <- model.response(model.frame(object))
-  if(ranked_response){
+  if(object$ranked_response){
     I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
   } else {
     I_Y <- NULL
