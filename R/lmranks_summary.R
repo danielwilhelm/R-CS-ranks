@@ -89,8 +89,17 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   l <- get_and_separate_regressors(object)
   RX <- l$RX
   RY <- model.response(model.frame(object))
-  I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
-  I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  if(ranked_response){
+    I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  } else {
+    I_Y <- NULL
+  }
+  
+  if(length(object$rank_terms_indices) == 1){
+    I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+  } else {
+    I_X <- NULL
+  }
   
   psi_sample <- sapply(1:length(coef(object)), function(i){
     if(is.na(coef(object))[i]){
@@ -131,6 +140,18 @@ get_and_separate_regressors <- function(model){
 get_projection_model <- function(original_model, projected_regressor_index){
   l <- get_and_separate_regressors(original_model)
   RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
+  if(length(rank_column_index) == 0){
+    l <- projected_regressor_index
+    W_minus_l <- W[,-l,drop=FALSE]
+    W_l <- W[,l]
+    if(ncol(W_minus_l) > 0)
+      proj_model <- lm(W_l ~ W_minus_l - 1)
+    else
+      cli::cli_abort("Not theoretically developped yet.")
+    proj_model$rank_terms_indices <- integer(0)
+    proj_model$ranked_response <- FALSE
+    return(proj_model)
+  }
   if(projected_regressor_index %in% rank_column_index){
     proj_model <- lm(RX ~ W-1)
     proj_model$rank_terms_indices <- numeric(0)
@@ -163,6 +184,9 @@ calculate_g_l_2 <- function(original_model, proj_model, I_X, I_Y){
 }
 
 calculate_g_l_3 <- function(original_model, proj_model, I_X){
+  if(is.null(I_X)){
+    return(rep(0, nobs(original_model)))
+  }
   epsilonhat <- resid(original_model)
   if(proj_model$ranked_response){
   ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
@@ -187,6 +211,7 @@ replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
   else
     betahat <- coef(model)
   
+  # in singular fit case, some coefficients are NA
   predictor <- as.vector(W[,!is.na(betahat), drop=FALSE] %*% betahat[!is.na(betahat)])
   if(has_ranked_regressors && has_ranked_response){
     return(t(I_Y) - t(I_X * rhohat) - predictor)

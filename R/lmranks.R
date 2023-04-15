@@ -156,7 +156,8 @@ lmranks <- function(formula, data, subset,
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE,
                     singular.ok = TRUE, constrasts = NULL, offset = offset,
                     omega=0, na.rm=FALSE, ...){
-  rank_terms_indices <- process_lmranks_formula(formula)
+  l <- process_lmranks_formula(formula)
+  rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
   original_call <- match.call() # for the final output
   lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
   # From this environment lm will take the definition of r()
@@ -173,7 +174,7 @@ lmranks <- function(formula, data, subset,
   main_model$df.residual <- NA
   main_model$rank_terms_indices <- rank_terms_indices
   main_model$omega <- omega
-  main_model$ranked_response <- TRUE
+  main_model$ranked_response <- ranked_response
   class(main_model) <- c("lmranks", class(main_model))
   
   # Phew.
@@ -182,7 +183,8 @@ lmranks <- function(formula, data, subset,
 
 #' Check validity of passed formula and identify ranked terms
 #' 
-#' For now only formulas with one rank regressor and one rank outcome are allowed.
+#' For now only formulas with (at most) one rank regressor are allowed.
+#' The outcome can be both ranked and usual.
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
 #' @return An integer vector with indices of entries of \code{terms.labels} attribute
@@ -206,30 +208,31 @@ process_lmranks_formula <- function(formula){
                          allowDotAsName = TRUE)
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
   response_variable_index <- attr(formula_terms, "response")
-  if(length(response_variable_index) != 1){
-    cli::cli_abort(c("In formula there must be exactly one ranked response and exactly one ranked regressor.",
-                     "x" = "There are multiple or no responses."))
-  }
-  if(!response_variable_index %in% rank_variables_indices){
-    cli::cli_abort(c("In formula there must be exactly one ranked response and exactly one ranked regressor.",
-                   "x" = "The response is not ranked."))
-  }
-  if(length(rank_variables_indices) != 2){
-    cli::cli_abort(c("In formula there must be exactly one ranked response and exactly one ranked regressor.",
-                   "x" = "There are multiple or no ranked regressors."))
-  }
   regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
-  variable_table <- attr(formula_terms, "factors")
-  rank_regressor_occurances <- variable_table[regressor_variable_index,]
-  occured_exactly_once <- sum(rank_regressor_occurances == 1) == 1 && sum(rank_regressor_occurances == 0) == (length(rank_regressor_occurances) - 1)
-  if(!occured_exactly_once){
-    cli::cli_abort("In formula, the ranked regressor must occur exactly once. No interactions are supported.")
+  # TODO: handle the case of non-ranked response and regressors
+  # return regular lm then
+  if(length(regressor_variable_index) > 1){
+    cli::cli_abort(c("In formula there may be at most one ranked regressor.",
+                   "x" = "There are multiple ranked regressors."))
   }
-  
-  rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
-  rearranged_formula_terms <- terms(formula, allowDotAsName = TRUE, 
-                                    keep.order = FALSE) # default used later inside lm
-  which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
+  ranked_response <- response_variable_index %in% rank_variables_indices
+  if(length(regressor_variable_index) == 0){
+    return(list(rank_terms_indices = integer(0), 
+                ranked_response = ranked_response))
+  } else {
+    variable_table <- attr(formula_terms, "factors")
+    rank_regressor_occurances <- variable_table[regressor_variable_index,]
+    occured_exactly_once <- sum(rank_regressor_occurances == 1) == 1 && sum(rank_regressor_occurances == 0) == (length(rank_regressor_occurances) - 1)
+    if(!occured_exactly_once){
+      cli::cli_abort("In formula, the ranked regressor may occur only once. No interactions are supported.")
+    }
+    rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
+    rearranged_formula_terms <- terms(formula, allowDotAsName = TRUE, 
+                                      keep.order = FALSE) # default used later inside lm
+    rank_terms_indices <- which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
+    return(list(rank_terms_indices = rank_terms_indices, 
+                ranked_response = ranked_response))
+  }
 }
 
 prepare_lm_call <- function(lm_call){
