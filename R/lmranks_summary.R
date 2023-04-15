@@ -52,6 +52,15 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
     confint.default(object=object, parm=parm, level=level, ...)
 }
 
+#' @describeIn lmranks Calculate Variance-Covariance Matrix for a Fitted \code{lmranks} object
+#' 
+#' Returns the variance-covariance matrix of the regression coefficients 
+#' (main parameters) of a fitted \code{lmranks} object.
+#' 
+#' @param complete logical indicating if the full variance-covariance matrix 
+#' should be returned also in case of an over-determined system where 
+#' some coefficients are undefined and \code{coef(.)} contains NAs correspondingly. 
+#' When \code{complete = TRUE}, \code{vcov()} is compatible with \code{coef()} also in this singular case.
 #' @export
 vcov.lmranks <- function(object, complete = TRUE, ...){
   l <- get_and_separate_regressors(object)
@@ -88,6 +97,13 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   return(sigmahat)
 }
 
+#' Extract regressors from a model object and separate rank- from usual ones
+#' 
+#' @return a list with entries:
+#' - RX: vector of ranks of ranked regressor. May be empty.
+#' - W: matrix of non-ranked regressors.
+#' - rank_column_index: which column in model.matrix corresponds to ranked regressor?
+#' @noRd
 get_and_separate_regressors <- function(model){
   if(length(model$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
   rank_column_index <- which(model$assign %in% model$rank_terms_indices)
@@ -105,6 +121,11 @@ get_and_separate_regressors <- function(model){
               rank_column_index=rank_column_index))
 }
 
+#' Construct a *projection* onto a selected regressor
+#' i.e. a linear model with one of regressors as response variable
+#' in terms of the rest of the regressors (but not the original response)
+#' Used heavily in vcov
+#' @noRd
 get_projection_model <- function(original_model, projected_regressor_index){
   l <- get_and_separate_regressors(original_model)
   RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
@@ -166,6 +187,20 @@ calculate_g_l_3 <- function(original_model, proj_model, I_X){
   return(colMeans(epsilonhat * ineq_resids))
 }
 
+#' Sometimes, instead of regular residuals, we are interested in residuals in a model,
+#' where we replace ranks with indicator of relation (>=).
+#' So instead of sth like RY = a*RX + b*W + c
+#' we will have I_Y = a*I_X + b*W + c
+#' 
+#' Since we consider those indicators for every single observation, this function
+#' returns a matrix. Each *column* corresponds to response of indicator; each *row*
+#' to argument. In other words, if M is the returned matrix, then
+#' M[j,i] = I(Y_i, Y_j) - rho*I(X_i, X_j) - beta %*% W[,j]
+#' 
+#' Easier done in paper than here, hence we have a separate method that does just that.
+#' It has several use cases (ranked response and regressor / only response / only regressor) 
+#' detected based on model argument. Always replaces as much as possible.
+#' @noRd
 replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
     model, I_X=NULL, I_Y=NULL){
   l <- get_and_separate_regressors(model)

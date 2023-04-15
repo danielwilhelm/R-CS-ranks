@@ -13,6 +13,10 @@
 #' bases in the ‘Details’ section of the \code{\link{model.frame}} documentation.)
 #' @param weights currently not supported.
 #' @inheritParams stats::lm
+#' @param x \itemize{
+#' \item{For \code{lmranks}: }{Logical. Should model.matrix be returned?}
+#' \item{For \code{plot} method: }{An \code{lmranks} object.}
+#' }
 #' @param omega as in \code{\link{frank}}.
 #' @param na.rm If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
 #' are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
@@ -36,6 +40,11 @@
 #' 
 #' Currently, only models at most one rank regressor are available. The single 
 #' response might be either ranked or continuous.
+#' 
+#' Many functions defined for \code{lm} also work correctly with \code{lmranks}.
+#' This includes \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
+#' \code{\link[stats]{model.matrix}}, \code{\link[stats]{resid}} and \code{\link[stats]{update}}. 
+#' On the other hand, some would not return correct results. 
 #' 
 #' @section Warning:
 #' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
@@ -63,6 +72,7 @@
 #' @seealso 
 #' \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
 #' 
+#' \code{\link{summary.lmranks}}
 #' @examples 
 #' Y <- c(3,1,2,4,5)
 #' y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
@@ -253,6 +263,11 @@ slotsFromS3.lmranks <- function(object){
   NextMethod()
 }
 
+#' @describeIn lmranks Plot diagnostics for an \code{lmranks} object
+#' 
+#' Displays plots useful for assessing quality of model fit. Currently, only one
+#' plot is available, which plots fitted values against residuals (for homoscedacity check).
+#' 
 #' @export
 plot.lmranks <- function(x,which = 1,...){
   if(length(which) != 1 || which != 1)
