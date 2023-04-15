@@ -128,33 +128,6 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
-process_simple_lmranks_args <- function(Y, X, W, omega, increasing, na.rm){
-  assert_is_numeric_vector(Y, "Y", na_ok = na.rm)
-  assert_is_numeric_vector(X, "X", na_ok = na.rm)
-  if(is.null(W)){
-    W <- matrix(rep(1, length(Y)), ncol = 1)
-  } else if(!is.matrix(W)){
-    msg <- c("{.var W} must be a numeric matrix.",
-             "x" = "{.var W} if of {.cls {class(W)}} class.")
-    cli::cli_abort(msg)
-  } else {
-    W <- cbind(rep(1, length(Y)),
-               W)
-  }
-  assert_equal_length(Y, X, W, names = c("Y", "X", "W"))
-  process_compare_args(Y, Y, omega, increasing, na.rm)
-  
-  is_na = is.na(Y) | is.na(X) | apply(W, 1, function(v) any(is.na(v)))
-  if(!na.rm && any(is_na)){
-    cli::cli_abort("NAs detected")
-  } else{
-    Y <- Y[!is_na]
-    X <- X[!is_na]
-    W <- W[!is_na,,drop=FALSE]
-  }
-  list(Y=Y, X=X, W=W)
-}
-
 process_compare_args <- function(x, v, omega, increasing, na.rm){
   assert_is_numeric_vector(x, "x")
   if(is.null(v))

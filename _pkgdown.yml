@@ -15,7 +15,8 @@ reference:
     - cstaubest
     - cstauworst
     - plotranking
-    - simple_lmranks
+    - lmranks
+    - summary.lmranks
   - title: "Datasets"
   - contents:
     - pisa
