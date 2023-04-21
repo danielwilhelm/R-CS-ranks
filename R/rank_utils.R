@@ -26,7 +26,7 @@
 #' minimum and maximum rank, weighted by \eqn{\omega}: 
 #' \deqn{r(1-\omega) + R\omega} 
 #' 
-#' @return vector of the same length as \code{x} containing the ranks
+#' @return Integer vector of the same length as \code{x} containing the ranks.
 #' @examples
 #' irank(c(4,3,1,10,7))
 #' irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
@@ -39,6 +39,19 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
   irank_against(x, x, omega=omega, increasing=increasing, na.rm=na.rm)
 }
 
+#' Compute integer ranks in another reference vector
+#' 
+#' The method \code{\link{irank}} compares ranks using the same vector as reference.
+#' This method returns ranks, that values from \code{x} would assume if (individually)
+#' inserted into \code{v}. 
+#' 
+#' @param x numeric query vector.
+#' @param v numeric reference vector.
+#' @inheritParams irank
+#' 
+#' @inherit irank details return
+#' @examples 
+#' irank_against(1:10, c(4,4,4,3,1,10,7,7))
 #' @export
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   compares <- compare(x, v, omega=omega, increasing=increasing, na.rm=na.rm)
@@ -63,6 +76,7 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) 
   return(frank_against(x, x, omega, increasing, na.rm))
 
+#' @describeIn irank_against Compute integer ranks in another reference vector
 #' @export
 frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   if(na.rm){
