@@ -10,6 +10,19 @@ test_that("vcov passes shallow checks", {
   expect_true(isSymmetric(V))
   vals <- eigen(V, only.values = TRUE)
   expect_true(all(vals$values> 0))
+  expect_equal(colnames(V),
+               c("(Intercept)", "r(cyl)", "disp"))
+  expect_equal(rownames(V),
+               c("(Intercept)", "r(cyl)", "disp"))
+})
+
+test_that("vcov passes shallow checks in no ranked regressors case", {
+  model <- lmranks(r(mpg) ~ cyl + disp, data=mtcars)
+  V <- vcov(model)
+  
+  expect_true(isSymmetric(V))
+  vals <- eigen(V, only.values = TRUE)
+  expect_true(all(vals$values> 0))
 })
 
 test_that("vcov works for singular model matrix", {

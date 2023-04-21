@@ -90,6 +90,8 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   })
   
   sigmahat <- (t(psi_sample) %*% psi_sample) / (nrow(psi_sample) ^ 2)
+  colnames(sigmahat) <- names(coef(object))
+  rownames(sigmahat) <- colnames(sigmahat)
   if(!complete){
     sigmahat <- sigmahat[!is.na(coef(object)),
                          !is.na(coef(object))]
