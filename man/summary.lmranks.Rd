@@ -6,6 +6,17 @@
 \usage{
 \method{summary}{lmranks}(object, correlation = FALSE, symbolic.cor = FALSE, ...)
 }
+\arguments{
+\item{object}{A \code{lmranks} object.}
+
+\item{correlation}{logical; if \code{TRUE}, the correlation matrix of
+    the estimated parameters is returned and printed.}
+
+\item{symbolic.cor}{logical. If \code{TRUE}, print the correlations in
+    a symbolic form (see \code{\link[stats]{symnum}}) rather than as numbers.}
+
+\item{...}{further arguments passed to or from other methods.}
+}
 \description{
 Summary method for class "\code{lmranks}". It returns theoretically valid standard
 errors, in comparison to naively running \code{summary(lm(...))}.

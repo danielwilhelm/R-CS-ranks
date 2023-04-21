@@ -10,11 +10,12 @@
 #' @param subset an optional vector specifying a subset of observations to be used 
 #' in the fitting process. The ranks will be calculated using full data. 
 #' (See additional details about how this argument interacts with data-dependent 
-#' bases in the ‘Details’ section of the \code{\link{model.frame}} documentation.)
+#' bases in the Details section of the \code{\link{model.frame}} documentation.)
 #' @param weights currently not supported.
 #' @inheritParams stats::lm
+#' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
 #' @param x \itemize{
-#' \item{For \code{lmranks}: }{Logical. Should model.matrix be returned?}
+#' \item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
 #' @param omega as in \code{\link{frank}}.
@@ -34,7 +35,7 @@
 #' As a consequence of the order, in which model.frame applies operations, \code{subset} 
 #' and \code{na.action} are applied after evaluation of \code{r()}. This means, that
 #' 1) the ranks will be calculated using full data. In order to calculate them on subsetted data,
-#' one may subset the data outside of lm and pass it simply as new \code{data} argument.
+#' one may subset the data outside of \code{lm} and pass it simply as new \code{data} argument.
 #' 2) \code{na.action} will not handle NA values in ranked regressors. This means,
 #' that they have to be handled separately by the user.
 #' 
@@ -95,8 +96,8 @@
 lmranks <- function(formula, data, subset, 
                     weights, 
                     na.action, 
-                    method = "qr", model = TRUE, x = FALSE, qr = TRUE,
-                    singular.ok = TRUE, constrasts = NULL, offset = offset,
+                    method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
+                    singular.ok = TRUE, contrasts = NULL, offset = offset,
                     omega=0, na.rm=FALSE, ...){
   l <- process_lmranks_formula(formula)
   rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
@@ -154,7 +155,7 @@ process_lmranks_formula <- function(formula){
     cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
                    "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."))
   }
-  formula_terms <- terms(formula, specials="r",
+  formula_terms <- stats::terms(formula, specials="r",
                          keep.order = TRUE,
                          allowDotAsName = TRUE)
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
@@ -176,7 +177,7 @@ process_lmranks_formula <- function(formula){
       cli::cli_abort("In formula, the ranked regressor may occur only once. No interactions are supported.")
     }
     rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
-    rearranged_formula_terms <- terms(formula, allowDotAsName = TRUE, 
+    rearranged_formula_terms <- stats::terms(formula, allowDotAsName = TRUE, 
                                       keep.order = FALSE) # default used later inside lm
     rank_terms_indices <- which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
     return(list(rank_terms_indices = rank_terms_indices, 
@@ -257,7 +258,6 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   return(rank_env)
 }
 
-#' @export
 slotsFromS3.lmranks <- function(object){
   cli::cli_warn("This method might not return correct results.")
   NextMethod()
@@ -268,6 +268,7 @@ slotsFromS3.lmranks <- function(object){
 #' Displays plots useful for assessing quality of model fit. Currently, only one
 #' plot is available, which plots fitted values against residuals (for homoscedacity check).
 #' 
+#' @param which As in \code{\link{plot.lm}}. Currently only no.1 is available.
 #' @export
 plot.lmranks <- function(x,which = 1,...){
   if(length(which) != 1 || which != 1)

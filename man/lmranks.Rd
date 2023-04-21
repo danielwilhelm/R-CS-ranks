@@ -18,8 +18,9 @@ lmranks(
   model = TRUE,
   x = FALSE,
   qr = TRUE,
+  y = FALSE,
   singular.ok = TRUE,
-  constrasts = NULL,
+  contrasts = NULL,
   offset = offset,
   omega = 0,
   na.rm = FALSE,
@@ -47,7 +48,7 @@ and to specify a rank response. See Details.}
 \item{subset}{an optional vector specifying a subset of observations to be used 
 in the fitting process. The ranks will be calculated using full data. 
 (See additional details about how this argument interacts with data-dependent 
-bases in the ‘Details’ section of the \code{\link{model.frame}} documentation.)}
+bases in the Details section of the \code{\link{model.frame}} documentation.)}
 
 \item{weights}{currently not supported.}
 
@@ -62,13 +63,18 @@ bases in the ‘Details’ section of the \code{\link{model.frame}} documentatio
     \code{method = "qr"} is supported; \code{method = "model.frame"} returns
     the model frame (the same as with \code{model = TRUE}, see below).}
 
+\item{model, y, qr}{logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.}
+
 \item{x}{\itemize{
-\item{For \code{lmranks}: }{Logical. Should model.matrix be returned?}
+\item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
 \item{For \code{plot} method: }{An \code{lmranks} object.}
 }}
 
 \item{singular.ok}{logical. If \code{FALSE} (the default in S but
     not in \R) a singular fit is an error.}
+
+\item{contrasts}{an optional list. See the \code{contrasts.arg}
+    of \code{\link[stats]{model.matrix.default}}.}
 
 \item{offset}{this can be used to specify an \emph{a priori} known
     component to be included in the linear predictor during fitting.
@@ -85,6 +91,8 @@ For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na
 
 \item{...}{For \code{lm()}: additional arguments to be passed to the low level
     regression fitting functions (see below).}
+
+\item{which}{As in \code{\link{plot.lm}}. Currently only no.1 is available.}
 
 \item{object}{\code{lmranks} object.}
 
@@ -124,7 +132,7 @@ The \code{r()} is a private alias for \code{\link{frank}} and can accept
 As a consequence of the order, in which model.frame applies operations, \code{subset} 
 and \code{na.action} are applied after evaluation of \code{r()}. This means, that
 1) the ranks will be calculated using full data. In order to calculate them on subsetted data,
-one may subset the data outside of lm and pass it simply as new \code{data} argument.
+one may subset the data outside of \code{lm} and pass it simply as new \code{data} argument.
 2) \code{na.action} will not handle NA values in ranked regressors. This means,
 that they have to be handled separately by the user.
 

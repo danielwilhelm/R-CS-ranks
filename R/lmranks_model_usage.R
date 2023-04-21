@@ -1,3 +1,4 @@
+#' @importFrom stats simulate
 #' @export
 simulate.lmranks <- function(object, nsim = 1, seed = NULL, ...){
   cli::cli_abort(c("This method does not return correct results.",
@@ -18,7 +19,7 @@ predict.lmranks <- function(object, newdata, ...){
     !is.null(call$df) || !is.null(call$interval) || !is.null(call$type)
   # Disable not (yet) supported arguments 
   if(illegal_argument_encountered){
-    cli::cli_error(c("Only {.var object}, {.var newdata} and {.var na.action} arguments are currently suppoerted.",
+    cli::cli_abort(c("Only {.var object}, {.var newdata} and {.var na.action} arguments are currently suppoerted.",
                    "i" = "Currently, only basic prediction is supported, without calculation of standard error, confidence intervals, or per-term breakdown."))
   }
   

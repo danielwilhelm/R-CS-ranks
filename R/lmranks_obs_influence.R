@@ -1,3 +1,4 @@
+#' @importFrom stats cooks.distance dfbeta dfbetas influence rstandard rstudent
 #' @export
 rstandard.lmranks <- function(model, ...){
   cli::cli_abort(c("This method returns incorrect results.",

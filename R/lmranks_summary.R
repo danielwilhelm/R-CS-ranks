@@ -7,6 +7,9 @@
 #' 
 #' Summary method for class "\code{lmranks}". It returns theoretically valid standard
 #' errors, in comparison to naively running \code{summary(lm(...))}.
+#' 
+#' @param object A \code{lmranks} object.
+#' @inheritParams stats::summary.lm
 #' @export
 summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, ...){
   if(symbolic.cor){
@@ -32,10 +35,10 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   
   outcome$coefficients[, 2] <- sqrt(diag(cov_matrix))
   outcome$coefficients[, 3] <- outcome$coefficients[, 1] / outcome$coefficients[, 2]
-  outcome$coefficients[, 4] <- 2*pnorm(-abs(outcome$coefficients[, 3]))
+  outcome$coefficients[, 4] <- 2*stats::pnorm(-abs(outcome$coefficients[, 3]))
   
   if(correlation)
-    outcome$correlation <- cov2cor(cov_matrix)
+    outcome$correlation <- stats::cov2cor(cov_matrix)
   cli::cli_warn(c("The number of residual degrees of freedom is not correct.", 
                 "Also, z-value, not t-value, since the distribution used for p-value calculation is standard normal."))
   class(outcome) <- c("summary.lmranks", class(outcome))
@@ -47,9 +50,9 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
   # As is the case with confint.lm, this method returns *marginal* CIs for coefficients
   # not simultaneous
   if(missing(parm))
-    confint.default(object=object, level=level, ...)
+    stats::confint.default(object=object, level=level, ...)
   else
-    confint.default(object=object, parm=parm, level=level, ...)
+    stats::confint.default(object=object, parm=parm, level=level, ...)
 }
 
 #' @describeIn lmranks Calculate Variance-Covariance Matrix for a Fitted \code{lmranks} object
@@ -61,11 +64,12 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
 #' should be returned also in case of an over-determined system where 
 #' some coefficients are undefined and \code{coef(.)} contains NAs correspondingly. 
 #' When \code{complete = TRUE}, \code{vcov()} is compatible with \code{coef()} also in this singular case.
+#' @importFrom stats vcov
 #' @export
 vcov.lmranks <- function(object, complete = TRUE, ...){
   l <- get_and_separate_regressors(object)
   RX <- l$RX
-  RY <- model.response(model.frame(object))
+  RY <- stats::model.response(stats::model.frame(object))
   if(object$ranked_response){
     I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
   } else {
@@ -111,10 +115,10 @@ get_and_separate_regressors <- function(model){
   rank_column_index <- which(model$assign %in% model$rank_terms_indices)
   if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
   if(length(rank_column_index) > 0){
-    W <- model.matrix(model)[,-rank_column_index,drop=FALSE]
-    RX <- model.matrix(model)[,rank_column_index]
+    W <- stats::model.matrix(model)[,-rank_column_index,drop=FALSE]
+    RX <- stats::model.matrix(model)[,rank_column_index]
   } else {
-    W <- model.matrix(model)
+    W <- stats::model.matrix(model)
     attr(W, "assign") <- NULL
     RX <- integer(0)
   }
@@ -176,7 +180,7 @@ calculate_g_l_2 <- function(original_model, proj_model, I_X, I_Y){
 
 calculate_g_l_3 <- function(original_model, proj_model, I_X){
   if(is.null(I_X)){
-    return(rep(0, nobs(original_model)))
+    return(rep(0, stats::nobs(original_model)))
   }
   epsilonhat <- resid(original_model)
   if(proj_model$ranked_response){
@@ -207,7 +211,7 @@ replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
     model, I_X=NULL, I_Y=NULL){
   l <- get_and_separate_regressors(model)
   RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
-  RY <- model.response(model.frame(model))
+  RY <- stats::model.response(stats::model.frame(model))
   has_ranked_regressors <- length(rank_column_index) > 0
   has_ranked_response <- model$ranked_response
   rhohat <- coef(model)[rank_column_index]
@@ -230,6 +234,7 @@ replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
   }
 }
 
+#' @importFrom stats sigma
 #' @export
 sigma.lmranks <- function(object, ...){
   cli::cli_abort("Not theoretically developped yet.")
