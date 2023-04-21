@@ -88,7 +88,7 @@ frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 } 
 #' Comparator function
 #' 
-#' @inheritParams irank
+#' @inheritParams irank_against
 #' @return Matrix M of size `length(x)`, `length(v)`. For increasing = FALSE M[i,j] = 
 #' 1 if x[i] < v[j]
 #' 0 if x[i] > v[j]
