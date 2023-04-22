@@ -71,13 +71,13 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   RX <- l$RX
   RY <- stats::model.response(stats::model.frame(object))
   if(object$ranked_response){
-    I_Y <- compare(RY, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+    I_Y <- compare(RY, omega=object$omega, na.rm=FALSE)
   } else {
     I_Y <- NULL
   }
   
   if(length(object$rank_terms_indices) == 1){
-    I_X <- compare(RX, omega=object$omega, increasing=TRUE, na.rm=FALSE)
+    I_X <- compare(RX, omega=object$omega, na.rm=FALSE)
   } else {
     I_X <- NULL
   }

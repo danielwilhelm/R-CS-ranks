@@ -28,8 +28,8 @@
 #' (or, put differently, their ECDF value) is of interest. The variables to be ranked
 #' (both dependent and independent) can be marked with \code{r()}. 
 #' 
-#' The \code{r()} is a private alias for \code{\link{frank}} and can accept 
-#' \code{increasing} argument. However, \code{omega} argument must be specified globally 
+#' The \code{r()} is a private alias for \code{\link{frank}} with fixed
+#' \code{increasing} argument. \code{omega} argument may be specified globally 
 #' (as a specification of rank definition) in the call to \code{lmranks}.
 #' 
 #' As a consequence of the order, in which model.frame applies operations, \code{subset} 
@@ -234,7 +234,7 @@ prepare_lm_call <- function(lm_call, check_weights = TRUE){
 #' @noRd
 create_env_to_interpret_r_mark <- function(omega, na.rm){
   rank_env <- new.env(parent = parent.frame(2))
-  r <- function(x, increasing=FALSE) x
+  r <- function(x) x
   body(r) <- bquote({
     predict <- get(".r_predict", envir = environment(r), inherits=FALSE)
     cache <- get(".r_cache", envir = environment(r), inherits=FALSE)
@@ -248,8 +248,8 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     v <- cache[[var_name]]
     out <- rep(NA, length(was_na))
-    out[!was_na] <- csranks::frank_against(x, v, increasing=increasing, omega=.(omega), na.rm=.(na.rm))
-    out
+    out[!was_na] <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=.(na.rm))
+    out + (.(omega) - 1) / sum(!is.na(v))
   })
   environment(r) <- rank_env
   assign("r", r, envir = rank_env)
