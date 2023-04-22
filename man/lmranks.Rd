@@ -125,8 +125,8 @@ This function is useful in case when relationship not between variables themselv
 (or, put differently, their ECDF value) is of interest. The variables to be ranked
 (both dependent and independent) can be marked with \code{r()}. 
 
-The \code{r()} is a private alias for \code{\link{frank}} and can accept 
-\code{increasing} argument. However, \code{omega} argument must be specified globally 
+The \code{r()} is a private alias for \code{\link{frank}} with fixed
+\code{increasing} argument. \code{omega} argument may be specified globally 
 (as a specification of rank definition) in the call to \code{lmranks}.
 
 As a consequence of the order, in which model.frame applies operations, \code{subset} 

@@ -44,7 +44,7 @@ test_that("predict works for new data", {
   
   new_data <- data.frame(x = c(1.5, 2.5, 3),
                          w = c(1.5, 2.5, 3))
-  new_x_rank <- c(0.9, 0.7, 0.6)
+  new_x_rank <- c(0.2, 0.4, 0.5)
   expected_prediction <-
     coefs[1] + coefs[2] * new_x_rank + coefs[3] * new_data$w
   names(expected_prediction) <- 1:3
