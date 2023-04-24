@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Simulation setup
 
-```{r simul_setup}
+```{r simul_setup, cache=TRUE}
 library(csranks) # make sure to install version from rrreg-grouping branch
 library(mvtnorm)
 library(dplyr)
@@ -82,7 +82,7 @@ extract_estimates_from_simulation_results <- function(res){
   colnames(empirical_covariances) <- cluster_names
   empirical_df <- as_tibble(empirical_covariances, rownames = "parameter") %>%
     tidyr::pivot_longer(-1, names_to = "cluster") %>%
-    mutate(method = "empirical_covariance")
+    mutate(method = "empirical")
   
   cov_matrices_across_clusters <- sapply(res, function(l){
       l$covariance_matrices
@@ -95,7 +95,7 @@ extract_estimates_from_simulation_results <- function(res){
     vec
   }) %>% as_tibble(rownames = "parameter") %>%
     tidyr::pivot_longer(-1, names_to = "cluster") %>%
-    mutate(method = "mean_of_estimates_of_covariance")
+    mutate(method = "implemented")
   
   rbind(empirical_df, est_df)
 }
@@ -109,7 +109,7 @@ conduct_simulation(1, grouping_f_small, "Gaussian", theta_1)
 
 ## Scenario 1
 
-```{r sim_scenario_1, cache=TRUE}
+```{r sim_scenario_1, cache=TRUE, dependson="simul_setup"}
 normal_sample_1 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_1)
 t_sample_1 <- conduct_simulation(R, grouping_f_small, "t", theta_1)
 ```
@@ -129,11 +129,15 @@ ggplot(results_1, aes(x = cluster, y = value, col = method, shape = parameter)) 
   facet_wrap(~distribution)+
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Small, equal clusters; no correlation")
+knitr::kable(
+  tidyr::pivot_wider(results_1, c("cluster","parameter"), 
+                   names_from = c("method","distribution"))
+  )
 ```
 
 ## Scenario 2
 
-```{r sim_scenario_2, cache=TRUE}
+```{r sim_scenario_2, cache=TRUE, dependson="simul_setup"}
 normal_sample_2 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_2)
 t_sample_2 <- conduct_simulation(R, grouping_f_small, "t", theta_2)
 ```
@@ -153,11 +157,15 @@ ggplot(results_2, aes(x = cluster, y = value, col = method, shape = parameter)) 
   facet_wrap(~distribution)+
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Small, equal clusters; strong correlation")
+knitr::kable(
+  tidyr::pivot_wider(results_2, c("cluster","parameter"), 
+                 names_from = c("method","distribution"))
+)
 ```
 
 ## Scenario 3
 
-```{r sim_scenario_3, cache=TRUE}
+```{r sim_scenario_3, cache=TRUE, dependson="simul_setup"}
 normal_sample_3 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_1)
 t_sample_3 <- conduct_simulation(R, grouping_f_large, "t", theta_1)
 ```
@@ -176,11 +184,15 @@ ggplot(results_3, aes(x = cluster, y = value, col = method, shape = parameter)) 
   facet_wrap(~distribution)+
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Large, equal clusters; no correlation")
+knitr::kable(
+  tidyr::pivot_wider(results_3, c("cluster","parameter"), 
+                   names_from = c("method","distribution"))
+)
 ```
 
 ## Scenario 4
 
-```{r sim_scenario_4, cache=TRUE}
+```{r sim_scenario_4, cache=TRUE, dependson="simul_setup"}
 normal_sample_4 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_2)
 t_sample_4 <- conduct_simulation(R, grouping_f_large, "t", theta_2)
 ```
@@ -199,11 +211,16 @@ ggplot(results_4, aes(x = cluster, y = value, col = method, shape = parameter)) 
   facet_wrap(~distribution)+
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Large, equal clusters; strong correlation")
+
+knitr::kable(
+  tidyr::pivot_wider(results_4, c("cluster","parameter"), 
+                   names_from = c("method","distribution"))
+)
 ```
 
 ## Scenario 5
 
-```{r sim_scenario_5, cache=TRUE}
+```{r sim_scenario_5, cache=TRUE, dependson="simul_setup"}
 normal_sample_5 <- conduct_simulation(R, grouping_f_mixed, "Gaussian", theta_mixed)
 t_sample_5 <- conduct_simulation(R, grouping_f_mixed, "t", theta_mixed)
 ```
@@ -222,4 +239,8 @@ ggplot(results_5, aes(x = cluster, y = value, col = method, shape = parameter)) 
   facet_wrap(~distribution)+
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Varying clusters and correlations")
+knitr::kable(
+  tidyr::pivot_wider(results_5, c("cluster","parameter"), 
+                   names_from = c("method","distribution"))
+)
 ```
