@@ -31,51 +31,68 @@ n_g_mixed <- c(50, 50, 200, 200)
 grouping_f_small <- factor(rep(LETTERS[1:G], times=n_g_small))
 grouping_f_large <- factor(rep(LETTERS[1:G], times=n_g_large))
 grouping_f_mixed <- factor(rep(LETTERS[1:G], times=n_g_mixed))
+
+conduct_simulation <- function(num_samples, grouping_f, distribution, theta){
+  if(distribution == "Gaussian"){
+    sampling_f <- rmvnorm
+    p_f <- pnorm
+  } else if(distribution == "t"){
+    sampling_f <- rmvt
+    p_f <- function(q) pt(q, 1)
+  } else cli::cli_abort("Not implemented")
+  true_sigma <- matrix(c(1, theta,
+                         theta, 1), nrow = 2)
+  lapply(1:num_samples, function(i){
+    sample <- sampling_f(length(grouping_f), sigma = true_sigma)
+    copula_df <- data.frame(y = p_f(sample[,2]),
+                            x = p_f(sample[,1]))
+    grouped_model <- grouped_lmranks(r(y) ~ r(x), data = copula_df, 
+                                     grouping_factor = grouping_f)
+    coefs <- coef(grouped_model)
+    covariance_matrices <- calculate_grouped_lmranks_covariances(grouped_model)
+    covariance_matrices <- sapply(covariance_matrices, function(x) x, simplify = "array")
+    out <- list(coefs = coefs, covariance_matrices = covariance_matrices)
+    out
+  })
+}
+
+extract_estimates_from_simulation_results <- function(res){
+  coefs_across_clusters <- sapply(res, function(l){
+    l$coefs}, simplify = "array")
+  mean_coefs <- apply(coefs_across_clusters, MARGIN = c(1,2), FUN = mean)
+  
+  estimated_cov_matrices <- sapply(1:dim(coefs_across_clusters)[2], function(i) {cov(t(coefs_across_clusters[,i,]))}, simplify = "array")
+  dimnames(estimated_cov_matrices)[[3]] <- dimnames(coefs_across_clusters)[[2]]
+  cov_matrices_across_clusters <- sapply(res, function(l){
+    l$covariance_matrices}, simplify = "array")
+  mean_cov_matrices <- apply(cov_matrices_across_clusters, MARGIN = c(1,2,3), FUN = mean)
+  list(mean_coefs = mean_coefs,
+       empirical_cov_matrices = estimated_cov_matrices,
+       mean_est_cov_matrices = mean_cov_matrices)
+}
 ```
 
 ## Example usage
 
 ```{r example_usage}
-normal_sample <- rmvnorm(sum(n_g_small), sigma = true_Sigma_2)
-normal_copula_df <- data.frame(y = pnorm(normal_sample[,2]),
-                        x = pnorm(normal_sample[,1]))
-
-grouped_model <- grouped_lmranks(r(y) ~ r(x), data = normal_copula_df, 
-                                 grouping_factor = grouping_f_small)
-coef(grouped_model)
-calculate_grouped_lmranks_covariances(grouped_model)
+conduct_simulation(1, grouping_f_small, "Gaussian", 0)
 ```
 
 ## Scenario 1
 
 ```{r sim_scenario_1, cache=TRUE}
-# simulation
-coef_sample_1 <- lapply(1:R, function(i){
-  normal_sample <- mvtnorm::rmvnorm(sum(n_g_small), sigma = true_Sigma_2)
-  normal_copula_df <- data.frame(y = pnorm(normal_sample[,2]),
-                        x = pnorm(normal_sample[,1]))
-  grouped_model <- grouped_lmranks(r(y) ~ r(x), data = normal_copula_df, 
-                                   grouping_factor = grouping_f_small)
-  coefs <- coef(grouped_model)
-  covariance_matrix <- calculate_grouped_lmranks_covariances(grouped_model)
-  out <- list(coefs = coefs, covariance_matrix = covariance_matrix)
-  out
-})
+normal_sample_1 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_1)
+t_sample_1 <- conduct_simulation(R, grouping_f_small, "t", theta_1)
 ```
 
-```{r results_scenario_1}
-coefs_across_clusters <- sapply(coef_sample_1, function(l){
-  l$coefs}, simplify = "array")
-mean_coefs <- apply(coefs_across_clusters, MARGIN = c(1,2), FUN = mean)
-mean_coefs
-
-estimated_cov_matrices <- lapply(1:dim(coefs_across_clusters)[2], function(i) {cov(t(coefs_across_clusters[,i,]))})
-names(estimated_cov_matrices) <- dimnames(coefs_across_clusters)[[2]]
-cov_matrices_across_clusters <- sapply(coef_sample_1, function(l){
-  sapply(l$covariance_matrix, function(x) x, simplify = "array")
-}, simplify = "array")
-mean_cov_matrices <- apply(cov_matrices_across_clusters, MARGIN = c(1,2,3), FUN = mean)
-estimated_cov_matrices$A
-mean_cov_matrices[,,"A"]
+```{r postprocess_scenario_1}
+normal_ests_1 <- extract_estimates_from_simulation_results(normal_sample_1)
+t_ests_1 <- extract_estimates_from_simulation_results(t_sample_1)
 ```
+
+```{r visualize_scenario_1}
+normal_ests_1
+t_ests_1
+```
+
 
