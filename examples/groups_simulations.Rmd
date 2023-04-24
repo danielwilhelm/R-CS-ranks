@@ -1,0 +1,81 @@
+---
+title: "Groups simulations"
+author: "Pawel Morgen, Daniel Wilhelm"
+date: "2023-04-22"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simulation setup
+
+```{r simul_setup}
+library(csranks) # make sure to install version from rrreg-grouping branch
+library(mvtnorm)
+set.seed(2023)
+R <- 1000
+G <- 4
+theta_1 <- 0
+theta_2 <- 0.7
+true_Sigma_1 <- matrix(c(1, theta_1,
+                         theta_1, 1), nrow = 2)
+true_Sigma_2 <- matrix(c(1, theta_2,
+                         theta_2, 1), nrow = 2)
+
+n_g_small <- rep(50, G)
+n_g_large <- rep(200, G)
+n_g_mixed <- c(50, 50, 200, 200)
+
+grouping_f_small <- factor(rep(LETTERS[1:G], times=n_g_small))
+grouping_f_large <- factor(rep(LETTERS[1:G], times=n_g_large))
+grouping_f_mixed <- factor(rep(LETTERS[1:G], times=n_g_mixed))
+```
+
+## Example usage
+
+```{r example_usage}
+normal_sample <- rmvnorm(sum(n_g_small), sigma = true_Sigma_2)
+normal_copula_df <- data.frame(y = pnorm(normal_sample[,2]),
+                        x = pnorm(normal_sample[,1]))
+
+grouped_model <- grouped_lmranks(r(y) ~ r(x), data = normal_copula_df, 
+                                 grouping_factor = grouping_f_small)
+coef(grouped_model)
+calculate_grouped_lmranks_covariances(grouped_model)
+```
+
+## Scenario 1
+
+```{r sim_scenario_1, cache=TRUE}
+# simulation
+coef_sample_1 <- lapply(1:R, function(i){
+  normal_sample <- mvtnorm::rmvnorm(sum(n_g_small), sigma = true_Sigma_2)
+  normal_copula_df <- data.frame(y = pnorm(normal_sample[,2]),
+                        x = pnorm(normal_sample[,1]))
+  grouped_model <- grouped_lmranks(r(y) ~ r(x), data = normal_copula_df, 
+                                   grouping_factor = grouping_f_small)
+  coefs <- coef(grouped_model)
+  covariance_matrix <- calculate_grouped_lmranks_covariances(grouped_model)
+  out <- list(coefs = coefs, covariance_matrix = covariance_matrix)
+  out
+})
+```
+
+```{r results_scenario_1}
+coefs_across_clusters <- sapply(coef_sample_1, function(l){
+  l$coefs}, simplify = "array")
+mean_coefs <- apply(coefs_across_clusters, MARGIN = c(1,2), FUN = mean)
+mean_coefs
+
+estimated_cov_matrices <- lapply(1:dim(coefs_across_clusters)[2], function(i) {cov(t(coefs_across_clusters[,i,]))})
+names(estimated_cov_matrices) <- dimnames(coefs_across_clusters)[[2]]
+cov_matrices_across_clusters <- sapply(coef_sample_1, function(l){
+  sapply(l$covariance_matrix, function(x) x, simplify = "array")
+}, simplify = "array")
+mean_cov_matrices <- apply(cov_matrices_across_clusters, MARGIN = c(1,2,3), FUN = mean)
+estimated_cov_matrices$A
+mean_cov_matrices[,,"A"]
+```
+
