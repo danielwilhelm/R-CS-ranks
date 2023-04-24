@@ -14,11 +14,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r simul_setup}
 library(csranks) # make sure to install version from rrreg-grouping branch
 library(mvtnorm)
+library(dplyr)
+library(ggplot2)
+theme_set(theme_bw())
 set.seed(2023)
-R <- 1000
+R <- 100
 G <- 4
-theta_1 <- 0
-theta_2 <- 0.7
+theta_1 <- rep(0, G)
+theta_2 <- rep(0.7, G)
+theta_mixed <- c(0, 0.7, 0, 0.7)
 true_Sigma_1 <- matrix(c(1, theta_1,
                          theta_1, 1), nrow = 2)
 true_Sigma_2 <- matrix(c(1, theta_2,
@@ -40,10 +44,16 @@ conduct_simulation <- function(num_samples, grouping_f, distribution, theta){
     sampling_f <- rmvt
     p_f <- function(q) pt(q, 1)
   } else cli::cli_abort("Not implemented")
-  true_sigma <- matrix(c(1, theta,
-                         theta, 1), nrow = 2)
   lapply(1:num_samples, function(i){
-    sample <- sampling_f(length(grouping_f), sigma = true_sigma)
+    sample <- matrix(nrow = length(grouping_f), ncol = 2)
+    for (j in 1:length(levels(grouping_f))){
+      group_indicator <- grouping_f == levels(grouping_f)[j]
+      true_sigma <- matrix(c(1, theta[j],
+                         theta[j], 1), nrow = 2)
+      level_sample <- sampling_f(sum(group_indicator), 
+                                 sigma = true_sigma)
+      sample[group_indicator,] <- level_sample
+    }
     copula_df <- data.frame(y = p_f(sample[,2]),
                             x = p_f(sample[,1]))
     grouped_model <- grouped_lmranks(r(y) ~ r(x), data = copula_df, 
@@ -60,22 +70,41 @@ extract_estimates_from_simulation_results <- function(res){
   coefs_across_clusters <- sapply(res, function(l){
     l$coefs}, simplify = "array")
   mean_coefs <- apply(coefs_across_clusters, MARGIN = c(1,2), FUN = mean)
+  coef_names <- dimnames(coefs_across_clusters)[[1]]
+  cluster_names <- dimnames(coefs_across_clusters)[[2]]
+  empirical_covariances <- sapply(1:dim(coefs_across_clusters)[2], function(i) {
+      cov_mat <- cov(t(coefs_across_clusters[,i,]))
+      vec <- c(cov_mat[1,1], cov_mat[2,2], cov_mat[1,2])
+      names(vec) <- c(paste0("var_", coef_names),
+                      paste0(c("covar" ,coef_names), collapse="_"))
+      vec
+    })
+  colnames(empirical_covariances) <- cluster_names
+  empirical_df <- as_tibble(empirical_covariances, rownames = "parameter") %>%
+    tidyr::pivot_longer(-1, names_to = "cluster") %>%
+    mutate(method = "empirical_covariance")
   
-  estimated_cov_matrices <- sapply(1:dim(coefs_across_clusters)[2], function(i) {cov(t(coefs_across_clusters[,i,]))}, simplify = "array")
-  dimnames(estimated_cov_matrices)[[3]] <- dimnames(coefs_across_clusters)[[2]]
   cov_matrices_across_clusters <- sapply(res, function(l){
-    l$covariance_matrices}, simplify = "array")
+      l$covariance_matrices
+    }, simplify = "array")
   mean_cov_matrices <- apply(cov_matrices_across_clusters, MARGIN = c(1,2,3), FUN = mean)
-  list(mean_coefs = mean_coefs,
-       empirical_cov_matrices = estimated_cov_matrices,
-       mean_est_cov_matrices = mean_cov_matrices)
+  est_df <- apply(mean_cov_matrices, 3, function(cov_mat){
+    vec <- c(cov_mat[1,1], cov_mat[2,2], cov_mat[1,2])
+    names(vec) <- c(paste0("var_", coef_names),
+                    paste0(c("covar" ,coef_names), collapse="_"))
+    vec
+  }) %>% as_tibble(rownames = "parameter") %>%
+    tidyr::pivot_longer(-1, names_to = "cluster") %>%
+    mutate(method = "mean_of_estimates_of_covariance")
+  
+  rbind(empirical_df, est_df)
 }
 ```
 
 ## Example usage
 
 ```{r example_usage}
-conduct_simulation(1, grouping_f_small, "Gaussian", 0)
+conduct_simulation(1, grouping_f_small, "Gaussian", theta_1)
 ```
 
 ## Scenario 1
@@ -86,13 +115,111 @@ t_sample_1 <- conduct_simulation(R, grouping_f_small, "t", theta_1)
 ```
 
 ```{r postprocess_scenario_1}
-normal_ests_1 <- extract_estimates_from_simulation_results(normal_sample_1)
-t_ests_1 <- extract_estimates_from_simulation_results(t_sample_1)
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_1)
+t_ests <- extract_estimates_from_simulation_results(t_sample_1)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_1 <- rbind(normal_annotated, t_annotated)
 ```
 
 ```{r visualize_scenario_1}
-normal_ests_1
-t_ests_1
+
+ggplot(results_1, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Small, equal clusters; no correlation")
 ```
 
+## Scenario 2
 
+```{r sim_scenario_2, cache=TRUE}
+normal_sample_2 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_2)
+t_sample_2 <- conduct_simulation(R, grouping_f_small, "t", theta_2)
+```
+
+```{r postprocess_scenario_2}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_2)
+t_ests <- extract_estimates_from_simulation_results(t_sample_2)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_2 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_2}
+
+ggplot(results_2, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Small, equal clusters; strong correlation")
+```
+
+## Scenario 3
+
+```{r sim_scenario_3, cache=TRUE}
+normal_sample_3 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_1)
+t_sample_3 <- conduct_simulation(R, grouping_f_large, "t", theta_1)
+```
+
+```{r postprocess_scenario_3}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_3)
+t_ests <- extract_estimates_from_simulation_results(t_sample_3)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_3 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_3}
+ggplot(results_3, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Large, equal clusters; no correlation")
+```
+
+## Scenario 4
+
+```{r sim_scenario_4, cache=TRUE}
+normal_sample_4 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_2)
+t_sample_4 <- conduct_simulation(R, grouping_f_large, "t", theta_2)
+```
+
+```{r postprocess_scenario_4}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_4)
+t_ests <- extract_estimates_from_simulation_results(t_sample_4)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_4 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_4}
+ggplot(results_4, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Large, equal clusters; strong correlation")
+```
+
+## Scenario 5
+
+```{r sim_scenario_5, cache=TRUE}
+normal_sample_5 <- conduct_simulation(R, grouping_f_mixed, "Gaussian", theta_mixed)
+t_sample_5 <- conduct_simulation(R, grouping_f_mixed, "t", theta_mixed)
+```
+
+```{r postprocess_scenario_5}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_5)
+t_ests <- extract_estimates_from_simulation_results(t_sample_5)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_5 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_5}
+ggplot(results_5, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Varying clusters and correlations")
+```
