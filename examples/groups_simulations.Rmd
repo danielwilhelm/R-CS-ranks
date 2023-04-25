@@ -13,9 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r simul_setup, cache=TRUE}
 library(csranks) # make sure to install version from rrreg-grouping branch
-library(mvtnorm)
+#library(mvtnorm)
 library(dplyr)
 library(ggplot2)
+library(parallel)
 theme_set(theme_bw())
 set.seed(2023)
 R <- 100
@@ -36,34 +37,53 @@ grouping_f_small <- factor(rep(LETTERS[1:G], times=n_g_small))
 grouping_f_large <- factor(rep(LETTERS[1:G], times=n_g_large))
 grouping_f_mixed <- factor(rep(LETTERS[1:G], times=n_g_mixed))
 
-conduct_simulation <- function(num_samples, grouping_f, distribution, theta){
+conduct_simulation <- function(num_samples, grouping_f, distribution, theta,
+                               num.cores = NULL){
   if(distribution == "Gaussian"){
-    sampling_f <- rmvnorm
+    sampling_f <- mvtnorm::rmvnorm
     p_f <- pnorm
   } else if(distribution == "t"){
-    sampling_f <- rmvt
+    sampling_f <- mvtnorm::rmvt
     p_f <- function(q) pt(q, 1)
   } else cli::cli_abort("Not implemented")
-  lapply(1:num_samples, function(i){
+  if(is.null(num.cores))
+    num.cores <- parallelly::availableCores()
+  type <- ifelse(parallelly::supportsMulticore(),
+                 "FORK",
+                 "PSOCK")
+  cl <- makeCluster(num.cores, type)
+  clusterSetRNGStream(cl, 2023)
+  clusterExport(cl, c("grouping_f", "theta", "sampling_f", "p_f"), envir = environment())
+  sim <- parLapply(cl, 1:num_samples, function(i, grouping_f, theta, sampling_f, p_f){
     sample <- matrix(nrow = length(grouping_f), ncol = 2)
     for (j in 1:length(levels(grouping_f))){
       group_indicator <- grouping_f == levels(grouping_f)[j]
       true_sigma <- matrix(c(1, theta[j],
-                         theta[j], 1), nrow = 2)
+                             theta[j], 1), nrow = 2)
       level_sample <- sampling_f(sum(group_indicator), 
                                  sigma = true_sigma)
       sample[group_indicator,] <- level_sample
     }
     copula_df <- data.frame(y = p_f(sample[,2]),
                             x = p_f(sample[,1]))
-    grouped_model <- grouped_lmranks(r(y) ~ r(x), data = copula_df, 
+    grouped_model <- csranks::grouped_lmranks(r(y) ~ r(x), data = copula_df, 
                                      grouping_factor = grouping_f)
     coefs <- coef(grouped_model)
-    covariance_matrices <- calculate_grouped_lmranks_covariances(grouped_model)
-    covariance_matrices <- sapply(covariance_matrices, function(x) x, simplify = "array")
+    csranks_vcov <- csranks::calculate_grouped_lmranks_covariances(grouped_model)
+    vcov_vcov <- vcov(grouped_model)
+    vcovHC_vcov <- sandwich::vcovHC(grouped_model)
+    
+    covariance_matrices <- sapply(list(csranks= csranks_vcov,
+                                       vcov = vcov_vcov,
+                                       vcovHC = vcovHC_vcov), 
+                                  function(x) {sapply(x, function(x) x, simplify = "array")}, 
+                                  simplify = "array")
+    # covariance_matrices is an array of size n_coefs x n_coefs x n_groups x n_vcov_methods
     out <- list(coefs = coefs, covariance_matrices = covariance_matrices)
     out
-  })
+  }, grouping_f=grouping_f, theta=theta, sampling_f=sampling_f, p_f=p_f)
+  stopCluster(cl)
+  return(sim)
 }
 
 extract_estimates_from_simulation_results <- function(res){
@@ -87,15 +107,14 @@ extract_estimates_from_simulation_results <- function(res){
   cov_matrices_across_clusters <- sapply(res, function(l){
       l$covariance_matrices
     }, simplify = "array")
-  mean_cov_matrices <- apply(cov_matrices_across_clusters, MARGIN = c(1,2,3), FUN = mean)
-  est_df <- apply(mean_cov_matrices, 3, function(cov_mat){
+  mean_cov_matrices <- apply(cov_matrices_across_clusters, MARGIN = c(1,2,3,4), FUN = mean)
+  est_df <- apply(mean_cov_matrices, c(3,4), function(cov_mat){
     vec <- c(cov_mat[1,1], cov_mat[2,2], cov_mat[1,2])
     names(vec) <- c(paste0("var_", coef_names),
                     paste0(c("covar" ,coef_names), collapse="_"))
     vec
   }) %>% as_tibble(rownames = "parameter") %>%
-    tidyr::pivot_longer(-1, names_to = "cluster") %>%
-    mutate(method = "implemented")
+    tidyr::pivot_longer(-1, names_to = c("cluster", "method"), names_sep = "\\.")
   
   rbind(empirical_df, est_df)
 }
@@ -130,8 +149,9 @@ ggplot(results_1, aes(x = cluster, y = value, col = method, shape = parameter)) 
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Small, equal clusters; no correlation")
 knitr::kable(
-  tidyr::pivot_wider(results_1, c("cluster","parameter"), 
-                   names_from = c("method","distribution"))
+  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
   )
 ```
 
@@ -158,8 +178,9 @@ ggplot(results_2, aes(x = cluster, y = value, col = method, shape = parameter)) 
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Small, equal clusters; strong correlation")
 knitr::kable(
-  tidyr::pivot_wider(results_2, c("cluster","parameter"), 
-                 names_from = c("method","distribution"))
+  tidyr::pivot_wider(results_2, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
 )
 ```
 
@@ -185,8 +206,9 @@ ggplot(results_3, aes(x = cluster, y = value, col = method, shape = parameter)) 
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Large, equal clusters; no correlation")
 knitr::kable(
-  tidyr::pivot_wider(results_3, c("cluster","parameter"), 
-                   names_from = c("method","distribution"))
+  tidyr::pivot_wider(results_3, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
 )
 ```
 
@@ -213,8 +235,9 @@ ggplot(results_4, aes(x = cluster, y = value, col = method, shape = parameter)) 
        subtitle = "Large, equal clusters; strong correlation")
 
 knitr::kable(
-  tidyr::pivot_wider(results_4, c("cluster","parameter"), 
-                   names_from = c("method","distribution"))
+  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
 )
 ```
 
@@ -240,7 +263,8 @@ ggplot(results_5, aes(x = cluster, y = value, col = method, shape = parameter)) 
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Varying clusters and correlations")
 knitr::kable(
-  tidyr::pivot_wider(results_5, c("cluster","parameter"), 
-                   names_from = c("method","distribution"))
+  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
 )
 ```
