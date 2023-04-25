@@ -1,3 +1,14 @@
+#' @export
+vcov.grouped_lmranks <- function(object, ...){
+  lapply(object, vcov, ...)
+}
+
+#' @importFrom sandwich vcovHC
+#' @export
+vcovHC.grouped_lmranks <- function(x, ...){
+  lapply(x, sandwich::vcovHC, ...)
+}
+
 # Some of the functions used here are defined in lmranks_summary
 #' @export
 calculate_grouped_lmranks_covariances <- function(object, complete = TRUE, ...){
