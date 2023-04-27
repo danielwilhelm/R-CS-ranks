@@ -24,7 +24,7 @@ R <- 100
 G <- nrow(CorrCZ50)
 rho_cz <- CorrCZ50$rho
 
-n_g_cz <- round(CorrCZ50$nsim / 10)
+n_g_cz <- CorrCZ50$nsim
 
 grouping_f_cz <- factor(rep(CorrCZ50$czname, times=n_g_cz))
 
