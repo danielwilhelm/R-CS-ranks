@@ -130,145 +130,31 @@ extract_estimates_from_simulation_results <- function(res, true_data,
 s <- conduct_simulation(10, grouping_f_cz, "Gaussian", rho_cz)
 ```
 
-## Scenario 1
+## Mobility in the US - simulation
 
-```{r sim_scenario_1, cache=TRUE, dependson="simul_setup"}
-normal_sample_1 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_1)
-t_sample_1 <- conduct_simulation(R, grouping_f_small, "t", theta_1)
+```{r sim_scenario, cache=TRUE, dependson="simul_setup"}
+normal_sample <- conduct_simulation(R, grouping_f_cz, "Gaussian", rho_cz)
+t_sample <- conduct_simulation(R, grouping_f_cz, "t", rho_cz)
 ```
 
-```{r postprocess_scenario_1}
-normal_ests <- extract_estimates_from_simulation_results(normal_sample_1)
-t_ests <- extract_estimates_from_simulation_results(t_sample_1)
+```{r postprocess}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample)
+t_ests <- extract_estimates_from_simulation_results(t_sample)
 normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
 t_annotated <- mutate(t_ests, distribution = "t-Student")
-results_1 <- rbind(normal_annotated, t_annotated)
+results <- rbind(normal_annotated, t_annotated)
 ```
 
-```{r visualize_scenario_1}
+```{r visualize}
 
-ggplot(results_1, aes(x = cluster, y = value, col = method, shape = parameter)) +
+ggplot(results, aes(x = cluster, y = delta_variance, col = method)) +
   geom_point() +
   facet_wrap(~distribution)+
   labs(title = "Comparison between empirical and implemented variance estimates",
        subtitle = "Small, equal clusters; no correlation")
 knitr::kable(
-  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+  tidyr::pivot_wider(results, c("distribution", "cluster","parameter"), 
                    names_from = c("method")) %>%
     arrange(distribution, cluster, parameter)
   )
-```
-
-## Scenario 2
-
-```{r sim_scenario_2, cache=TRUE, dependson="simul_setup"}
-normal_sample_2 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_2)
-t_sample_2 <- conduct_simulation(R, grouping_f_small, "t", theta_2)
-```
-
-```{r postprocess_scenario_2}
-normal_ests <- extract_estimates_from_simulation_results(normal_sample_2)
-t_ests <- extract_estimates_from_simulation_results(t_sample_2)
-normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
-t_annotated <- mutate(t_ests, distribution = "t-Student")
-results_2 <- rbind(normal_annotated, t_annotated)
-```
-
-```{r visualize_scenario_2}
-
-ggplot(results_2, aes(x = cluster, y = value, col = method, shape = parameter)) +
-  geom_point() +
-  facet_wrap(~distribution)+
-  labs(title = "Comparison between empirical and implemented variance estimates",
-       subtitle = "Small, equal clusters; strong correlation")
-knitr::kable(
-  tidyr::pivot_wider(results_2, c("distribution", "cluster","parameter"), 
-                   names_from = c("method")) %>%
-    arrange(distribution, cluster, parameter)
-)
-```
-
-## Scenario 3
-
-```{r sim_scenario_3, cache=TRUE, dependson="simul_setup"}
-normal_sample_3 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_1)
-t_sample_3 <- conduct_simulation(R, grouping_f_large, "t", theta_1)
-```
-
-```{r postprocess_scenario_3}
-normal_ests <- extract_estimates_from_simulation_results(normal_sample_3)
-t_ests <- extract_estimates_from_simulation_results(t_sample_3)
-normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
-t_annotated <- mutate(t_ests, distribution = "t-Student")
-results_3 <- rbind(normal_annotated, t_annotated)
-```
-
-```{r visualize_scenario_3}
-ggplot(results_3, aes(x = cluster, y = value, col = method, shape = parameter)) +
-  geom_point() +
-  facet_wrap(~distribution)+
-  labs(title = "Comparison between empirical and implemented variance estimates",
-       subtitle = "Large, equal clusters; no correlation")
-knitr::kable(
-  tidyr::pivot_wider(results_3, c("distribution", "cluster","parameter"), 
-                   names_from = c("method")) %>%
-    arrange(distribution, cluster, parameter)
-)
-```
-
-## Scenario 4
-
-```{r sim_scenario_4, cache=TRUE, dependson="simul_setup"}
-normal_sample_4 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_2)
-t_sample_4 <- conduct_simulation(R, grouping_f_large, "t", theta_2)
-```
-
-```{r postprocess_scenario_4}
-normal_ests <- extract_estimates_from_simulation_results(normal_sample_4)
-t_ests <- extract_estimates_from_simulation_results(t_sample_4)
-normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
-t_annotated <- mutate(t_ests, distribution = "t-Student")
-results_4 <- rbind(normal_annotated, t_annotated)
-```
-
-```{r visualize_scenario_4}
-ggplot(results_4, aes(x = cluster, y = value, col = method, shape = parameter)) +
-  geom_point() +
-  facet_wrap(~distribution)+
-  labs(title = "Comparison between empirical and implemented variance estimates",
-       subtitle = "Large, equal clusters; strong correlation")
-
-knitr::kable(
-  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
-                   names_from = c("method")) %>%
-    arrange(distribution, cluster, parameter)
-)
-```
-
-## Scenario 5
-
-```{r sim_scenario_5, cache=TRUE, dependson="simul_setup"}
-normal_sample_5 <- conduct_simulation(R, grouping_f_mixed, "Gaussian", theta_mixed)
-t_sample_5 <- conduct_simulation(R, grouping_f_mixed, "t", theta_mixed)
-```
-
-```{r postprocess_scenario_5}
-normal_ests <- extract_estimates_from_simulation_results(normal_sample_5)
-t_ests <- extract_estimates_from_simulation_results(t_sample_5)
-normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
-t_annotated <- mutate(t_ests, distribution = "t-Student")
-results_5 <- rbind(normal_annotated, t_annotated)
-```
-
-```{r visualize_scenario_5}
-ggplot(results_5, aes(x = cluster, y = value, col = method, shape = parameter)) +
-  geom_point() +
-  facet_wrap(~distribution)+
-  labs(title = "Comparison between empirical and implemented variance estimates",
-       subtitle = "Varying clusters and correlations")
-knitr::kable(
-  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
-                   names_from = c("method")) %>%
-    arrange(distribution, cluster, parameter)
-)
 ```
