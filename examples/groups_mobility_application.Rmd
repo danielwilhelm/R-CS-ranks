@@ -1,0 +1,274 @@
+---
+title: "Mobility - a case study"
+author: "Pawel Morgen, Daniel Wilhelm"
+date: "2023-04-22"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simulation setup
+
+```{r simul_setup, cache=TRUE}
+library(csranks) # make sure to install version from rrreg-grouping branch
+library(dplyr)
+library(ggplot2)
+library(parallel)
+theme_set(theme_bw())
+set.seed(2023)
+
+load("czsim.RData")
+R <- 100
+G <- nrow(CorrCZ50)
+rho_cz <- CorrCZ50$rho
+
+n_g_cz <- round(CorrCZ50$nsim / 10)
+
+grouping_f_cz <- factor(rep(CorrCZ50$czname, times=n_g_cz))
+
+conduct_simulation <- function(num_samples, grouping_f, distribution, rho,
+                               num.cores = NULL){
+  grouping_f <- sort(grouping_f)
+  if(distribution == "Gaussian"){
+    cop_object <- copula::normalCopula()
+    sampling_f <- mvtnorm::rmvnorm
+    p_f <- pnorm
+  } else if(distribution == "t"){
+    cop_object <- copula::tCopula(df = 1)
+    sampling_f <- mvtnorm::rmvt
+    p_f <- function(q) pt(q, 1)
+  } else cli::cli_abort("Not implemented")
+  theta <- copula::iRho(cop_object, rho)
+  if(is.null(num.cores))
+    num.cores <- parallelly::availableCores()
+  type <- ifelse(parallelly::supportsMulticore(),
+                 "FORK",
+                 "PSOCK")
+  cl <- makeCluster(num.cores, type)
+  clusterSetRNGStream(cl, 2023)
+  clusterExport(cl, c("grouping_f", "theta", "sampling_f", "p_f"), envir = environment())
+  sim <- parLapply(cl, 1:num_samples, function(i, grouping_f, theta, sampling_f, p_f){
+    sample_per_levels <- lapply(1:length(levels(grouping_f)), function(j){
+      group_indicator <- grouping_f == levels(grouping_f)[j]
+      true_sigma <- matrix(c(1, theta[j],
+                             theta[j], 1), nrow = 2)
+      level_sample <- sampling_f(sum(group_indicator), 
+                                 sigma = true_sigma)
+      level_sample
+    })
+    sample <- do.call(rbind, sample_per_levels)
+    copula_df <- data.frame(y = p_f(sample[,2]),
+                            x = p_f(sample[,1]))
+    grouped_model <- csranks::grouped_lmranks(r(y) ~ r(x), data = copula_df, 
+                                     grouping_factor = grouping_f)
+    coefs <- coef(grouped_model)
+    csranks_vcov <- csranks::calculate_grouped_lmranks_covariances(grouped_model)
+    vcov_vcov <- vcov(grouped_model)
+    vcovHC_vcov <- sandwich::vcovHC(grouped_model)
+    
+    covariance_matrices <- sapply(list(csranks= csranks_vcov,
+                                       vcov = vcov_vcov,
+                                       vcovHC = vcovHC_vcov), 
+                                  function(x) {sapply(x, function(x) x, simplify = "array")}, 
+                                  simplify = "array")
+    # covariance_matrices is an array of size n_coefs x n_coefs x n_groups x n_vcov_methods
+    out <- list(coefs = coefs, covariance_matrices = covariance_matrices)
+    out
+  }, grouping_f=grouping_f, theta=theta, sampling_f=sampling_f, p_f=p_f)
+  stopCluster(cl)
+  return(sim)
+}
+
+extract_estimates_from_simulation_results <- function(res, true_data,
+                                                      coverage = 0.95){
+  true_data <- arrange(true_data, czname)
+  deltas_across_clusters <- sapply(res, function(l){
+    v <- as.vector(matrix(c(1, 0.25), nrow = 1) %*% l$coefs)
+    names(v) <- colnames(l$coefs)
+    v
+  })
+  mean_coefs <- rowMeans(deltas_across_clusters)
+  cluster_names <- rownames(deltas_across_clusters)
+  empirical_variances <- diag(cov(t(deltas_across_clusters)))
+  empirical_df <- tibble(cluster = cluster_names,
+                         var_est_method = "empirical",
+                         delta = mean_coefs,
+                         delta_variance = empirical_variances)
+  
+  delta_variances_across_clusters <- sapply(res, function(l){
+      apply(l$covariance_matrices, MARGIN = c(3,4), function(m){
+        m[1,1] + m[1,2] / 2 + m[2,2] / 16})
+    }, simplify = "array")
+  mean_delta_variances <- apply(delta_variances_across_clusters, MARGIN = c(1,2), FUN = mean)
+  method_names <- colnames(mean_delta_variances)
+  est_df <- as_tibble(mean_delta_variances, rownames = "cluster") %>%
+    mutate(delta = mean_coefs) %>%
+    tidyr::pivot_longer(all_of(method_names), names_to = "var_est_method", values_to = "delta_variance")
+  
+  true_delta <- true_data$theta25
+  n_g <- true_data$nsim
+  
+  CI_coverage_across_clusters <- sapply(1:ncol(deltas_across_clusters), function(i){
+    delta_est <- deltas_across_clusters[,i]
+    var_ests <- delta_variances_across_clusters[,,i]
+    sds <- sqrt(var_ests / n_g * sum(n_g))
+    CI_lower <- delta_est - qnorm(coverage) * sds
+    CI_upper <- delta_est + qnorm(coverage) * sds
+    true_delta > CI_lower & true_delta < CI_upper
+  }, simplify = "array")
+  emp_CI_coverage <- apply(CI_coverage_across_clusters, MARGIN = c(1,2), mean)
+  emp_CI_df
+  rbind(empirical_df, est_df)
+}
+```
+
+## Example usage
+
+```{r example_usage}
+s <- conduct_simulation(10, grouping_f_cz, "Gaussian", rho_cz)
+```
+
+## Scenario 1
+
+```{r sim_scenario_1, cache=TRUE, dependson="simul_setup"}
+normal_sample_1 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_1)
+t_sample_1 <- conduct_simulation(R, grouping_f_small, "t", theta_1)
+```
+
+```{r postprocess_scenario_1}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_1)
+t_ests <- extract_estimates_from_simulation_results(t_sample_1)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_1 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_1}
+
+ggplot(results_1, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Small, equal clusters; no correlation")
+knitr::kable(
+  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
+  )
+```
+
+## Scenario 2
+
+```{r sim_scenario_2, cache=TRUE, dependson="simul_setup"}
+normal_sample_2 <- conduct_simulation(R, grouping_f_small, "Gaussian", theta_2)
+t_sample_2 <- conduct_simulation(R, grouping_f_small, "t", theta_2)
+```
+
+```{r postprocess_scenario_2}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_2)
+t_ests <- extract_estimates_from_simulation_results(t_sample_2)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_2 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_2}
+
+ggplot(results_2, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Small, equal clusters; strong correlation")
+knitr::kable(
+  tidyr::pivot_wider(results_2, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
+)
+```
+
+## Scenario 3
+
+```{r sim_scenario_3, cache=TRUE, dependson="simul_setup"}
+normal_sample_3 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_1)
+t_sample_3 <- conduct_simulation(R, grouping_f_large, "t", theta_1)
+```
+
+```{r postprocess_scenario_3}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_3)
+t_ests <- extract_estimates_from_simulation_results(t_sample_3)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_3 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_3}
+ggplot(results_3, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Large, equal clusters; no correlation")
+knitr::kable(
+  tidyr::pivot_wider(results_3, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
+)
+```
+
+## Scenario 4
+
+```{r sim_scenario_4, cache=TRUE, dependson="simul_setup"}
+normal_sample_4 <- conduct_simulation(R, grouping_f_large, "Gaussian", theta_2)
+t_sample_4 <- conduct_simulation(R, grouping_f_large, "t", theta_2)
+```
+
+```{r postprocess_scenario_4}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_4)
+t_ests <- extract_estimates_from_simulation_results(t_sample_4)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_4 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_4}
+ggplot(results_4, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Large, equal clusters; strong correlation")
+
+knitr::kable(
+  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
+)
+```
+
+## Scenario 5
+
+```{r sim_scenario_5, cache=TRUE, dependson="simul_setup"}
+normal_sample_5 <- conduct_simulation(R, grouping_f_mixed, "Gaussian", theta_mixed)
+t_sample_5 <- conduct_simulation(R, grouping_f_mixed, "t", theta_mixed)
+```
+
+```{r postprocess_scenario_5}
+normal_ests <- extract_estimates_from_simulation_results(normal_sample_5)
+t_ests <- extract_estimates_from_simulation_results(t_sample_5)
+normal_annotated <- mutate(normal_ests, distribution = "Gaussian")
+t_annotated <- mutate(t_ests, distribution = "t-Student")
+results_5 <- rbind(normal_annotated, t_annotated)
+```
+
+```{r visualize_scenario_5}
+ggplot(results_5, aes(x = cluster, y = value, col = method, shape = parameter)) +
+  geom_point() +
+  facet_wrap(~distribution)+
+  labs(title = "Comparison between empirical and implemented variance estimates",
+       subtitle = "Varying clusters and correlations")
+knitr::kable(
+  tidyr::pivot_wider(results_1, c("distribution", "cluster","parameter"), 
+                   names_from = c("method")) %>%
+    arrange(distribution, cluster, parameter)
+)
+```
