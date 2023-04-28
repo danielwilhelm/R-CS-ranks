@@ -59,6 +59,39 @@ test_that("lmranks and lm provide coherent results", {
   expect_equal(raw_rank_m, expected_m)
 })
 
+test_that("lmranks correctly estimates rank correlation", {
+  set.seed(100)
+  
+  # continuous X and Y should produce identical rank correlation estimates
+  X <- rnorm(100)
+  Y <- X + rnorm(100)
+  for (omega in c(0, 0.5, 1)) {
+    RY <- frank(Y, omega=omega, increasing=TRUE)
+    RX <- frank(X, omega=omega, increasing=TRUE)
+    rcorr <- cor(RY, RX)
+
+    res <- lmranks(r(Y) ~ r(X), omega=omega)
+    rcorr.lmranks <- coef(res)[2]
+    names(rcorr.lmranks) <- NULL
+    expect_equal(rcorr, rcorr.lmranks)     
+  }
+
+  # discrete X and Y should produce identical estimates after rescaling
+  X <- rbinom(100, 5, 0.5)
+  Y <- X + rbinom(100, 2, 0.5)
+  for (omega in c(0, 0.5, 1)) {
+    RY <- frank(Y, omega=omega, increasing=TRUE)
+    RX <- frank(X, omega=omega, increasing=TRUE)
+    rcorr <- cor(RY, RX)
+
+    res <- lmranks(r(Y) ~ r(X), omega=omega)
+    rcorr.lmranks <- coef(res)[2] * sd(RX) / sd(RY)
+    names(rcorr.lmranks) <- NULL
+    expect_equal(rcorr, rcorr.lmranks)     
+  }  
+})
+
+
 test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula("y ~ x + w"))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
