@@ -86,6 +86,6 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
       
     # ------- test equality
     
-      expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+      expect_equal(sigma2hat, sigma2hat.lmranks)
   }
 })
