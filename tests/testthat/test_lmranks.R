@@ -4,18 +4,18 @@ test_that("lmranks and by-hand calculations provide same results",{
   df <- mtcars[1:10,]
   model <- lmranks(r(mpg) ~ r(hp) + disp + cyl + 1, data=df)
   
-  expected_response <- c(0.4, 0.4, 0.7, 0.6, 0.2, 0.1, 0.0, 0.9, 0.7, 0.3)
+  expected_response <- c(0.6, 0.6, 0.9, 0.7, 0.3, 0.2, 0.1, 1.0, 0.9, 0.4)
   expected_model.matrix <- matrix(c(
-    1, 0.4, 160.0, 6,
-    1, 0.4, 160.0, 6,
-    1, 0.1, 108.0, 4,
-    1, 0.4, 258.0, 6,
-    1, 0.8, 360.0, 8,
-    1, 0.3, 225.0, 6,
+    1, 0.7, 160.0, 6,
+    1, 0.7, 160.0, 6,
+    1, 0.2, 108.0, 4,
+    1, 0.7, 258.0, 6,
     1, 0.9, 360.0, 8,
-    1, 0.0, 146.7, 4,
-    1, 0.2, 140.8, 4,
-    1, 0.7, 167.6, 6
+    1, 0.4, 225.0, 6,
+    1, 1.0, 360.0, 8,
+    1, 0.1, 146.7, 4,
+    1, 0.3, 140.8, 4,
+    1, 0.8, 167.6, 6
   ), byrow = TRUE, nrow = 10)
   expected_coef <- solve(t(expected_model.matrix) %*% expected_model.matrix) %*% 
     t(expected_model.matrix) %*% expected_response
@@ -30,10 +30,10 @@ test_that("lmranks and by-hand calculations provide same results",{
 
 test_that("lmranks and lm provide coherent results", {
   Y <- c(3,1,2,4,5)
-  y_frank <- c(0.4, 0.0, 0.2, 0.6, 0.8)
+  y_frank <- c(0.6, 0.2, 0.4, 0.8, 1.0)
   X <- 1:5
   omega <- 0.5
-  x_frank <- c(0.0, 0.2, 0.4, 0.6, 0.8)
+  x_frank <- c(0.2, 0.4, 0.6, 0.8, 1.0)
   W <- c(1,3,2,5,4)
   
   rank_m <- lmranks(r(Y) ~ r(X) + W)
@@ -178,14 +178,14 @@ test_that("create_env_to_interpret_r_mark has correct contents", {
 
 test_that("create_env_to_interpret_r_mark's r function behaves correctly in fitting", {
   x_1 <- c(4,4,4,3,1,10,7,7)
-  expected_r_output <- c(0.4, 0.4, 0.4, 0.175, 0.05, 0.925, 0.725, 0.725)
+  expected_r_output <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)
   wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
                                                                na.rm=na.rm)}
   created_env <- wrapper(0.4, FALSE)
   actual_r_output <- eval(quote(r(x_1)), created_env)
   expect_equal(actual_r_output, expected_r_output)
   
-  expected_r_output_om0 <- c(0.25, 0.25, 0.25, 0.125, 0.00, 0.875, 0.625, 0.625)
+  expected_r_output_om0 <- c(0.375, 0.375, 0.375, 0.250, 0.125, 1.000, 0.750, 0.750)
   created_env <- wrapper(0, FALSE)
   actual_r_output <- eval(quote(r(x_1)), created_env)
   expect_equal(actual_r_output, expected_r_output_om0)
@@ -213,7 +213,8 @@ test_that("create_env_to_interpret_r_mark's r function behaves correctly in pred
 
 test_that("create_env_to_interpret_r_mark's r function handles NA", {
   x_1 <- c(4,4,NA,4,3,NA,1,10,7,7)
-  expected_r_output <- c(0.4, 0.4, NA, 0.4, 0.175, NA, 0.05, 0.925, 0.725, 0.725)
+  expected_r_output <- expected_r_output <- c(0.475, 0.475, NA, 0.475, 0.250, 
+                                              NA, 0.125, 1.000, 0.800, 0.800)
   wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
                                                                    na.rm=na.rm)}
   created_env <- wrapper(0.4, TRUE)
@@ -223,7 +224,7 @@ test_that("create_env_to_interpret_r_mark's r function handles NA", {
 
 test_that("omega argument is passed further correctly", {
   Y <- c(4,4,4,3,1,10,7,7)
-  y_frank <-c(0.4, 0.4, 0.4, 0.175, 0.05, 0.925, 0.725, 0.725)
+  y_frank <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)
   X <- 1:8
   W <- matrix(c(1,4,3,2,5,8,7,6), ncol = 1)
   
@@ -231,4 +232,3 @@ test_that("omega argument is passed further correctly", {
   names(rank_m$y) <- NULL
   expect_equal(rank_m$y, y_frank)
 })
-

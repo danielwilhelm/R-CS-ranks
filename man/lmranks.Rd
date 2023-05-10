@@ -22,7 +22,7 @@ lmranks(
   singular.ok = TRUE,
   contrasts = NULL,
   offset = offset,
-  omega = 0,
+  omega = 1,
   na.rm = FALSE,
   ...
 )
