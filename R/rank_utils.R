@@ -54,10 +54,25 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' irank_against(1:10, c(4,4,4,3,1,10,7,7))
 #' @export
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
-  compares <- compare(x, v, omega=omega, increasing=increasing, na.rm=na.rm)
-  out <- rowSums(compares) + 1 - omega
+  l <- process_compare_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
+  x <- l$x; v <- l$v
+  irank_min_max <- irank_minmax(x, v)
+  out <- omega * irank_min_max[,1] + (1-omega) * irank_min_max[,2]  + 1 - omega
   names(out) <- names(x)
   out
+}
+
+#' Compute minimum and maximum integer ranks in another reference vector
+#' 
+#' @return A matrix of size length(x), 2. In column there are integer ranks in 
+#' extreme cases of omega=0 and omega=1; increasing=TRUE.
+#' 
+#' @noRd
+irank_minmax <- function(x, v){
+  ranking <- order(v)
+  n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
+  n_lower <- findInterval(x, v[ranking], left.open = TRUE)
+  return(cbind(n_lower_or_equal, n_lower, deparse.level = 0))
 }
 
 #' @describeIn irank Compute fractional ranks
@@ -86,6 +101,7 @@ frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   out <- irank_against(x, v, omega, increasing, na.rm)
   return(out / l)
 } 
+
 #' Comparator function
 #' 
 #' @inheritParams irank_against
@@ -99,16 +115,17 @@ frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 compare <- function(x, v=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
   l <- process_compare_args(x, v, omega, increasing, na.rm)
   x <- l$x; v <- l$v
+  irank_min_max <- irank_minmax(x, v)
   ranking <- order(v)
-  
-  n_higher_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
-  n_higher <- findInterval(x, v[ranking], left.open = TRUE)
+  n_higher_or_equal <- irank_min_max[,1]
+  n_higher <- irank_min_max[,2]
   n_equal <- n_higher_or_equal - n_higher
-  out_for_sorted_v <- t(apply(cbind(n_higher, n_equal), MARGIN = 1, function(n_s){
-    c(rep(1, n_s[1]),
-      rep(omega, n_s[2]),
-      rep(0, length(v) - n_s[1] - n_s[2]))
-  }))
+  n_lower <- length(v) - n_higher - n_equal
+  
+  out_for_sorted_v <- matrix(rep(
+      rep(c(1, omega, 0), times = length(x)),
+      times = as.vector(rbind(n_higher, n_equal, n_lower))
+  ), byrow = TRUE, nrow = length(x))
   
   # return in order of original v
   original_order <- order(ranking)

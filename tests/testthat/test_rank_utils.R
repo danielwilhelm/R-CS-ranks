@@ -1,3 +1,22 @@
+### irank_minmax ###
+# TODO: modify tests of compare to check irank_minmax directly
+test_that("irank_minmax works", {
+  v <- c(1,3,4,4,4,7,7,10)
+  x <- c(0,1,2,3,4,5,7,8,10,11)
+  expected_irank <- matrix(c(0,0,
+                             1,0,
+                             1,1,
+                             2,1,
+                             5,2,
+                             5,5,
+                             7,5,
+                             7,7,
+                             8,7,
+                             8,8),byrow=TRUE,ncol=2)
+  expect_equal(irank_minmax(x, v),
+               expected_irank)
+})
+
 ### compare ###
 test_that("compare returns error for matrix input", {
   # This behavior ensures, that user cannot pass r(MATRIX) in lmranks
