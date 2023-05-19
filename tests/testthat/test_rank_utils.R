@@ -1,6 +1,6 @@
-### irank_minmax ###
-# TODO: modify tests of compare to check irank_minmax directly
-test_that("irank_minmax works", {
+### count_lequal_lesser ###
+# TODO: modify tests of compare to check count_lequal_lesser directly
+test_that("count_lequal_lesser works", {
   v <- c(1,3,4,4,4,7,7,10)
   x <- c(0,1,2,3,4,5,7,8,10,11)
   expected_irank <- matrix(c(0,0,
@@ -13,7 +13,7 @@ test_that("irank_minmax works", {
                              7,7,
                              8,7,
                              8,8),byrow=TRUE,ncol=2)
-  expect_equal(irank_minmax(x, v),
+  expect_equal(count_lequal_lesser(x, v),
                expected_irank)
 })
 

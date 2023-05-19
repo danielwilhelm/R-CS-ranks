@@ -213,7 +213,7 @@ test_that("get_projection_model works for model with 1 usual regressor", {
 
 test_that("calculate_g_l_3 works for no ranked regressors case", {
   data(mtcars)
-  irank_minmax_X <- NULL
+  n_lequal_lesser_X <- NULL
   W <- as.matrix(mtcars[, c("cyl", "hp")])
   W <- cbind(rep(1, nrow(W)),
              W)
@@ -228,7 +228,7 @@ test_that("calculate_g_l_3 works for no ranked regressors case", {
   
   expected_out <- rep(0, nrow(mtcars))
   
-  expect_equal(calculate_g_l_3(original_model, proj_model, irank_minmax_X=irank_minmax_X),
+  expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
                expected_out)
 })
 
@@ -236,7 +236,7 @@ test_that("calculate_g_l_3 works for proj_model with ranked response", {
   data(mtcars)
   original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars, omega=1)
   RX <- original_model$model$`r(cyl)`
-  irank_minmax_X <- irank_minmax(mtcars$cyl, return_inverse_ranking = TRUE)
+  n_lequal_lesser_X <- count_lequal_lesser(mtcars$cyl, return_inverse_ranking = TRUE)
   expected_I_X <- function(i,j) compare_for_tests(i,j,mtcars$cyl)
   W <- as.matrix(mtcars[, c("hp")])
   W <- cbind(rep(1, nrow(W)),
@@ -258,7 +258,7 @@ test_that("calculate_g_l_3 works for proj_model with ranked response", {
     )
   })
   
-  expect_equal(calculate_g_l_3(original_model, proj_model, irank_minmax_X=irank_minmax_X),
+  expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
                expected_out)
 })
 
@@ -266,7 +266,7 @@ test_that("calculate_g_l_3 works for proj_model with usual response", {
   data(mtcars)
   original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars, omega=1)
   RX <- original_model$model$`r(cyl)`
-  irank_minmax_X <- irank_minmax(mtcars$cyl, return_inverse_ranking = TRUE)
+  n_lequal_lesser_X <- count_lequal_lesser(mtcars$cyl, return_inverse_ranking = TRUE)
   expected_I_X <- function(i,j) compare_for_tests(i,j,mtcars$cyl)
   W_l <- mtcars$hp
   W_minus_l <- rep(1, length(W_l))
@@ -289,7 +289,7 @@ test_that("calculate_g_l_3 works for proj_model with usual response", {
     )
   })
   
-  expect_equal(calculate_g_l_3(original_model, proj_model, irank_minmax_X=irank_minmax_X),
+  expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
                expected_out)
 })
 
@@ -325,7 +325,7 @@ test_that("extract_nonrank_predictor works when ranked regressors present", {
 
 test_that("get_ineq_indicator works for sorted data", {
   original_v <- c(1,3,4,4,4,7,7,10)
-  irank_minmax <- matrix(c(
+  n_lequal_lesser <- matrix(c(
     1,0,1,
     2,1,2,
     5,2,3,
@@ -343,18 +343,18 @@ test_that("get_ineq_indicator works for sorted data", {
     expected_om1 <- sapply(1:length(original_v), function(j)
       compare_for_tests(i,j,original_v,omega=1))
     
-    expect_equal(get_ineq_indicator(irank_minmax, i, 0),
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
                  expected_om0)
-    expect_equal(get_ineq_indicator(irank_minmax, i, 0.4),
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
                  expected_om0.4)
-    expect_equal(get_ineq_indicator(irank_minmax, i, 1),
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
                  expected_om1)
   }
 })
 
 test_that("get_ineq_indicator works for unsorted data", {
   original_v <- c(4,4,4,3,1,10,7,7)
-  irank_minmax <- matrix(c(
+  n_lequal_lesser <- matrix(c(
     5,2,3,
     5,2,4,
     5,2,5,
@@ -372,11 +372,11 @@ test_that("get_ineq_indicator works for unsorted data", {
     expected_om1 <- sapply(1:length(original_v), function(j)
       compare_for_tests(i,j,original_v,omega=1))
     
-    expect_equal(get_ineq_indicator(irank_minmax, i, 0),
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
                  expected_om0)
-    expect_equal(get_ineq_indicator(irank_minmax, i, 0.4),
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
                  expected_om0.4)
-    expect_equal(get_ineq_indicator(irank_minmax, i, 1),
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
                  expected_om1)
   }
 })

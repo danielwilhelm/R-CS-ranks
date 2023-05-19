@@ -56,8 +56,8 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   l <- process_compare_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
   x <- l$x; v <- l$v
-  irank_min_max <- irank_minmax(x, v)
-  out <- omega * irank_min_max[,1] + (1-omega) * irank_min_max[,2]  + 1 - omega
+  n_lequal_lesser <- count_lequal_lesser(x, v)
+  out <- omega * n_lequal_lesser[,1] + (1-omega) * n_lequal_lesser[,2]  + 1 - omega
   names(out) <- names(x)
   out
 }
@@ -70,13 +70,17 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 #' 
 #' @param v If NULL - set it as x. An often usecase.
 #' @param return_inverse_ranking Logical. If TRUE, add a third column to the matrix s.t.
-#' `sorted_v[third_column] == v`. Used in `get_ineq_indicator`.
+#' `sorted_v[third_column] == v`. In other words: inverse of sorting permutation of v.
+#' Used in `get_ineq_indicator`.
 #' @return A matrix of size length(x), 2
 #' 
 #' @noRd
-irank_minmax <- function(x, v=NULL, return_inverse_ranking=FALSE){
+count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
   if(is.null(v))
     v <- x
+  else if(return_inverse_ranking){
+    cli::cli_abort("Not implemented")
+  }
   ranking <- order(v)
   n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
   n_lower <- findInterval(x, v[ranking], left.open = TRUE)
@@ -126,10 +130,10 @@ frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 compare <- function(x, v=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
   l <- process_compare_args(x, v, omega, increasing, na.rm)
   x <- l$x; v <- l$v
-  irank_min_max <- irank_minmax(x, v)
+  n_lequal_lesser <- count_lequal_lesser(x, v)
   ranking <- order(v)
-  n_higher_or_equal <- irank_min_max[,1]
-  n_higher <- irank_min_max[,2]
+  n_higher_or_equal <- n_lequal_lesser[,1]
+  n_higher <- n_lequal_lesser[,2]
   n_equal <- n_higher_or_equal - n_higher
   n_lower <- length(v) - n_higher - n_equal
   

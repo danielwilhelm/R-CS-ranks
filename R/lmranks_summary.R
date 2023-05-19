@@ -71,15 +71,17 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   RX <- l$RX
   RY <- stats::model.response(stats::model.frame(object))
   if(object$ranked_response){
-    irank_minmax_Y <- irank_minmax(RY, return_inverse_ranking=TRUE)
+    n_lequal_lesser_Y <- count_lequal_lesser(RY, return_inverse_ranking=TRUE)
   } else {
-    irank_minmax_Y <- NULL
+    n_lequal_lesser_Y <- NULL
   }
   
   if(length(object$rank_terms_indices) == 1){
-    irank_minmax_X <- irank_minmax(RX, return_inverse_ranking=TRUE)
+    n_lequal_lesser_X <- count_lequal_lesser(RX, return_inverse_ranking=TRUE)
+  } else if(length(object$rank_terms_indices) == 0) {
+    n_lequal_lesser_X <- NULL
   } else {
-    irank_minmax_X <- NULL
+    cli::cli_abort("Not implemented")
   }
   
   psi_sample <- sapply(1:length(coef(object)), function(i){
@@ -88,8 +90,8 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
     }
     proj_model <- get_projection_model(object, i)
     g_l_1 <- calculate_g_l_1(object, proj_model)
-    g_l_2 <- calculate_g_l_2(object, proj_model, irank_minmax_X=irank_minmax_X, irank_minmax_Y=irank_minmax_Y)
-    g_l_3 <- calculate_g_l_3(object, proj_model, irank_minmax_X=irank_minmax_X)
+    g_l_2 <- calculate_g_l_2(object, proj_model, n_lequal_lesser_X=n_lequal_lesser_X, n_lequal_lesser_Y=n_lequal_lesser_Y)
+    g_l_3 <- calculate_g_l_3(object, proj_model, n_lequal_lesser_X=n_lequal_lesser_X)
     (g_l_1 + g_l_2 + g_l_3) / var(resid(proj_model))
   })
   
@@ -177,24 +179,24 @@ calculate_g_l_1 <- function(original_model, proj_model){
   return(epsilonhat * nuhat)
 }
 
-calculate_g_l_2 <- function(original_model, proj_model, irank_minmax_X, irank_minmax_Y){
+calculate_g_l_2 <- function(original_model, proj_model, n_lequal_lesser_X, n_lequal_lesser_Y){
  nuhat <- resid(proj_model)
   return(calculate_weighted_ineq_resid_means(
-    original_model, weights=nuhat, irank_minmax_X=irank_minmax_X, irank_minmax_Y=irank_minmax_Y
+    original_model, weights=nuhat, n_lequal_lesser_X=n_lequal_lesser_X, n_lequal_lesser_Y=n_lequal_lesser_Y
   ))
 }
 
-calculate_g_l_3 <- function(original_model, proj_model, irank_minmax_X){
-  if(is.null(irank_minmax_X)){
+calculate_g_l_3 <- function(original_model, proj_model, n_lequal_lesser_X){
+  if(is.null(n_lequal_lesser_X)){
     return(rep(0, stats::nobs(original_model)))
   }
   epsilonhat <- resid(original_model)
   if(proj_model$ranked_response){
     return(calculate_weighted_ineq_resid_means(
-      proj_model, weights=epsilonhat, irank_minmax_Y=irank_minmax_X))
+      proj_model, weights=epsilonhat, n_lequal_lesser_Y=n_lequal_lesser_X))
   } else {
     return(calculate_weighted_ineq_resid_means(
-      proj_model, weights=epsilonhat, irank_minmax_X=irank_minmax_X))
+      proj_model, weights=epsilonhat, n_lequal_lesser_X=n_lequal_lesser_X))
   }
 }
 
@@ -208,49 +210,37 @@ calculate_g_l_3 <- function(original_model, proj_model, irank_minmax_X){
 #'
 #' @param weights Numeric vector. Usually the ordinary residuals of "the other model"
 #' (if `model` is the main model, the "other" is one of the projected models and vice versa).
-#' @param irank_minmax_X output of irank_minmax function for the ranked regressor. Could be NULL.
-#' @param irank_minmax_Y Same as above, but for the response. Also could be NULL.
+#' @param n_lequal_lesser_X output of count_lequal_lesser function for the ranked regressor. Could be NULL.
+#' @param n_lequal_lesser_Y Same as above, but for the response. Also could be NULL.
 #' @return A vector of length equal to number of observations in `model`.
 #' Its ith element is an estimate of expected weighted difference between prediction and response
 #' In a situation when we use the `model` to predict inequality indicator I(y_i,Y) instead of response's rank
 #' Using I(x_i, X) instead of a rank of regressor X.
 #' @noRd
 calculate_weighted_ineq_resid_means <- function(
-    model, weights, irank_minmax_X=NULL, irank_minmax_Y=NULL){
+    model, weights, n_lequal_lesser_X=NULL, n_lequal_lesser_Y=NULL){
   predictor <- extract_nonrank_predictor(model)
-  has_ranked_regressors <- !is.null(irank_minmax_X)
-  has_ranked_response <- !is.null(irank_minmax_Y)
-  if(has_ranked_regressors && has_ranked_response){
-    return(sapply(1:(stats::nobs(model)), function(i){
-      i_X <- get_ineq_indicator(irank_minmax_X, i, model$omega)
-      Y <- get_ineq_indicator(irank_minmax_Y, i, model$omega)
+  has_ranked_regressors <- !is.null(n_lequal_lesser_X)
+  get_x_ineq <- get_ineq_indicator_function(has_ranked_regressors, rep(0, stats::nobs(model)))
+  has_ranked_response <- !is.null(n_lequal_lesser_Y)
+  get_y_ineq <- get_ineq_indicator_function(has_ranked_response, stats::model.response(stats::model.frame(model)))
+  return(sapply(1:(stats::nobs(model)), function(i){
+      I_x_i <- get_x_ineq(n_lequal_lesser_X, i, model$omega)
+      I_Y_i <- get_y_ineq(n_lequal_lesser_Y, i, model$omega)
       ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-        model, predictor, i_X, Y)
+        model, predictor, I_x_i, I_Y_i)
       mean(ineq_resids * weights)
     }))
-  } else if(has_ranked_regressors && !has_ranked_response){
-    Y <- stats::model.response(stats::model.frame(model))
-    return(sapply(1:(stats::nobs(model)), function(i){
-      i_X <- get_ineq_indicator(irank_minmax_X, i, model$omega)
-      ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-        model, predictor, i_X, Y)
-      mean(ineq_resids * weights)
-    }))
-  } else if(!has_ranked_regressors && has_ranked_response){
-    i_X <- rep(0, stats::nobs(model))
-    return(sapply(1:(stats::nobs(model)), function(i){
-      Y <- get_ineq_indicator(irank_minmax_Y, i, model$omega)
-      ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-        model, predictor, i_X, Y)
-      mean(ineq_resids * weights)
-    }))
+}
+
+get_ineq_indicator_function <- function(has_ranked, v){
+  if(has_ranked){
+    return(get_ineq_indicator)
   } else {
-    i_X <- rep(0, stats::nobs(model))
-    Y <- stats::model.response(stats::model.frame(model))
-    ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-      model, predictor, i_X, Y)
-    return(rep(mean(ineq_resids * weights),
-               stats::nobs(model))) 
+    f <- function(n_lequal_lesser, i, omega){
+      return(v)
+    }
+    return(f)
   }
 }
 
@@ -272,25 +262,32 @@ extract_nonrank_predictor <- function(model){
 
 #' Compare a certain (ith) observation against all others in (*the same*) vector 
 #' of interest. The vector of interest is not passed explicitly;
-#' All the required info about it is in `irank_min_max`. Here the vector of interest
+#' All the required info about it is in `count_lequal_lesser`. Here the vector of interest
 #' might actually be a ranked regressor or response.
 #' 
-#' @param irank_min_max output of irank_minmax function for the vector of interest.
+#' @param count_lequal_lesser output of count_lequal_lesser function for the vector of interest.
+#' To reiterate: its third column is a vector J of indices that rearrange 
+#' a sorted vector of interest into its original order.
+#' In other words, it is an *inverse* of sorting permutation of vector of interest
 #' @param i single integer; index of the vector of interest.
 #' @param omega for the definition of rank, as in irank.
 #' 
-#' @return A vector v of same length as vector of interest x. 
-#' v[j] = 1 if x[i] < x[j];
-#' v[j] = omega if x[i] == x[j]; and
-#' v[j] = 0 if x[i] > x[j].
+#' @return A vector I of same length as vector of interest x. 
+#' I[j] = 1 if x[i] < x[j];
+#' I[j] = omega if x[i] == x[j]; and
+#' I[j] = 0 if x[i] > x[j].
+#' In other words, I[j] = I(x[i], x[j]), where the I() is the indicator function
+#' as described in references
 #' @noRd
-get_ineq_indicator <- function(irank_min_max, i, omega){
-  # Note: we actually do not need to know the exact ordering in the vector of interest
-  n_lower_or_equal <- irank_min_max[i,1]
-  n_lower <- irank_min_max[i,2]
-  n_equal <- n_lower_or_equal - n_lower
-  n_higher <- nrow(irank_min_max) - n_lower_or_equal
-  out <- rep(c(0, omega, 1), times = c(n_lower, n_equal, n_higher))[irank_min_max[,3]]
+get_ineq_indicator <- function(n_lequal_lesser, i, omega){
+  n_lesser_or_equal <- n_lequal_lesser[i,1] # Number of observations lower or equal than ith observation
+  n_lesser <- n_lequal_lesser[i,2]
+  n_equal <- n_lesser_or_equal - n_lesser
+  n_higher <- nrow(n_lequal_lesser) - n_lesser_or_equal
+  # If the vector of interest was sorted, then the output would look like this:
+  out <- rep(c(0, omega, 1), times = c(n_lesser, n_equal, n_higher))[
+    # However, for generality, it has to be rearranged
+               n_lequal_lesser[,3]]
   out
 }
 
@@ -298,6 +295,9 @@ get_ineq_indicator <- function(irank_min_max, i, omega){
 #' 
 #' @return a numeric vector V s.t.
 #' V[j] = I(y_i, Y_j) - rho*I(x_i, X_j) - beta %*% W[,j]
+#' where rho and beta - respective coefficients from `model`. 
+#' Note, that this function has a lot of usecases; the `model` might be the original
+#' or one of the projection models (in which case, a different notation is used in references).
 #' 
 #' @param nonrank_predictor Numeric vector; the linear predictor part calculated from non-rank regressors.
 #' @param I_X Numeric vector; Indicator whether jth X (ranked regressor) value is larger/equal/smaller 
