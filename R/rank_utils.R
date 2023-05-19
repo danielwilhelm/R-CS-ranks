@@ -64,15 +64,26 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 
 #' Compute minimum and maximum integer ranks in another reference vector
 #' 
-#' @return A matrix of size length(x), 2. In column there are integer ranks in 
-#' extreme cases of omega=0 and omega=1; increasing=TRUE.
+#' For each element of query vector x:
+#'     count, how many observations in the reference vector v are lower (returned in 2nd column)
+#'     and lower or equal (returned in 1st column) than this element.
+#' 
+#' @param v If NULL - set it as x. An often usecase.
+#' @param return_inverse_ranking Logical. If TRUE, add a third column to the matrix s.t.
+#' `sorted_v[third_column] == v`. Used in `get_ineq_indicator`.
+#' @return A matrix of size length(x), 2
 #' 
 #' @noRd
-irank_minmax <- function(x, v){
+irank_minmax <- function(x, v=NULL, return_inverse_ranking=FALSE){
+  if(is.null(v))
+    v <- x
   ranking <- order(v)
   n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
   n_lower <- findInterval(x, v[ranking], left.open = TRUE)
-  return(cbind(n_lower_or_equal, n_lower, deparse.level = 0))
+  if(!return_inverse_ranking)
+    return(cbind(n_lower_or_equal, n_lower, deparse.level = 0))
+  else
+    return(cbind(n_lower_or_equal, n_lower, order(ranking), deparse.level = 0))
 }
 
 #' @describeIn irank Compute fractional ranks
