@@ -323,6 +323,28 @@ test_that("extract_nonrank_predictor works when ranked regressors present", {
                expected_nonrank_predictor)
 })
 
+test_that("get_ineq_indicator_function returns functions with identical arguments", {
+  v <- 1:10
+  f1 <- get_ineq_indicator_function(FALSE, v)
+  f2 <- get_ineq_indicator_function(TRUE, v)
+  
+  expect_equal(args(f1), args(f2))
+})
+
+test_that("get_ineq_indicator_function remembers vector values across calls", {
+  v1 <- 1:3
+  v2 <- 4:6
+  v3 <- 7:9
+  
+  f1 <- get_ineq_indicator_function(FALSE, v1)
+  f2 <- get_ineq_indicator_function(FALSE, v2)
+  f3 <- get_ineq_indicator_function(FALSE, v3)
+  
+  expect_equal(f1(1,2,3), v1)
+  expect_equal(f2(1,2,3), v2)
+  expect_equal(f2(1,2,3), v2)
+})
+
 test_that("get_ineq_indicator works for sorted data", {
   original_v <- c(1,3,4,4,4,7,7,10)
   n_lequal_lesser <- matrix(c(

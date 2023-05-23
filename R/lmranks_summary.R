@@ -221,9 +221,11 @@ calculate_weighted_ineq_resid_means <- function(
     model, weights, n_lequal_lesser_X=NULL, n_lequal_lesser_Y=NULL){
   predictor <- extract_nonrank_predictor(model)
   has_ranked_regressors <- !is.null(n_lequal_lesser_X)
-  get_x_ineq <- get_ineq_indicator_function(has_ranked_regressors, rep(0, stats::nobs(model)))
+  get_x_ineq <- get_ineq_indicator_function(has_ranked_regressors, 
+                                            rep(0, stats::nobs(model)))
   has_ranked_response <- !is.null(n_lequal_lesser_Y)
-  get_y_ineq <- get_ineq_indicator_function(has_ranked_response, stats::model.response(stats::model.frame(model)))
+  get_y_ineq <- get_ineq_indicator_function(has_ranked_response, 
+                                            stats::model.response(stats::model.frame(model)))
   return(sapply(1:(stats::nobs(model)), function(i){
       I_x_i <- get_x_ineq(n_lequal_lesser_X, i, model$omega)
       I_Y_i <- get_y_ineq(n_lequal_lesser_Y, i, model$omega)
@@ -284,7 +286,8 @@ get_ineq_indicator <- function(n_lequal_lesser, i, omega){
   n_lesser <- n_lequal_lesser[i,2]
   n_equal <- n_lesser_or_equal - n_lesser
   n_higher <- nrow(n_lequal_lesser) - n_lesser_or_equal
-  # If the vector of interest was sorted, then the output would look like this:
+  # If the vector of interest were sorted (in increasing order), 
+  # then the output would look like this:
   out <- rep(c(0, omega, 1), times = c(n_lesser, n_equal, n_higher))[
     # However, for generality, it has to be rearranged
                n_lequal_lesser[,3]]
