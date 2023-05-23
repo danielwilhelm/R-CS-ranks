@@ -17,11 +17,21 @@ test_that("count_lequal_lesser works", {
                expected_irank)
 })
 
+test_that("count_lequal_lesser return_inverse_ranking argument works", {
+  x <- c(4,4,4,3,1,10,7,7)
+  x_sorted <- sort(x)
+  out <- count_lequal_lesser(x, return_inverse_ranking = TRUE)
+  expect_equal(x_sorted[out[,3]], x)
+})
+
 ### compare ###
-test_that("compare returns error for matrix input", {
+test_that("frank_against returns error for matrix input", {
   # This behavior ensures, that user cannot pass r(MATRIX) in lmranks
+  expect_error(frank(matrix(1:12, ncol = 3),
+                                    omega=0.4, increasing=TRUE,
+                                    na.rm = FALSE))
   expect_error(process_compare_args(matrix(1:12, ncol = 3),
-                                    omega=omega, increasing=TRUE,
+                                    omega=0.4, increasing=TRUE,
                                     na.rm = FALSE))
 })
 
@@ -216,7 +226,22 @@ test_that("irank_against works", {
                expected_irank)
 })
 
-test_that("frank_against works", {
+test_that("frank works", {
+  x_1 <- c(4,4,4,3,1,10,7,7)
+  expected_output <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)
+  actual_output <- frank(x_1, omega=0.4, increasing = TRUE, na.rm=FALSE)
+  expect_equal(actual_output, expected_output)
+  
+  expected_output_om0 <- c(0.375, 0.375, 0.375, 0.250, 0.125, 1.000, 0.750, 0.750)
+  actual_output <- frank(x_1, omega=0, increasing = TRUE, na.rm=FALSE)
+  expect_equal(actual_output, expected_output_om0)
+  
+  expected_output_om1 <- c(0.625, 0.625, 0.625, 0.25, 0.125, 1.0, 0.875, 0.875)
+  actual_output <- frank(x_1, omega=1, increasing = TRUE, na.rm=FALSE)
+  expect_equal(actual_output, expected_output_om1)
+})
+
+test_that("frank_against v argument works", {
   v <- c(1,3,4,4,4,7,7,10)
   x <- c(0,1,2,3,4,5,7,8,10,11)
   expected_irank <- c(8.5, 8, 7.5, 7, 5, 3.5, 2.5, 1.5, 1, 0.5) / 8

@@ -129,6 +129,8 @@ get_and_separate_regressors <- function(model){
               rank_column_index=rank_column_index))
 }
 
+#' Which column in model.matrix corresponds to ranked regressor?
+#' @return integer vector. Could be empty.
 get_ranked_column_index <- function(model){
   rank_column_index <- which(model$assign %in% model$rank_terms_indices)
 }
