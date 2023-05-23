@@ -81,6 +81,7 @@ count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
   else if(return_inverse_ranking){
     cli::cli_abort("Not implemented")
   }
+  assert_has_no_NAs(v, "v")
   ranking <- order(v)
   n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
   n_lower <- findInterval(x, v[ranking], left.open = TRUE)
