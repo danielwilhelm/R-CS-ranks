@@ -116,34 +116,3 @@ frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   out <- irank_against(x, v, omega, increasing, na.rm)
   return(out / l)
 } 
-
-#' Comparator function
-#' 
-#' @inheritParams irank_against
-#' @return Matrix M of size `length(x)`, `length(v)`. For increasing = FALSE M[i,j] = 
-#' 1 if x[i] < v[j]
-#' 0 if x[i] > v[j]
-#' omega if x[i] == v[j]
-#' For decreasing = FALSE, the `<` and `>` in above definition is swapped.
-#' 
-#' @noRd
-compare <- function(x, v=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
-  l <- process_compare_args(x, v, omega, increasing, na.rm)
-  x <- l$x; v <- l$v
-  n_lequal_lesser <- count_lequal_lesser(x, v)
-  ranking <- order(v)
-  n_higher_or_equal <- n_lequal_lesser[,1]
-  n_higher <- n_lequal_lesser[,2]
-  n_equal <- n_higher_or_equal - n_higher
-  n_lower <- length(v) - n_higher - n_equal
-  
-  out_for_sorted_v <- matrix(rep(
-      rep(c(1, omega, 0), times = length(x)),
-      times = as.vector(rbind(n_higher, n_equal, n_lower))
-  ), byrow = TRUE, nrow = length(x))
-  
-  # return in order of original v
-  original_order <- order(ranking)
-  out <- out_for_sorted_v[,original_order]
-  out
-}
