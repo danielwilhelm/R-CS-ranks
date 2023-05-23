@@ -139,7 +139,6 @@ process_compare_args <- function(x, v, omega, increasing, na.rm){
   assert_is_single_logical(increasing, "increasing")
   if(!na.rm){
     assert_has_no_NAs(v, "v")
-    assert_has_no_NAs(x, "x")
   } else {
     v <- v[!is.na(v)]
     x <- x[!is.na(x)]

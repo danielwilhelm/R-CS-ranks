@@ -54,10 +54,41 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' irank_against(1:10, c(4,4,4,3,1,10,7,7))
 #' @export
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
-  compares <- compare(x, v, omega=omega, increasing=increasing, na.rm=na.rm)
-  out <- rowSums(compares) + 1 - omega
+  l <- process_compare_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
+  x <- l$x; v <- l$v
+  n_lequal_lesser <- count_lequal_lesser(x, v)
+  out <- omega * n_lequal_lesser[,1] + (1-omega) * n_lequal_lesser[,2]  + 1 - omega
   names(out) <- names(x)
   out
+}
+
+#' Compute minimum and maximum integer ranks in another reference vector
+#' 
+#' For each element of query vector x:
+#'     count, how many observations in the reference vector v are lower (returned in 2nd column)
+#'     and lower or equal (returned in 1st column) than this element.
+#' 
+#' @param v If NULL - set it as x. An often usecase.
+#' @param return_inverse_ranking Logical. If TRUE, add a third column to the matrix s.t.
+#' `sorted_v[third_column] == v`. In other words: inverse of sorting permutation of v.
+#' Used in `get_ineq_indicator`.
+#' @return A matrix of size length(x), 2
+#' 
+#' @noRd
+count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
+  if(is.null(v))
+    v <- x
+  else if(return_inverse_ranking){
+    cli::cli_abort("Not implemented")
+  }
+  assert_has_no_NAs(v, "v")
+  ranking <- order(v)
+  n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
+  n_lower <- findInterval(x, v[ranking], left.open = TRUE)
+  if(!return_inverse_ranking)
+    return(cbind(n_lower_or_equal, n_lower, deparse.level = 0))
+  else
+    return(cbind(n_lower_or_equal, n_lower, order(ranking), deparse.level = 0))
 }
 
 #' @describeIn irank Compute fractional ranks
@@ -86,32 +117,3 @@ frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   out <- irank_against(x, v, omega, increasing, na.rm)
   return(out / l)
 } 
-#' Comparator function
-#' 
-#' @inheritParams irank_against
-#' @return Matrix M of size `length(x)`, `length(v)`. For increasing = FALSE M[i,j] = 
-#' 1 if x[i] < v[j]
-#' 0 if x[i] > v[j]
-#' omega if x[i] == v[j]
-#' For decreasing = FALSE, the `<` and `>` in above definition is swapped.
-#' 
-#' @noRd
-compare <- function(x, v=NULL, omega=0, increasing=FALSE, na.rm=FALSE){
-  l <- process_compare_args(x, v, omega, increasing, na.rm)
-  x <- l$x; v <- l$v
-  ranking <- order(v)
-  
-  n_higher_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
-  n_higher <- findInterval(x, v[ranking], left.open = TRUE)
-  n_equal <- n_higher_or_equal - n_higher
-  out_for_sorted_v <- t(apply(cbind(n_higher, n_equal), MARGIN = 1, function(n_s){
-    c(rep(1, n_s[1]),
-      rep(omega, n_s[2]),
-      rep(0, length(v) - n_s[1] - n_s[2]))
-  }))
-  
-  # return in order of original v
-  original_order <- order(ranking)
-  out <- out_for_sorted_v[,original_order]
-  out
-}

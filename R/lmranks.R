@@ -98,7 +98,7 @@ lmranks <- function(formula, data, subset,
                     na.action, 
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
-                    omega=0, na.rm=FALSE, ...){
+                    omega=1, na.rm=FALSE, ...){
   l <- process_lmranks_formula(formula)
   rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
   original_call <- match.call() # for the final output
@@ -249,7 +249,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
     v <- cache[[var_name]]
     out <- rep(NA, length(was_na))
     out[!was_na] <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=.(na.rm))
-    out + (.(omega) - 1) / sum(!is.na(v))
+    out
   })
   environment(r) <- rank_env
   assign("r", r, envir = rank_env)
