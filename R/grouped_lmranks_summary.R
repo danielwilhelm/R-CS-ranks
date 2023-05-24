@@ -20,10 +20,21 @@ calculate_grouped_lmranks_covariances <- function(object, complete = TRUE, ...){
     l <- get_and_separate_regressors(group_model)
     group_RX <- l$RX; rank_column_index <- l$rank_column_index
     group_RY <- model.response(model.frame(group_model))
-    I_X <- compare(global_RX, group_RX,
-                   omega=group_model$omega, na.rm=FALSE)
-    I_Y <- compare(global_RY, group_RY, 
-                   omega=group_model$omega, na.rm=FALSE)
+    if(object$ranked_response){
+      n_lequal_lesser_Y <- count_lequal_lesser(global_RY, group_RY, 
+                                               return_inverse_ranking=TRUE)
+    } else {
+      n_lequal_lesser_Y <- NULL
+    }
+    if(length(object$rank_terms_indices) == 1){
+      n_lequal_lesser_X <- count_lequal_lesser(global_RX, group_RX,
+                                               return_inverse_ranking=TRUE)
+    } else if(length(object$rank_terms_indices) == 0) {
+      n_lequal_lesser_X <- NULL
+    } else {
+      cli::cli_abort("Not implemented")
+    }
+    
     group_indicator <- as.integer(attr(object, "grouping_factor")) == j
     h_sum <- sapply(1:length(coef(group_model)), function(i){
       if(is.na(coef(group_model))[i]){
@@ -50,27 +61,29 @@ calculate_grouped_lmranks_covariances <- function(object, complete = TRUE, ...){
 calculate_h_1 <- function(original_model, proj_model, group_indicator){
   epsilonhat <- resid(original_model)
   nuhat <- resid(proj_model)
-  out <- numeric(length=length(group_indicator))
+  out <- numeric(length=length(group_indicator)) # 0 by default
   out[group_indicator] <- epsilonhat * nuhat
   return(out)
 }
 
-calculate_h_2 <- function(original_model, proj_model, I_X, I_Y){
- ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-    original_model, I_X=I_X, I_Y=I_Y)
- # ineq_resids is N_g x N matrix
+calculate_h_2 <- function(original_model, proj_model, n_lequal_lesser_X, n_lequal_lesser_Y){
  nuhat <- resid(proj_model)
- return(colSums(ineq_resids * nuhat) / nrow(I_X))
+ # Correct for mean in next function. Expectation over whole dataset, not just cluster
+ nuhat <- nuhat * stats::nobs(original_model) / nrow(n_lequal_lesser_X) 
+ return(calculate_weighted_ineq_resid_means(
+   original_model, weights=nuhat, n_lequal_lesser_X=n_lequal_lesser_X, n_lequal_lesser_Y=n_lequal_lesser_Y
+ ))
 }
 
 calculate_h_3 <- function(original_model, proj_model, I_X){
   epsilonhat <- resid(original_model)
+  # Correct for mean in next function. Expectation over whole dataset, not just cluster
+  epsilonhat <- epsilonhat * stats::nobs(original_model) / nrow(n_lequal_lesser_X) 
   if(proj_model$ranked_response){
-    ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-      proj_model, I_Y=I_X)
+    return(calculate_weighted_ineq_resid_means(
+      proj_model, weights=epsilonhat, n_lequal_lesser_Y=n_lequal_lesser_X))
   } else {
-    ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-      proj_model, I_X=I_X)
+    return(calculate_weighted_ineq_resid_means(
+      proj_model, weights=epsilonhat, n_lequal_lesser_X=n_lequal_lesser_X))
   }
-  return(colSums(epsilonhat * ineq_resids) / nrow(I_X))
 }
