@@ -1,43 +1,26 @@
 ### count_lequal_lesser ###
-# TODO: modify tests of compare to check count_lequal_lesser directly
 test_that("count_lequal_lesser works for sorted x", {
   v <- c(1,3,4,4,4,7,7,10)
   x <- c(0,1,2,3,4,5,7,8,10,11)
-  expected_irank <- matrix(c(0,0,
-                             1,0,
-                             1,1,
-                             2,1,
-                             5,2,
-                             5,5,
-                             7,5,
-                             7,7,
-                             8,7,
-                             8,8),byrow=TRUE,ncol=2)
+  expected <- list(n_lequal = c(0,1,1,2,5,5,7,7,8,8),
+                   n_lesser = c(0,0,1,1,2,5,5,7,7,8))
   expect_equal(count_lequal_lesser(x, v),
-               expected_irank)
+               expected)
   v <- c(4,4,4,3,1,10,7,7)
   expect_equal(count_lequal_lesser(x, v),
-               expected_irank)
+               expected)
 })
 
 test_that("count_lequal_lesser works for unsorted x", {
   v <- c(1,3,4,4,4,7,7,10)
   x <- c(5,10,8,1,7,2,3,4,11,0)
-  expected_irank <- matrix(c(5,5,
-                             8,7,
-                             7,7,
-                             1,0,
-                             7,5,
-                             1,1,
-                             2,1,
-                             5,2,
-                             8,8,
-                             0,0),byrow=TRUE,ncol=2)
+  expected <- list(n_lequal = c(5,8,7,1,7,1,2,5,8,0),
+                   n_lesser = c(5,7,7,0,5,1,1,2,8,0))
   expect_equal(count_lequal_lesser(x, v),
-               expected_irank)
+               expected)
   v <- c(4,4,4,3,1,10,7,7)
   expect_equal(count_lequal_lesser(x, v),
-               expected_irank)
+               expected)
 })
 
 test_that("count_lequal_lesser with default v works", {
@@ -50,7 +33,8 @@ test_that("count_lequal_lesser return_inverse_ranking argument works", {
   x <- c(4,4,4,3,1,10,7,7)
   x_sorted <- sort(x)
   out <- count_lequal_lesser(x, return_inverse_ranking = TRUE)
-  expect_equal(x_sorted[out[,3]], x)
+  expect_false(is.null(out[["inverse_ranking"]]))
+  expect_equal(x_sorted[out$inverse_ranking], x)
 })
 
 ### compare ###

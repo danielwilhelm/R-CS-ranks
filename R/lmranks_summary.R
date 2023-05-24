@@ -271,7 +271,7 @@ extract_nonrank_predictor <- function(model){
 #' might actually be a ranked regressor or response.
 #' 
 #' @param count_lequal_lesser output of count_lequal_lesser function for the vector of interest.
-#' To reiterate: its third column is a vector J of indices that rearrange 
+#' To reiterate: its third element, called `inverse_ranking`, is a vector J of indices that rearrange 
 #' a sorted vector of interest into its original order.
 #' In other words, it is an *inverse* of sorting permutation of vector of interest
 #' @param i single integer; index of the vector of interest.
@@ -285,15 +285,15 @@ extract_nonrank_predictor <- function(model){
 #' as described in references
 #' @noRd
 get_ineq_indicator <- function(n_lequal_lesser, i, omega){
-  n_lesser_or_equal <- n_lequal_lesser[i,1] # Number of observations lower or equal than ith observation
-  n_lesser <- n_lequal_lesser[i,2]
+  n_lesser_or_equal <- n_lequal_lesser$n_lequal[i] # Number of observations lower or equal than ith observation
+  n_lesser <- n_lequal_lesser$n_lesser[i]
   n_equal <- n_lesser_or_equal - n_lesser
-  n_higher <- nrow(n_lequal_lesser) - n_lesser_or_equal
+  n_higher <- length(n_lequal_lesser$inverse_ranking) - n_lesser_or_equal
   # If the vector of interest were sorted (in increasing order), 
   # then the output would look like this:
   out <- rep(c(0, omega, 1), times = c(n_lesser, n_equal, n_higher))[
     # However, for generality, it has to be rearranged
-               n_lequal_lesser[,3]]
+               n_lequal_lesser$inverse_ranking]
   out
 }
 
