@@ -224,7 +224,8 @@ calculate_weighted_ineq_resid_means <- function(
   has_ranked_response <- !is.null(n_lequal_lesser_Y)
   get_y_ineq <- get_ineq_indicator_function(has_ranked_response, 
                                             stats::model.response(stats::model.frame(model)))
-  return(sapply(1:(stats::nobs(model)), function(i){
+  return(sapply(1:get_global_nobs(n_lequal_lesser_X, n_lequal_lesser_Y), 
+                function(i){
       I_x_i <- get_x_ineq(n_lequal_lesser_X, i, model$omega)
       I_Y_i <- get_y_ineq(n_lequal_lesser_Y, i, model$omega)
       ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
@@ -244,6 +245,16 @@ get_ineq_indicator_function <- function(has_ranked, v){
   }
 }
 
+get_global_nobs <- function(n_lequal_lesser_1, n_lequal_lesser_2){
+  if(!is.null(n_lequal_lesser_1)){
+    return(length(n_lequal_lesser_1$inverse_ranking))
+  } else if(!is.null(n_lequal_lesser_2)){
+    return(length(n_lequal_lesser_2$inverse_ranking))
+  } else {
+    cli::cli_abort("All regressors and responses are ordinary.")
+  }
+}
+
 #' @return Numeric vector; the linear predictor part calculated from non-rank regressors.
 #' @noRd
 extract_nonrank_predictor <- function(model){
@@ -260,16 +271,16 @@ extract_nonrank_predictor <- function(model){
   return(predictor)
 }
 
-#' Compare a certain (ith) observation against all others in (*the same*) vector 
-#' of interest. The vector of interest is not passed explicitly;
-#' All the required info about it is in `count_lequal_lesser`. Here the vector of interest
-#' might actually be a ranked regressor or response.
+#' Compare a certain (ith) observation in a quary vector against all others in  
+#' a reference vector. None of these vectors are passed explicitly.;
+#' All the required info about them is in `count_lequal_lesser`. Here the vectors 
+#' might actually be (group parts of) a ranked regressor or response.
 #' 
-#' @param count_lequal_lesser output of count_lequal_lesser function for the vector of interest.
+#' @param count_lequal_lesser output of count_lequal_lesser function for the query and reference vector.
 #' To reiterate: its third element, called `inverse_ranking`, is a vector J of indices that rearrange 
-#' a sorted vector of interest into its original order.
+#' a reference vector into its original order.
 #' In other words, it is an *inverse* of sorting permutation of vector of interest
-#' @param i single integer; index of the vector of interest.
+#' @param i single integer; index of the query vector.
 #' @param omega for the definition of rank, as in irank.
 #' 
 #' @return A vector I of same length as vector of interest x. 
