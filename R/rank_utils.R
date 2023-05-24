@@ -57,7 +57,8 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   l <- process_compare_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
   x <- l$x; v <- l$v
   n_lequal_lesser <- count_lequal_lesser(x, v)
-  out <- omega * n_lequal_lesser[,1] + (1-omega) * n_lequal_lesser[,2]  + 1 - omega
+  out <- omega * n_lequal_lesser$n_lequal + (1-omega) * n_lequal_lesser$n_lesser + 
+    1 - omega
   names(out) <- names(x)
   out
 }
@@ -65,14 +66,15 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 #' Compute minimum and maximum integer ranks in another reference vector
 #' 
 #' For each element of query vector x:
-#'     count, how many observations in the reference vector v are lower (returned in 2nd column)
-#'     and lower or equal (returned in 1st column) than this element.
+#'     count, how many observations in the reference vector v are lesser 
+#'     (returned in n_lesser element)
+#'     and lower or equal (returned in n_lequal element) than this element.
 #' 
 #' @param v If NULL - set it as x. An often usecase.
 #' @param return_inverse_ranking Logical. If TRUE, add a third column to the matrix s.t.
 #' `sorted_v[third_column] == v`. In other words: inverse of sorting permutation of v.
 #' Used in `get_ineq_indicator`.
-#' @return A matrix of size length(x), 2
+#' @return A list with 2 (or 3 in case of return_inverse_ranking) elements.
 #' 
 #' @noRd
 count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
@@ -85,10 +87,11 @@ count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
   ranking <- order(v)
   n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
   n_lower <- findInterval(x, v[ranking], left.open = TRUE)
-  if(!return_inverse_ranking)
-    return(cbind(n_lower_or_equal, n_lower, deparse.level = 0))
-  else
-    return(cbind(n_lower_or_equal, n_lower, order(ranking), deparse.level = 0))
+  out <- list(n_lequal=stats::setNames(n_lower_or_equal, NULL), 
+       n_lesser=stats::setNames(n_lower, NULL))
+  if(return_inverse_ranking)
+    out$inverse_ranking <- order(ranking)
+  return(out)
 }
 
 #' @describeIn irank Compute fractional ranks

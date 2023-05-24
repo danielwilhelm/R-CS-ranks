@@ -347,16 +347,9 @@ test_that("get_ineq_indicator_function remembers vector values across calls", {
 
 test_that("get_ineq_indicator works for sorted data", {
   original_v <- c(1,3,4,4,4,7,7,10)
-  n_lequal_lesser <- matrix(c(
-    1,0,1,
-    2,1,2,
-    5,2,3,
-    5,2,4,
-    5,2,5,
-    7,5,6,
-    7,5,7,
-    8,7,8
-  ), byrow=TRUE, ncol = 3)
+  n_lequal_lesser <- list(n_lequal = c(1,2,5,5,5,7,7,8),
+                          n_lesser = c(0,1,2,2,2,5,5,7),
+                          inverse_ranking = c(1,2,3,4,5,6,7,8))
   for(i in 1:length(original_v)){
     expected_om0 <- sapply(1:length(original_v), function(j)
       compare_for_tests(i,j,original_v,omega=0))
@@ -386,6 +379,9 @@ test_that("get_ineq_indicator works for unsorted data", {
     7,5,6,
     7,5,7
   ), byrow=TRUE, ncol = 3)
+  n_lequal_lesser <- list(n_lequal = c(5,5,5,2,1,8,7,7),
+                          n_lesser = c(2,2,2,1,0,7,5,5),
+                          inverse_ranking = c(3,4,5,2,1,8,6,7))
   for(i in 1:length(original_v)){
     expected_om0 <- sapply(1:length(original_v), function(j)
       compare_for_tests(i,j,original_v,omega=0))
