@@ -15,8 +15,9 @@ grouped_lmranks <- function(formula, data, grouping_factor,
   colnames(model_frame)[1] <- "response" # TODO: robustify
   splitted_data <- split(model_frame, f = grouping_factor, drop = TRUE)
   assign <- attr(model.matrix(formula, data=data), "assign")
+  intercept_present <- attr(terms(formula), "intercept")
   models <- lapply(splitted_data, function(df){
-    if(attr(terms(formula), "intercept")){
+    if(intercept_present){
       model <- lm(response ~ ., data = df) 
     } else {
       model <- lm(response ~ .-1, data=df)
@@ -28,7 +29,7 @@ grouped_lmranks <- function(formula, data, grouping_factor,
     model
   })
   rank_column_index <- which(assign %in% rank_terms_indices)
-  attr(models, "RX") <- model_frame[,rank_column_index] # -1 for intercept, +1 for response
+  attr(models, "RX") <- model_frame[,rank_column_index+1-intercept_present] # +1 for response
   attr(models, "RY") <- model_frame$response
   attr(models, "grouping_factor") <- grouping_factor
   class(models) <- "grouped_lmranks"
