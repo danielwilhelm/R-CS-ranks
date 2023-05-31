@@ -171,6 +171,7 @@ for (covariates in c(TRUE,FALSE)) {
                  mean((H12+H22+H32)^2) / mean((G==2)*nuhat^2)^2)
   
   # save the result
-  save(sigma2hat, Y, W, X, G, n, file = file.path("tests", "testthat", "testdata",
+  save(sigma2hat, Y, W, X, G, n, H11, H12, H21, H22, H31, H32,
+       file = file.path("tests", "testthat", "testdata",
                                                paste0("grouped_lmranks_cov_sigmahat_covariates_", covariates, ".rda")))
 }
