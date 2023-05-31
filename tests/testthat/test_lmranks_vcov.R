@@ -455,9 +455,84 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
 })
 
+######################################################
+### High-level checks against by-hand calculations ###
+######################################################
+
+test_that("h1 works for ranked regressor with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  proj_model <- get_projection_model(res, 2)
+  
+  h1_lmranks <- calculate_g_l_1(res, proj_model)
+  expect_equal(h1_lmranks, h1)
+})
+
+test_that("h2 works for ranked regressor with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y <- count_lequal_lesser(Y, return_inverse_ranking=TRUE)
+  
+  h2_lmranks <- calculate_g_l_2(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X,
+                                n_lequal_lesser_Y=n_lequal_lesser_Y)
+  expect_equal(h2_lmranks, h2)
+})
+
+test_that("h3 works for ranked regressor with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  
+  h3_lmranks <- calculate_g_l_3(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X)
+  
+  expect_equal(h3_lmranks, h3)
+})
+
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with no covariates", {
   load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
   res <- lmranks(r(Y) ~ r(X))
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+})
+
+test_that("h1 works for ranked regressor with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X) + W)
+  proj_model <- get_projection_model(res, 2)
+  
+  h1_lmranks <- calculate_g_l_1(res, proj_model)
+  expect_equal(h1_lmranks, h1)
+})
+
+test_that("h2 works for ranked regressor with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y <- count_lequal_lesser(Y, return_inverse_ranking=TRUE)
+  
+  h2_lmranks <- calculate_g_l_2(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X,
+                                n_lequal_lesser_Y=n_lequal_lesser_Y)
+  expect_equal(h2_lmranks, h2)
+})
+
+test_that("h3 works for ranked regressor with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  
+  h3_lmranks <- calculate_g_l_3(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X)
+  
+  expect_equal(h3_lmranks, h3)
+})
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
   sigma2hat.lmranks <- vcov(res)[2,2]*n
   expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
 })
