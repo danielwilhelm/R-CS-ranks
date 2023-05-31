@@ -16,7 +16,11 @@ grouped_lmranks <- function(formula, data, grouping_factor,
   splitted_data <- split(model_frame, f = grouping_factor, drop = TRUE)
   assign <- attr(model.matrix(formula, data=data), "assign")
   models <- lapply(splitted_data, function(df){
-    model <- lm(response ~ ., data = df) # TODO: no intercept case
+    if(attr(terms(formula), "intercept")){
+      model <- lm(response ~ ., data = df) 
+    } else {
+      model <- lm(response ~ .-1, data=df)
+    }
     model$rank_terms_indices <- rank_terms_indices
     model$assign <- assign
     model$omega <- omega

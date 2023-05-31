@@ -1,3 +1,20 @@
+test_that("grouped_lmranks handles intercept specification in formula", {
+  data(mtcars)
+  grouping_f <- factor(c(rep("A", round(nrow(mtcars) / 2)),
+                       rep("B", nrow(mtcars) - round(nrow(mtcars) / 2))))
+  grouped_lmr <- grouped_lmranks(r(mpg) ~ r(disp) + cyl - 1, data=mtcars, grouping_f)
+  expect_equal(names(coef(grouped_lmr[[1]])),
+               c("`r(disp)`", "cyl"))
+  expect_equal(names(coef(grouped_lmr[[2]])),
+               c("`r(disp)`", "cyl"))
+  
+  grouped_lmr <- grouped_lmranks(r(mpg) ~ r(disp) + cyl, data=mtcars, grouping_f)
+  expect_equal(names(coef(grouped_lmr[[1]])),
+               c("(Intercept)", "`r(disp)`", "cyl"))
+  expect_equal(names(coef(grouped_lmr[[2]])),
+               c("(Intercept)", "`r(disp)`", "cyl"))
+})
+
 test_that("grouped_lmranks correctly estimates OLS slope and intercept within each group", {
   set.seed(100)
   
