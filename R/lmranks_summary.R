@@ -247,9 +247,9 @@ get_ineq_indicator_function <- function(has_ranked, v){
 
 get_global_nobs <- function(n_lequal_lesser_1, n_lequal_lesser_2){
   if(!is.null(n_lequal_lesser_1)){
-    return(length(n_lequal_lesser_1$inverse_ranking))
+    return(length(n_lequal_lesser_1$n_lequal))
   } else if(!is.null(n_lequal_lesser_2)){
-    return(length(n_lequal_lesser_2$inverse_ranking))
+    return(length(n_lequal_lesser_2$n_lequal))
   } else {
     cli::cli_abort("All regressors and responses are ordinary.")
   }
@@ -271,8 +271,8 @@ extract_nonrank_predictor <- function(model){
   return(predictor)
 }
 
-#' Compare a certain (ith) observation in a quary vector against all others in  
-#' a reference vector. None of these vectors are passed explicitly.;
+#' Compare a certain (ith) observation in a query vector x against all others in  
+#' a reference vector v. None of these vectors are passed explicitly.;
 #' All the required info about them is in `count_lequal_lesser`. Here the vectors 
 #' might actually be (group parts of) a ranked regressor or response.
 #' 
@@ -283,11 +283,11 @@ extract_nonrank_predictor <- function(model){
 #' @param i single integer; index of the query vector.
 #' @param omega for the definition of rank, as in irank.
 #' 
-#' @return A vector I of same length as vector of interest x. 
-#' I[j] = 1 if x[i] < x[j];
-#' I[j] = omega if x[i] == x[j]; and
-#' I[j] = 0 if x[i] > x[j].
-#' In other words, I[j] = I(x[i], x[j]), where the I() is the indicator function
+#' @return A vector I of same length as reference vector v. 
+#' I[j] = 1 if x[i] < v[j];
+#' I[j] = omega if x[i] == v[j]; and
+#' I[j] = 0 if x[i] > v[j].
+#' In other words, I[j] = I(x[i], v[j]), where the I() is the indicator function
 #' as described in references
 #' @noRd
 get_ineq_indicator <- function(n_lequal_lesser, i, omega){
