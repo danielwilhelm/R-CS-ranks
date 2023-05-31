@@ -56,8 +56,9 @@ for (covariates in c(TRUE,FALSE)) {
   sigma2hat <- mean((h1+h2+h3)^2) / var(nuhat)^2
   
   # save the result
-  save(sigma2hat, Y, W, X, n, file = file.path("tests", "testthat", "testdata",
-                                   paste0("lmranks_cov_sigmahat_covariates_", covariates, ".rda")))
+  save(sigma2hat, Y, W, X, n, h1, h2, h3, 
+       file = file.path("tests", "testthat", "testdata",
+                        paste0("lmranks_cov_sigmahat_covariates_", covariates, ".rda")))
 }
 
 ############################
