@@ -10,11 +10,14 @@ grouped_lmranks <- function(formula, data, grouping_factor,
     cli::cli_abort("Not implemented")
   }
   rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
-  environment(formula) <- rank_env
-  model_frame <- lm(formula = formula, data = data, method = "model.frame")
+  mf_call <- prepare_lm_call(original_call)
+  mf_call$method <- "model.frame"
+  
+  model_frame <- eval(mf_call, rank_env)
+  assign <- attr(model.matrix(formula, data=model_frame), "assign")
   colnames(model_frame)[1] <- "response" # TODO: robustify
   splitted_data <- split(model_frame, f = grouping_factor, drop = TRUE)
-  assign <- attr(model.matrix(formula, data=data), "assign")
+  
   intercept_present <- attr(terms(formula), "intercept")
   models <- lapply(splitted_data, function(df){
     if(intercept_present){
