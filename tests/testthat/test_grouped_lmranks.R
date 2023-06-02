@@ -20,6 +20,15 @@ test_that("grouped_lmranks handles intercept specification in formula", {
                frank(mtcars$disp), 1, TRUE)
 })
 
+test_that("grouped_lmranks does not need data argument", {
+  data(mtcars)
+  grouping_f <- factor(mtcars$gear)
+  g1 <- grouped_lmranks(r(mpg) ~ r(disp) + cyl, data=mtcars, grouping_factor=grouping_f)
+  mpg <- mtcars$mpg; disp <- mtcars$disp; cyl <- mtcars$cyl
+  g2 <- grouped_lmranks(r(mpg) ~ r(disp) + cyl, grouping_factor=grouping_f)
+  expect_equivalent(g1,g2)
+})
+
 test_that("grouped_lmranks correctly estimates OLS slope and intercept within each group", {
   set.seed(100)
   
