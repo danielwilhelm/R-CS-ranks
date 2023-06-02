@@ -128,7 +128,7 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
-process_compare_args <- function(x, v, omega, increasing, na.rm){
+process_irank_against_args <- function(x, v, omega, increasing, na.rm){
   assert_is_numeric_vector(x, "x")
   if(is.null(v))
     v <- x

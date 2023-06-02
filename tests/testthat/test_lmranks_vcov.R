@@ -293,10 +293,6 @@ test_that("calculate_g_l_3 works for proj_model with usual response", {
                expected_out)
 })
 
-test_that("calculate_weighted_ineq_resid_means", {
-  skip()
-})
-
 test_that("extract_nonrank_predictor works when no ranked regressors present", {
   data(mtcars)
   model <- lmranks(r(mpg) ~ cyl + disp, data=mtcars)

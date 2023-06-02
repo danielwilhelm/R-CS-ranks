@@ -54,7 +54,7 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' irank_against(1:10, c(4,4,4,3,1,10,7,7))
 #' @export
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
-  l <- process_compare_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
+  l <- process_irank_against_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
   x <- l$x; v <- l$v
   n_lequal_lesser <- count_lequal_lesser(x, v)
   out <- omega * n_lequal_lesser$n_lequal + (1-omega) * n_lequal_lesser$n_lesser + 

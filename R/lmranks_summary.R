@@ -1,8 +1,3 @@
-# correct already:
-# coerce, dummy.coef, family, formula, kappa, model.frame, model.matrix,
-# nobs, print, qr, residuals, show, update, effects
-# alias, hatvalues, proj, case.names, variable.names, labels
-
 #' Summarizing fits of linear models for ranks
 #' 
 #' Summary method for class "\code{lmranks}". It returns theoretically valid standard

@@ -261,6 +261,11 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   return(rank_env)
 }
 
+# Inherited `lm` methods:
+# coerce, dummy.coef, family, formula, kappa, model.frame, model.matrix,
+# nobs, print, qr, residuals, show, update, effects
+# alias, hatvalues, proj, case.names, variable.names, labels
+
 slotsFromS3.lmranks <- function(object){
   cli::cli_warn("This method might not return correct results.")
   NextMethod()
