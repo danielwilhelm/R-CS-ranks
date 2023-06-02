@@ -29,3 +29,5 @@ vignettes/*.pdf
 # others
 gitignore/*
 inst/doc
+tests/testthat/testthat-problems.rds
+tests/spelling.Rout.save
