@@ -31,11 +31,9 @@
 #' (as a specification of rank definition) in the call to \code{lmranks}.
 #' 
 #' As a consequence of the order, in which model.frame applies operations, \code{subset} 
-#' and \code{na.action} are applied after evaluation of \code{r()}. This means, that
-#' 1) the ranks will be calculated using full data. In order to calculate them on subsetted data,
-#' one may subset the data outside of \code{lm} and pass it simply as new \code{data} argument.
-#' 2) \code{na.action} will not handle NA values in ranked regressors. This means,
-#' that they have to be handled separately by the user.
+#' and \code{na.action} would be applied after evaluation of \code{r()}. 
+#' In such a case, returned coefficients and standard errors might no longer be correct.
+#' The user must handle the NA values and may filter the data on his own.
 #' 
 #' Currently, only models at most one rank regressor are available. The single 
 #' response might be either ranked or continuous.
