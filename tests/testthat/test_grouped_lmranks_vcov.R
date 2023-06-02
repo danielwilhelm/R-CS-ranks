@@ -123,7 +123,7 @@ test_that("h3 works for ranked regressor with covariates and grouping", {
 })
 
 
-test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with no covariates", {
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with covariates", {
   load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_TRUE.rda"))
   res <- grouped_lmranks(r(Y) ~ r(X) + W - 1, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
   cov_mats <- calculate_grouped_lmranks_covariances(res)
