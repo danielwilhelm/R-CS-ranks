@@ -1,9 +1,9 @@
 # csranks 1.1.0
 
-* Added `simple_lmranks` function for linear modelling of ranks using single rank
+* Added `lmranks` function for linear modelling of ranks using single rank
 covariate and possibly other, "usual" covariates
-* Added a helper function `simple_lmranks_rho_se` for calculating and extracting just
-the standard error of regression coefficient rho
+* Implemented methods `print`, `summary`, `vcov`, `confint`, `predict` for `lmranks` output
+* Disabled a number of methods defined for `ļm` (like `sigma`, `AIC` or `influence`)
 
 # csranks 1.0.0
 

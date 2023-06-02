@@ -52,7 +52,7 @@ test_that("frank_against returns error for matrix input", {
   expect_error(frank(matrix(1:12, ncol = 3),
                                     omega=0.4, increasing=TRUE,
                                     na.rm = FALSE))
-  expect_error(process_compare_args(matrix(1:12, ncol = 3),
+  expect_error(process_irank_against_args(matrix(1:12, ncol = 3),
                                     omega=0.4, increasing=TRUE,
                                     na.rm = FALSE))
 })

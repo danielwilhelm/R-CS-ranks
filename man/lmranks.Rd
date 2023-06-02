@@ -13,7 +13,7 @@ lmranks(
   data,
   subset,
   weights,
-  na.action,
+  na.action = stats::na.fail,
   method = "qr",
   model = TRUE,
   x = FALSE,
@@ -45,19 +45,11 @@ and to specify a rank response. See Details.}
     variables are taken from \code{environment(formula)},
     typically the environment from which \code{lm} is called.}
 
-\item{subset}{an optional vector specifying a subset of observations to be used 
-in the fitting process. The ranks will be calculated using full data. 
-(See additional details about how this argument interacts with data-dependent 
-bases in the Details section of the \code{\link{model.frame}} documentation.)}
+\item{subset}{currently not supported.}
 
 \item{weights}{currently not supported.}
 
-\item{na.action}{a function which indicates what should happen
-    when the data contain \code{NA}s.  The default is set by
-    the \code{na.action} setting of \code{\link{options}}, and is
-    \code{\link[stats]{na.fail}} if that is unset.  The \sQuote{factory-fresh}
-    default is \code{\link[stats]{na.omit}}.  Another possible value is
-    \code{NULL}, no action.  Value \code{\link[stats]{na.exclude}} can be useful.}
+\item{na.action}{currently not supported. User is expected to handle NA values on his own.}
 
 \item{method}{the method to be used; for fitting, currently only
     \code{method = "qr"} is supported; \code{method = "model.frame"} returns

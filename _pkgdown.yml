@@ -9,6 +9,7 @@ reference:
   - title: "Functions for inference on ranks"
   - contents: 
     - irank
+    - irank_against
     - frank
     - csranks
     - csranks_multinom

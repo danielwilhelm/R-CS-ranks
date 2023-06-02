@@ -100,18 +100,18 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
   expect_error(process_indices_argument(2:11, 10))
 })
 
-test_that("`v` argument is handled correctly in process_compare_args",{
+test_that("`v` argument is handled correctly in process_irank_against_args",{
   x <- c(1,3,4,4,4,7,7,10)
   omega <- 0.4
-  expect_error(process_compare_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
+  expect_error(process_irank_against_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
                                   na.rm = FALSE))
-  expect_equal(process_compare_args(c(x, NA), v=x, omega=omega, increasing=TRUE,
+  expect_equal(process_irank_against_args(c(x, NA), v=x, omega=omega, increasing=TRUE,
                                     na.rm = FALSE),
                list(x=c(x, NA), v=x))
-  expect_equal(process_compare_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
+  expect_equal(process_irank_against_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
                                     na.rm = TRUE),
                list(x=x, v=x))
-  expect_equal(process_compare_args(x, v=NULL, omega=omega, increasing=FALSE,
+  expect_equal(process_irank_against_args(x, v=NULL, omega=omega, increasing=FALSE,
                                   na.rm = TRUE),
                list(x=-x, v=-x))
 })
