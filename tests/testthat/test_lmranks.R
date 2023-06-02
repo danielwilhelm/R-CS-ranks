@@ -91,6 +91,11 @@ test_that("lmranks correctly estimates rank correlation", {
   }  
 })
 
+test_that("lmranks raises error if NA is encountered in data", {
+  data(mtcars)
+  mtcars[5, "disp"] <- NA
+  expect_error(lmranks(r(mpg) ~ r(hp) + disp, data=mtcars), "missing values")
+})
 
 test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula("y ~ x + w"))
@@ -136,19 +141,33 @@ test_that("process_lmranks_formula returns correct index for simplest fits", {
 
 test_that("prepare_lm_call works", {
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data)")
-  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")
+  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data,
+                            na.action=stats::na.fail)")
   expect_equal(prepare_lm_call(input_call),
                expected_call)
   
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, omega=omega)")
-  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")
+  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data,
+                            na.action=stats::na.fail)")
   expect_equal(prepare_lm_call(input_call),
                expected_call)
   
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, na.rm=na.rm)")
-  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data)")
+  expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data,
+                            na.action=stats::na.fail)")
   expect_equal(prepare_lm_call(input_call),
                expected_call)
+})
+
+test_that("prepare_lm_call catches unsupported arguments", {
+  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, subset=x>0)")
+  expect_error(prepare_lm_call(input_call), "subset")
+  
+  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, weights=w)")
+  expect_error(prepare_lm_call(input_call), "weights")
+  
+  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, na.action=na.omit)")
+  expect_error(prepare_lm_call(input_call), "na.action")
 })
 
 test_that("create_env_to_interpret_r_mark has a correct parent env", {

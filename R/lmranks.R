@@ -7,11 +7,9 @@
 #' of the model to be fitted. Exactly like the formula for linear model except that
 #' rank terms, \code{r()}, can be added to specify that the linear regressor depends on ranks of regressors
 #' and to specify a rank response. See Details.
-#' @param subset an optional vector specifying a subset of observations to be used 
-#' in the fitting process. The ranks will be calculated using full data. 
-#' (See additional details about how this argument interacts with data-dependent 
-#' bases in the Details section of the \code{\link{model.frame}} documentation.)
+#' @param subset currently not supported.
 #' @param weights currently not supported.
+#' @param na.action currently not supported. User is expected to handle NA values on his own.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
 #' @param x \itemize{
@@ -95,7 +93,7 @@
 #' 
 lmranks <- function(formula, data, subset, 
                     weights, 
-                    na.action, 
+                    na.action = stats::na.fail, 
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
                     omega=1, na.rm=FALSE, ...){
@@ -191,6 +189,11 @@ prepare_lm_call <- function(lm_call, check_weights = TRUE){
   lm_call$na.rm <- NULL
   if(check_weights && !is.null(lm_call$weights))
     cli::cli_abort("{.var weights} argument is not yet supported. ")
+  if(!is.null(lm_call$na.action))
+    cli::cli_abort("{.var na.action} argument is not yet supported. ")
+  if(!is.null(lm_call$subset))
+    cli::cli_abort("{.var subset} argument is not yet supported. ")
+  lm_call$na.action <- str2lang("stats::na.fail")
   lm_call
 }
 
