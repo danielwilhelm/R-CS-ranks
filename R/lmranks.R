@@ -1,22 +1,20 @@
-#' Linear model for ranks
+#' Rank-Rank Regression
 #' 
-#' Fit a linear model with a single rank response and
-#' a single rank regressor (and possibly other usual regressors).
+#' Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
-#' rank terms, \code{r()}, can be added to specify that the linear regressor depends on ranks of regressors
-#' and to specify a rank response. See Details.
+#' variables to be ranked can be indicated by \code{r()}. See Details and Examples below.
 #' @param subset currently not supported.
 #' @param weights currently not supported.
-#' @param na.action currently not supported. User is expected to handle NA values on his own.
+#' @param na.action currently not supported. User is expected to handle NA values on their own.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
 #' @param x \itemize{
 #' \item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
-#' @param omega as in \code{\link{frank}}.
+#' @param omega real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.
 #' @param na.rm If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
 #' are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
 #' For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na.action}.
