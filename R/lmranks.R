@@ -168,14 +168,38 @@ process_lmranks_formula <- function(formula){
     rank_regressor_occurances <- variable_table[regressor_variable_index,]
     occured_exactly_once <- sum(rank_regressor_occurances == 1) == 1 && sum(rank_regressor_occurances == 0) == (length(rank_regressor_occurances) - 1)
     if(!occured_exactly_once){
-      cli::cli_abort("In formula, the ranked regressor may occur only once. No interactions are supported.")
+      one_inter_term_present <- sum(rank_regressor_occurances == 2) == 1 && sum(rank_regressor_occurances == 0) == (length(rank_regressor_occurances) - 1)
+      if(!one_inter_term_present){
+        cli::cli_abort(c("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
+                       "x" = "There are multiple (interacting) terms involving the ranked regressor."))
+      }
+      interaction_term_column <- variable_table[,rank_regressor_occurances == 2]
+      one_interacting_var_present <- sum(interaction_term_column == 2) == 2 && sum(interaction_term_column == 0) == (length(interaction_term_column) - 2)
+      if(!one_interacting_var_present){
+        cli::cli_abort(c("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
+                         "x" =  "The ranked regressor interacts with multiple variables in a single term."))
+      }
+      interacting_var <- interaction_term_column == 2
+      interacting_var[regressor_variable_index] <- FALSE
+      var_interacts_with_every_other_variable <- all(variable_table[interacting_var,] == 2)
+      if(!var_interacts_with_every_other_variable){
+        cli::cli_abort("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
+                       "x" = "The grouping variable does not interact with every other term in the formula.")
+      }
+      # We need to exclude intercept and replace it with the grouping factor
+      if(attr(formula_terms, "intercept")){
+        new_formula <- reformulate(c(attr(formula_terms, "term.labels"), rownames(variable_table)[interacting_var]), 
+                                   formula_terms[[2]], intercept = FALSE)
+      }
+      rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 2]
+    } else {
+      rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
     }
-    rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
     rearranged_formula_terms <- stats::terms(formula, allowDotAsName = TRUE, 
-                                      keep.order = FALSE) # default used later inside lm
+                                             keep.order = FALSE) # default used later inside lm
     rank_terms_indices <- which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
     return(list(rank_terms_indices = rank_terms_indices, 
-                ranked_response = ranked_response))
+                ranked_response = ranked_response)) 
   }
 }
 
