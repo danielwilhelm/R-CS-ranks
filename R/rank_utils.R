@@ -1,0 +1,122 @@
+#' Compute ranks from feature values
+#' 
+#' Given estimates of a certain feature for a set of populations,
+#' calculate the integer ranks of populations, i.e. places in ranking done by feature
+#' values. The larger (or smaller) feature value, the higher the place and the lower the integer
+#' rank (lowest, 1, is the best place).
+#'
+#' @param x vector of values to be ranked
+#' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.
+#' @param increasing logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. 
+#' In other words, larger values in \code{x} are lower in ranking. Otherwise, large elements receive small ranks. 
+#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}.
+#' In other case the output for NAs is NA and for other values it's for extreme
+#' possibilities that NA values are actually in first or last positions of ranking.
+#' 
+#' @details 
+#' \code{omega} (\eqn{\omega}) value determines, how equal entries in \code{x} should be ranked; 
+#' in other words how to handle ex aequo cases. If there are none, then the parameter 
+#' does not affect the output of this function. 
+#' For example, let's say, that \eqn{n} largest entries in \code{x} are equal.
+#' Those entries could receive (minimum) rank 1 or (maximum) rank \eqn{n} or some value in between.
+#'
+#' Suppose, that we want to assign rank to \eqn{n} equal values in an array.
+#' Denote their minimum rank as \eqn{r} and maximum as \eqn{R = r + n - 1}.
+#' Then the assigned rank is an average of 
+#' minimum and maximum rank, weighted by \eqn{\omega}: 
+#' \deqn{r(1-\omega) + R\omega} 
+#' 
+#' @return Integer vector of the same length as \code{x} containing the ranks.
+#' @examples
+#' irank(c(4,3,1,10,7))
+#' irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+#' irank(c(4,3,1,10,7), omega=0.5) # equal to previous ranks because there are no ties
+#' irank(c(4,4,4,3,1,10,7,7))
+#' irank(c(4,4,4,3,1,10,7,7), omega=1)
+#' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
+#' @export
+irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
+  irank_against(x, x, omega=omega, increasing=increasing, na.rm=na.rm)
+}
+
+#' Compute integer ranks in another reference vector
+#' 
+#' The method \code{\link{irank}} compares ranks using the same vector as reference.
+#' This method returns ranks, that values from \code{x} would assume if (individually)
+#' inserted into \code{v}. 
+#' 
+#' @param x numeric query vector.
+#' @param v numeric reference vector.
+#' @inheritParams irank
+#' 
+#' @inherit irank details return
+#' @examples 
+#' irank_against(1:10, c(4,4,4,3,1,10,7,7))
+#' @export
+irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
+  l <- process_irank_against_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
+  x <- l$x; v <- l$v
+  n_lequal_lesser <- count_lequal_lesser(x, v)
+  out <- omega * n_lequal_lesser$n_lequal + (1-omega) * n_lequal_lesser$n_lesser + 
+    1 - omega
+  names(out) <- names(x)
+  out
+}
+
+#' Compute minimum and maximum integer ranks in another reference vector
+#' 
+#' For each element of query vector x:
+#'     count, how many observations in the reference vector v are lesser 
+#'     (returned in n_lesser element)
+#'     and lower or equal (returned in n_lequal element) than this element.
+#' 
+#' @param v If NULL - set it as x. An often usecase.
+#' @param return_inverse_ranking Logical. If TRUE, add a third column to the matrix s.t.
+#' `sorted_v[third_column] == v`. In other words: inverse of sorting permutation of v.
+#' Used in `get_ineq_indicator`.
+#' @return A list with 2 (or 3 in case of return_inverse_ranking) elements.
+#' 
+#' @noRd
+count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
+  if(is.null(v))
+    v <- x
+  else if(return_inverse_ranking){
+    cli::cli_abort("Not implemented")
+  }
+  assert_has_no_NAs(v, "v")
+  ranking <- order(v)
+  n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
+  n_lower <- findInterval(x, v[ranking], left.open = TRUE)
+  out <- list(n_lequal=stats::setNames(n_lower_or_equal, NULL), 
+       n_lesser=stats::setNames(n_lower, NULL))
+  if(return_inverse_ranking)
+    out$inverse_ranking <- order(ranking)
+  return(out)
+}
+
+#' @describeIn irank Compute fractional ranks
+#' 
+#' This method returns ranks in form of fractions from [0-1] interval.
+#' Smaller values (closer to 0) indicate higher rank.
+#' 
+#' @examples
+#' frank(c(4,3,1,10,7))
+#' frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
+#' frank(c(4,3,1,10,7), omega=0.5) # mid-ranks, equal to previous ranks because there are no ties
+#' frank(c(4,4,4,3,1,10,7,7))
+#' frank(c(4,4,4,3,1,10,7,7), omega=1)
+#' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
+#' @export
+frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) 
+  return(frank_against(x, x, omega, increasing, na.rm))
+
+#' @describeIn irank_against Compute integer ranks in another reference vector
+#' @export
+frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
+  if(na.rm){
+    l <- sum(!is.na(v))
+  } else
+    l <- length(v)
+  out <- irank_against(x, v, omega, increasing, na.rm)
+  return(out / l)
+} 

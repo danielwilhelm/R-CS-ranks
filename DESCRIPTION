@@ -1,7 +1,7 @@
 Package: csranks
 Type: Package
 Title: Confidence Sets for Ranks
-Version: 1.0.1.9000
+Version: 1.1.0.9000
 Authors@R: c(
     person("Daniel", "Wilhelm", ,"d.wilhelm@ucl.ac.uk", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
@@ -16,7 +16,7 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/danielwilhelm/R-CS-ranks, https://danielwilhelm.github.io/R-CS-ranks/
 BugReports: https://github.com/danielwilhelm/R-CS-ranks/issues
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Depends:
     R (>= 3.5.0)
 Imports: 

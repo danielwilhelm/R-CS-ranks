@@ -1,3 +1,10 @@
+# csranks 1.1.0
+
+* Added `lmranks` function for linear modelling of ranks using single rank
+covariate and possibly other, "usual" covariates
+* Implemented methods `print`, `summary`, `vcov`, `confint`, `predict` for `lmranks` output
+* Disabled a number of methods defined for `ļm` (like `sigma`, `AIC` or `influence`)
+
 # csranks 1.0.0
 
 * Release!

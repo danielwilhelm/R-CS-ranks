@@ -9,12 +9,15 @@ reference:
   - title: "Functions for inference on ranks"
   - contents: 
     - irank
+    - irank_against
     - frank
     - csranks
     - csranks_multinom
     - cstaubest
     - cstauworst
     - plotranking
+    - lmranks
+    - summary.lmranks
   - title: "Datasets"
   - contents:
     - pisa

@@ -128,21 +128,27 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
-process_irank_args <- function(x, omega, increasing, na.rm){
+process_irank_against_args <- function(x, v, omega, increasing, na.rm){
   assert_is_numeric_vector(x, "x")
+  if(is.null(v))
+    v <- x
+  else
+    assert_is_numeric_vector(v, "v")
   assert_is_single_logical(na.rm, "na.rm")
   assert_is_single_probability(omega, "omega")
   assert_is_single_logical(increasing, "increasing")
-  if(!na.rm)
-    assert_has_no_NAs(x, "x")
-  else
+  if(!na.rm){
+    assert_has_no_NAs(v, "v")
+  } else {
+    v <- v[!is.na(v)]
     x <- x[!is.na(x)]
-  
+  }  
   if(!increasing){
+    v <- -v
     x <- -x
   }
   
-  return(x)
+  return(list(x=x, v=v))
 }
 
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){
@@ -235,6 +241,22 @@ assert_length <- function(x, name, length){
                      "x" = "{.var {name}} is of length {length(x)}."))
 }
 
+assert_equal_length <- function(..., names){
+  args <- list(...)
+  lengths <- sapply(args, function(v){
+    if(is.matrix(v))
+      nrow(v)
+    else
+      length(v)
+  })
+  is_equal <- lengths[1] == lengths
+  if(!all(is_equal)){
+    i <- which(!is_equal)[1]
+    cli::cli_abort(c("{.var {names}} must be of equal length.",
+                     "x" = "{.var {names[i]}} is of length {lengths[i]}, but {.var {names[1]}} is of length {lengths[1]}."))
+  }
+}
+
 assert_is_single_logical <- function(x, name){
   assert_is_vector(x, name)
   assert_is_single(x, name)
@@ -271,7 +293,13 @@ assert_has_no_NAs <- function(x, name){
 }
 
 assert_is_vector <- function(x, name){
-  if(!is.atomic(x))
+  AsIs_index <- which(class(x) == "AsIs")
+  original_x_class <- class(x)
+  if(length(AsIs_index) > 0){
+    class(x) <- class(x)[-AsIs_index]
+  }
+  if(!is.atomic(x) || !is.vector(x) && !is.factor(x))
     cli::cli_abort(c("{.var {name}} must be a vector.",
                      "x" = "{.var {name}} is of {.cls {class(x)}} class."))
+  class(x) <- original_x_class
 }

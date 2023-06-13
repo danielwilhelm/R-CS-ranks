@@ -100,17 +100,20 @@ test_that("`indices` argument is handled correctly by process_indices_argument",
   expect_error(process_indices_argument(2:11, 10))
 })
 
-test_that("`x` argument is handled correctly in process_irank_args",{
+test_that("`v` argument is handled correctly in process_irank_against_args",{
   x <- c(1,3,4,4,4,7,7,10)
   omega <- 0.4
-  expect_error(process_irank_args(c(x, NA), omega=omega, increasing=TRUE,
+  expect_error(process_irank_against_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
                                   na.rm = FALSE))
-  expect_equal(process_irank_args(c(x, NA), omega=omega, increasing=TRUE,
+  expect_equal(process_irank_against_args(c(x, NA), v=x, omega=omega, increasing=TRUE,
+                                    na.rm = FALSE),
+               list(x=c(x, NA), v=x))
+  expect_equal(process_irank_against_args(c(x, NA), v=NULL, omega=omega, increasing=TRUE,
+                                    na.rm = TRUE),
+               list(x=x, v=x))
+  expect_equal(process_irank_against_args(x, v=NULL, omega=omega, increasing=FALSE,
                                   na.rm = TRUE),
-               x)
-  expect_equal(process_irank_args(x, omega=omega, increasing=FALSE,
-                                  na.rm = TRUE),
-               -x)
+               list(x=-x, v=-x))
 })
 
 # Low-level assert tests
@@ -149,6 +152,14 @@ test_that("assert_is_single works correctly", {
   expect_error(assert_is_single(1:3, "x"))
 })
 
+test_that("assert_equal_length works correctly", {
+  x <- 1:10
+  y <- 1:10
+  z <- 1:10
+  expect_silent(assert_equal_length(x, y, z, names = c("x", "y", "z")))
+  expect_error(assert_equal_length(x, y[1:9], z, names = c("x", "y", "z")))
+})
+
 test_that("assert_is_single_logical works correctly", {
   expect_silent(assert_is_single_logical(TRUE, "x"))
   expect_error(assert_is_single_logical(1, "x"))
@@ -169,4 +180,8 @@ test_that("assert_has_no_NAs works correctly", {
 test_that("assert_is_vector works correctly", {
   expect_silent(assert_is_vector(1:4, "x"))
   expect_error(assert_is_vector(list(1:4), "x"))
+})
+
+test_that("assert_is_vector accepts I() object", {
+  expect_silent(assert_is_vector(I(1:5), "x"))
 })
