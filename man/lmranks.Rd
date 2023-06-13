@@ -6,14 +6,14 @@
 \alias{plot.lmranks}
 \alias{predict.lmranks}
 \alias{vcov.lmranks}
-\title{Linear model for ranks}
+\title{Rank-Rank Regression}
 \usage{
 lmranks(
   formula,
   data,
   subset,
   weights,
-  na.action,
+  na.action = stats::na.fail,
   method = "qr",
   model = TRUE,
   x = FALSE,
@@ -22,7 +22,7 @@ lmranks(
   singular.ok = TRUE,
   contrasts = NULL,
   offset = offset,
-  omega = 0,
+  omega = 1,
   na.rm = FALSE,
   ...
 )
@@ -36,8 +36,7 @@ lmranks(
 \arguments{
 \item{formula}{An object of class "\code{\link{formula}}": a symbolic description
 of the model to be fitted. Exactly like the formula for linear model except that
-rank terms, \code{r()}, can be added to specify that the linear regressor depends on ranks of regressors
-and to specify a rank response. See Details.}
+variables to be ranked can be indicated by \code{r()}. See Details and Examples below.}
 
 \item{data}{an optional data frame, list or environment (or object
     coercible by \code{\link{as.data.frame}} to a data frame) containing
@@ -45,19 +44,11 @@ and to specify a rank response. See Details.}
     variables are taken from \code{environment(formula)},
     typically the environment from which \code{lm} is called.}
 
-\item{subset}{an optional vector specifying a subset of observations to be used 
-in the fitting process. The ranks will be calculated using full data. 
-(See additional details about how this argument interacts with data-dependent 
-bases in the Details section of the \code{\link{model.frame}} documentation.)}
+\item{subset}{currently not supported.}
 
 \item{weights}{currently not supported.}
 
-\item{na.action}{a function which indicates what should happen
-    when the data contain \code{NA}s.  The default is set by
-    the \code{na.action} setting of \code{\link{options}}, and is
-    \code{\link[stats]{na.fail}} if that is unset.  The \sQuote{factory-fresh}
-    default is \code{\link[stats]{na.omit}}.  Another possible value is
-    \code{NULL}, no action.  Value \code{\link[stats]{na.exclude}} can be useful.}
+\item{na.action}{currently not supported. User is expected to handle NA values on their own.}
 
 \item{method}{the method to be used; for fitting, currently only
     \code{method = "qr"} is supported; \code{method = "model.frame"} returns
@@ -83,7 +74,7 @@ bases in the Details section of the \code{\link{model.frame}} documentation.)}
     included in the formula instead or as well, and if more than one are
     specified their sum is used.  See \code{\link[stats]{model.offset}}.}
 
-\item{omega}{as in \code{\link{frank}}.}
+\item{omega}{real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.}
 
 \item{na.rm}{If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
 are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
@@ -117,8 +108,7 @@ Also, the \code{df.residual} component is set to NA, since the notion of effects
 for the rank models is not theoretically established.
 }
 \description{
-Fit a linear model with a single rank response and
-a single rank regressor (and possibly other usual regressors).
+Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
 }
 \details{
 This function is useful in case when relationship not between variables themselves, but their rank
@@ -130,11 +120,9 @@ The \code{r()} is a private alias for \code{\link{frank}} with fixed
 (as a specification of rank definition) in the call to \code{lmranks}.
 
 As a consequence of the order, in which model.frame applies operations, \code{subset} 
-and \code{na.action} are applied after evaluation of \code{r()}. This means, that
-1) the ranks will be calculated using full data. In order to calculate them on subsetted data,
-one may subset the data outside of \code{lm} and pass it simply as new \code{data} argument.
-2) \code{na.action} will not handle NA values in ranked regressors. This means,
-that they have to be handled separately by the user.
+and \code{na.action} would be applied after evaluation of \code{r()}. 
+In such a case, returned coefficients and standard errors might no longer be correct.
+The user must handle the NA values and may filter the data on his own.
 
 Currently, only models at most one rank regressor are available. The single 
 response might be either ranked or continuous.

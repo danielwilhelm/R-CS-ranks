@@ -1,91 +1,138 @@
-test_that("vcov produces correct asymptotic variance estimate of rank-rank slope", {
-  set.seed(100)
+test_that("h1 works for ranked regressor with no covariates with grouping", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  proj_model_1 <- get_projection_model(res[[1]], 2)
+  g1 <- as.integer(attr(res, "grouping_factor")) == 1
+  h11_lmranks <- calculate_h_1(res[[1]], proj_model_1, g1)
+  expect_equivalent(h11_lmranks, H11)
+  
+  proj_model_2 <- get_projection_model(res[[2]], 2)
+  g2 <- as.integer(attr(res, "grouping_factor")) == 2
+  h12_lmranks <- calculate_h_1(res[[2]], proj_model_2, g2)
+  expect_equivalent(h12_lmranks, H12)
+})
 
-  for (covariates in c(TRUE,FALSE)) {
-    
-    # draw data
-    n <- 1000
-    G <- c(rep(1,n/2),rep(2,n/2))
-    beta <- G
-    if (covariates) {
-      X <- rnorm(n)
-      W <- matrix(rnorm(n*2), n, 2)
-      Y <- beta/2 + beta*X + rowSums(W) + rnorm(n,0,0.5)  
-      W <- cbind(1,W)  
-    } else {
-      X <- rnorm(n)
-      Y <- beta/2 + beta*X + rnorm(n,0,0.5) 
-      W <- matrix(1,n,1)
-    }
+test_that("h2 works for ranked regressor with no covariates with grouping", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  
+  n_lequal_lesser_X_1 <- count_lequal_lesser(X, X[G==1], 
+                                           return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y_1 <- count_lequal_lesser(Y, Y[G==1], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_1 <- get_projection_model(res[[1]], 2)
+  h21_lmranks <- calculate_h_2(res[[1]], proj_model_1, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_1, 
+                               n_lequal_lesser_Y=n_lequal_lesser_Y_1)
+  expect_equivalent(h21_lmranks, H21)
+  
+  n_lequal_lesser_X_2 <- count_lequal_lesser(X, X[G==2], 
+                                             return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y_2 <- count_lequal_lesser(Y, Y[G==2], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_2 <- get_projection_model(res[[2]], 2)
+  h22_lmranks <- calculate_h_2(res[[2]], proj_model_2, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_2, 
+                               n_lequal_lesser_Y=n_lequal_lesser_Y_2)
+  expect_equivalent(h22_lmranks, H22)
+})
 
-    # compute ranks
-    RY <- frank(Y, increasing=TRUE, omega=1)
-    RX <- frank(X, increasing=TRUE, omega=1)
-    RY1 <- RY[1:(n/2)]; RX1 <- RX[1:(n/2)]; W1 <- W[1:(n/2),]
-    RY2 <- RY[(n/2+1):n]; RX2 <- RX[(n/2+1):n]; W2 <- W[(n/2+1):n,]
+test_that("h3 works for ranked regressor with no covariates with grouping", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  
+  n_lequal_lesser_X_1 <- count_lequal_lesser(X, X[G==1], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_1 <- get_projection_model(res[[1]], 2)
+  h31_lmranks <- calculate_h_3(res[[1]], proj_model_1, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_1)
+  expect_equivalent(h31_lmranks, H31)
+  
+  n_lequal_lesser_X_2 <- count_lequal_lesser(X, X[G==2], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_2 <- get_projection_model(res[[2]], 2)
+  h32_lmranks <- calculate_h_3(res[[2]], proj_model_2, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_2)
+  expect_equivalent(h32_lmranks, H32)
+})
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with no covariates", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[2,2]*n, cov_mat[4,4]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
+})
+
+test_that("h1 works for ranked regressor with covariates and grouping", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X)+W-1, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  proj_model_1 <- get_projection_model(res[[1]], 1)
+  g1 <- as.integer(attr(res, "grouping_factor")) == 1
+  h11_lmranks <- calculate_h_1(res[[1]], proj_model_1, g1)
+  expect_equivalent(h11_lmranks, H11)
+  
+  proj_model_2 <- get_projection_model(res[[2]], 1)
+  g2 <- as.integer(attr(res, "grouping_factor")) == 2
+  h12_lmranks <- calculate_h_1(res[[2]], proj_model_2, g2)
+  expect_equivalent(h12_lmranks, H12)
+})
+
+test_that("h2 works for ranked regressor with covariates and grouping", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X)+W-1, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  
+  n_lequal_lesser_X_1 <- count_lequal_lesser(X, X[G==1], 
+                                             return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y_1 <- count_lequal_lesser(Y, Y[G==1], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_1 <- get_projection_model(res[[1]], 1)
+  h21_lmranks <- calculate_h_2(res[[1]], proj_model_1, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_1, 
+                               n_lequal_lesser_Y=n_lequal_lesser_Y_1)
+  expect_equivalent(h21_lmranks, H21)
+  
+  n_lequal_lesser_X_2 <- count_lequal_lesser(X, X[G==2], 
+                                             return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y_2 <- count_lequal_lesser(Y, Y[G==2], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_2 <- get_projection_model(res[[2]], 1)
+  h22_lmranks <- calculate_h_2(res[[2]], proj_model_2, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_2, 
+                               n_lequal_lesser_Y=n_lequal_lesser_Y_2)
+  expect_equivalent(h22_lmranks, H22)
+})
+
+test_that("h3 works for ranked regressor with covariates and grouping", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X)+W-1, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  
+  n_lequal_lesser_X_1 <- count_lequal_lesser(X, X[G==1], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_1 <- get_projection_model(res[[1]], 1)
+  h31_lmranks <- calculate_h_3(res[[1]], proj_model_1, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_1)
+  expect_equivalent(h31_lmranks, H31)
+  
+  n_lequal_lesser_X_2 <- count_lequal_lesser(X, X[G==2], 
+                                             return_inverse_ranking=TRUE)
+  proj_model_2 <- get_projection_model(res[[2]], 1)
+  h32_lmranks <- calculate_h_3(res[[2]], proj_model_2, 
+                               n_lequal_lesser_X=n_lequal_lesser_X_2)
+  expect_equivalent(h32_lmranks, H32)
+})
 
 
-    # ------- compute asymptotic variance "by hand"
-      
-      Ifn <- function(u, v) return( u<=v )
-
-      # first stage
-      res1 <- lm(RX1 ~ W1-1)
-      Wgammahat1 <- predict(res1)
-      nuhat1 <- resid(res1)
-      gammahat1 <- coef(res1)
-      res2 <- lm(RX2 ~ W2-1)
-      Wgammahat2 <- predict(res2)
-      nuhat2 <- resid(res2)
-      gammahat2 <- coef(res2)
-      nuhat <- c(nuhat1,nuhat2)
-      Wgammahat <- c(Wgammahat1,Wgammahat2)
-
-      # outcome equation
-      res1 <- lm(RY1~RX1+W1-1)
-      rhohat1 <- coef(res1)[1]
-      betahat1 <- coef(res1)[-1]
-      epsilonhat1 <- resid(res1)
-      res2 <- lm(RY2~RX2+W2-1)
-      rhohat2 <- coef(res2)[1]
-      betahat2 <- coef(res2)[-1]
-      epsilonhat2 <- resid(res2)
-      epsilonhat <- c(epsilonhat1,epsilonhat2)
-
-      # construct H1
-      H11 <- c(epsilonhat1 * nuhat1, rep(0,n/2))
-      H12 <- c(rep(0,n/2), epsilonhat2 * nuhat2)
-
-      # construct H2
-      H21fn <- function(xy) mean((G==1) * (Ifn(xy[2],Y)-rhohat1*Ifn(xy[1],X)-c(W%*%betahat1)) * nuhat)
-      H21 <- apply(cbind(X,Y), 1, H21fn)
-      H22fn <- function(xy) mean((G==2) * (Ifn(xy[2],Y)-rhohat2*Ifn(xy[1],X)-c(W%*%betahat2)) * nuhat)
-      H22 <- apply(cbind(X,Y), 1, H22fn)
-
-      # construct H3
-      H31fn <- function(x) mean((G==1) * epsilonhat * (Ifn(x,X)-Wgammahat))
-      H31 <- sapply(X, H31fn)
-      H32fn <- function(x) mean((G==2) * epsilonhat * (Ifn(x,X)-Wgammahat))
-      H32 <- sapply(X, H32fn)
-
-      # compute asymptotic variance
-      sigma2hat <- c(mean((H11+H21+H31)^2) / mean((G==1)*nuhat^2)^2,
-                      mean((H12+H22+H32)^2) / mean((G==2)*nuhat^2)^2)
-
-
-    # ------- compute asymptotic variance using grouped_lmranks
-
-      if (covariates) { 
-        res <- grouped_lmranks(r(Y) ~ r(X) + W - 1, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
-        sigma2hat.grouped_lmranks <- c(calculate_grouped_lmranks_covariances(res)[[1]][2,2]*n, calculate_grouped_lmranks_covariances(res)[[2]][2,2]*n)
-      } else {
-        res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
-        sigma2hat.grouped_lmranks <- c(calculate_grouped_lmranks_covariances(res)[[1]][2,2]*n, calculate_grouped_lmranks_covariances(res)[[2]][2,2]*n)
-      }
-
-      
-    # ------- test equality
-    
-      expect_equal(sigma2hat, sigma2hat.lmranks)
-  }
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with covariates", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- grouped_lmranks(r(Y) ~ r(X) + W - 1, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[5,5]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
+  
+  W_no_intercept <- W[,-1]
+  res <- grouped_lmranks(r(Y) ~ r(X) + W_no_intercept, data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[2,2]*n, cov_mat[6,6]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
 })

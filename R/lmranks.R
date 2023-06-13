@@ -1,24 +1,20 @@
-#' Linear model for ranks
+#' Rank-Rank Regression
 #' 
-#' Fit a linear model with a single rank response and
-#' a single rank regressor (and possibly other usual regressors).
+#' Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
-#' rank terms, \code{r()}, can be added to specify that the linear regressor depends on ranks of regressors
-#' and to specify a rank response. See Details.
-#' @param subset an optional vector specifying a subset of observations to be used 
-#' in the fitting process. The ranks will be calculated using full data. 
-#' (See additional details about how this argument interacts with data-dependent 
-#' bases in the Details section of the \code{\link{model.frame}} documentation.)
+#' variables to be ranked can be indicated by \code{r()}. See Details and Examples below.
+#' @param subset currently not supported.
 #' @param weights currently not supported.
+#' @param na.action currently not supported. User is expected to handle NA values on their own.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
 #' @param x \itemize{
 #' \item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
-#' @param omega as in \code{\link{frank}}.
+#' @param omega real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.
 #' @param na.rm If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
 #' are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
 #' For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na.action}.
@@ -33,11 +29,9 @@
 #' (as a specification of rank definition) in the call to \code{lmranks}.
 #' 
 #' As a consequence of the order, in which model.frame applies operations, \code{subset} 
-#' and \code{na.action} are applied after evaluation of \code{r()}. This means, that
-#' 1) the ranks will be calculated using full data. In order to calculate them on subsetted data,
-#' one may subset the data outside of \code{lm} and pass it simply as new \code{data} argument.
-#' 2) \code{na.action} will not handle NA values in ranked regressors. This means,
-#' that they have to be handled separately by the user.
+#' and \code{na.action} would be applied after evaluation of \code{r()}. 
+#' In such a case, returned coefficients and standard errors might no longer be correct.
+#' The user must handle the NA values and may filter the data on his own.
 #' 
 #' Currently, only models at most one rank regressor are available. The single 
 #' response might be either ranked or continuous.
@@ -95,10 +89,10 @@
 #' 
 lmranks <- function(formula, data, subset, 
                     weights, 
-                    na.action, 
+                    na.action = stats::na.fail, 
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
-                    omega=0, na.rm=FALSE, ...){
+                    omega=1, na.rm=FALSE, ...){
   l <- process_lmranks_formula(formula)
   rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
   original_call <- match.call() # for the final output
@@ -191,6 +185,11 @@ prepare_lm_call <- function(lm_call, check_weights = TRUE){
   lm_call$na.rm <- NULL
   if(check_weights && !is.null(lm_call$weights))
     cli::cli_abort("{.var weights} argument is not yet supported. ")
+  if(!is.null(lm_call$na.action))
+    cli::cli_abort("{.var na.action} argument is not yet supported. ")
+  if(!is.null(lm_call$subset))
+    cli::cli_abort("{.var subset} argument is not yet supported. ")
+  lm_call$na.action <- str2lang("stats::na.fail")
   lm_call
 }
 
@@ -249,7 +248,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
     v <- cache[[var_name]]
     out <- rep(NA, length(was_na))
     out[!was_na] <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=.(na.rm))
-    out + (.(omega) - 1) / sum(!is.na(v))
+    out
   })
   environment(r) <- rank_env
   assign("r", r, envir = rank_env)
@@ -257,6 +256,11 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   assign(".r_predict", FALSE, envir = rank_env)
   return(rank_env)
 }
+
+# Inherited `lm` methods:
+# coerce, dummy.coef, family, formula, kappa, model.frame, model.matrix,
+# nobs, print, qr, residuals, show, update, effects
+# alias, hatvalues, proj, case.names, variable.names, labels
 
 slotsFromS3.lmranks <- function(object){
   cli::cli_warn("This method might not return correct results.")

@@ -1,3 +1,8 @@
+compare_for_tests <- function(i,j,v,omega=1){
+  omega * (v[i] <= v[j]) + (1-omega) * (v[i] < v[j])
+}
+
+
 test_that("summary does not raise errors", {
   mod <- lmranks(r(mpg) ~ r(cyl) + disp, data=mtcars)
   expect_warning(summary(mod), "degrees of freedom")
@@ -58,7 +63,7 @@ test_that("get_and_separate_regressors works",{
   names(expected_RX) <- rownames(mtcars)
   expected_out_1 <- list(RX = expected_RX,
                          W = expected_W,
-                       rank_column_index = 2) # Intercept
+                         rank_column_index = 2) # Intercept
   expect_equal(get_and_separate_regressors(model_1),
                expected_out_1)
   
@@ -93,7 +98,8 @@ test_that("get_and_separate_regressors works for no ranked regressors",{
 
 test_that("get_projection_model works for ranked target", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars,
+                            omega = 1)
   
   RX <- original_model$model$`r(disp)`
   names(RX) <- rownames(mtcars)
@@ -101,6 +107,7 @@ test_that("get_projection_model works for ranked target", {
   expected_model <- lm(RX ~ W - 1)
   expected_model$rank_terms_indices <- integer(0)
   expected_model$ranked_response <- TRUE
+  expected_model$omega <- 1
   
   expect_equal(get_projection_model(original_model, 1),
                expected_model)
@@ -108,7 +115,8 @@ test_that("get_projection_model works for ranked target", {
 
 test_that("get_projection_model works for usual target with ranked regressor present", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars,
+                            omega = 1)
   
   RX <- original_model$model$`r(disp)`
   names(RX) <- rownames(mtcars)
@@ -120,6 +128,7 @@ test_that("get_projection_model works for usual target with ranked regressor pre
   expected_model <- lm(W_l ~ RX + W_minus_l - 1)
   expected_model$rank_terms_indices <- 1
   expected_model$ranked_response <- FALSE
+  expected_model$omega <- 1
   
   expect_equal(get_projection_model(original_model, 2),
                expected_model)
@@ -127,7 +136,8 @@ test_that("get_projection_model works for usual target with ranked regressor pre
 
 test_that("get_projection_model works for usual target with ranked regressor present", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp - 1, data=mtcars,
+                            omega = 1)
   
   RX <- original_model$model$`r(disp)`
   names(RX) <- rownames(mtcars)
@@ -139,6 +149,7 @@ test_that("get_projection_model works for usual target with ranked regressor pre
   expected_model <- lm(W_l ~ RX + W_minus_l - 1)
   expected_model$rank_terms_indices <- 1
   expected_model$ranked_response <- FALSE
+  expected_model$omega <- 1
   
   expect_equal(get_projection_model(original_model, 2),
                expected_model)
@@ -146,7 +157,8 @@ test_that("get_projection_model works for usual target with ranked regressor pre
 
 test_that("get_projection_model works with no ranked regressors", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ disp + cyl + hp - 1, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ disp + cyl + hp - 1, data=mtcars,
+                            omega=1)
   
   W_l <- mtcars$cyl
   names(W_l) <- rownames(mtcars)
@@ -156,6 +168,7 @@ test_that("get_projection_model works with no ranked regressors", {
   expected_model <- lm(W_l ~ W_minus_l - 1)
   expected_model$rank_terms_indices <- integer(0)
   expected_model$ranked_response <- FALSE
+  expected_model$omega <- 1
   
   expect_equal(get_projection_model(original_model, 2),
                expected_model)
@@ -163,7 +176,8 @@ test_that("get_projection_model works with no ranked regressors", {
 
 test_that("get_projection_model works for intercept", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(disp) + cyl + hp, data=mtcars,
+                            omega=1)
   
   RX <- original_model$model$`r(disp)`
   names(RX) <- rownames(mtcars)
@@ -173,6 +187,7 @@ test_that("get_projection_model works for intercept", {
   expected_model <- lm(W_l ~ RX + W_minus_l - 1)
   expected_model$rank_terms_indices <- 1
   expected_model$ranked_response <- FALSE
+  expected_model$omega <- 1
   
   expect_equal(get_projection_model(original_model, 1),
                expected_model)
@@ -180,7 +195,8 @@ test_that("get_projection_model works for intercept", {
 
 test_that("get_projection_model works for model with 1 usual regressor", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(disp), data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(disp), data=mtcars,
+                            omega=1)
   
   RX <- original_model$model$`r(disp)`
   names(RX) <- rownames(mtcars)
@@ -189,6 +205,7 @@ test_that("get_projection_model works for model with 1 usual regressor", {
   expected_model <- lm(W_l ~ RX - 1)
   expected_model$rank_terms_indices <- 1
   expected_model$ranked_response <- FALSE
+  expected_model$omega <- 1
   
   expect_equal(get_projection_model(original_model, 1),
                expected_model)
@@ -196,7 +213,7 @@ test_that("get_projection_model works for model with 1 usual regressor", {
 
 test_that("calculate_g_l_3 works for no ranked regressors case", {
   data(mtcars)
-  I_X <- NULL
+  n_lequal_lesser_X <- NULL
   W <- as.matrix(mtcars[, c("cyl", "hp")])
   W <- cbind(rep(1, nrow(W)),
              W)
@@ -211,16 +228,16 @@ test_that("calculate_g_l_3 works for no ranked regressors case", {
   
   expected_out <- rep(0, nrow(mtcars))
   
-  expect_equal(calculate_g_l_3(original_model, proj_model, I_X=I_X),
+  expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
                expected_out)
 })
 
 test_that("calculate_g_l_3 works for proj_model with ranked response", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars, omega=1)
   RX <- original_model$model$`r(cyl)`
-  I_X <- compare(mtcars$cyl)
-  RY <- original_model$model$`r(mpg)`
+  n_lequal_lesser_X <- count_lequal_lesser(mtcars$cyl, return_inverse_ranking = TRUE)
+  expected_I_X <- function(i,j) compare_for_tests(i,j,mtcars$cyl)
   W <- as.matrix(mtcars[, c("hp")])
   W <- cbind(rep(1, nrow(W)),
              W)
@@ -228,29 +245,29 @@ test_that("calculate_g_l_3 works for proj_model with ranked response", {
   proj_model <- lm(RX ~ W - 1)
   proj_model$rank_terms_indices <- integer(0)
   proj_model$ranked_response <- TRUE
+  proj_model$omega <- 1
   
   original_resid <- resid(original_model)
   predictor <- proj_model$fitted.values
   
-  expected_out <- sapply(1:length(RY), function(i){
+  expected_out <- sapply(1:length(RX), function(i){
     mean(
-      sapply(1:length(RY), function(j){
-        original_resid[j] * (I_X[i,j] - predictor[j])
+      sapply(1:length(RX), function(j){
+        original_resid[j] * (expected_I_X(i,j) - predictor[j])
       })
     )
   })
   
-  expect_equal(calculate_g_l_3(original_model, proj_model, I_X=I_X),
+  expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
                expected_out)
 })
 
 test_that("calculate_g_l_3 works for proj_model with usual response", {
   data(mtcars)
-  original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars)
+  original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars, omega=1)
   RX <- original_model$model$`r(cyl)`
-  I_X <- compare(mtcars$cyl)
-  RY <- frank(mtcars$mpg)
-  I_Y <- original_model$model$`r(disp)`
+  n_lequal_lesser_X <- count_lequal_lesser(mtcars$cyl, return_inverse_ranking = TRUE)
+  expected_I_X <- function(i,j) compare_for_tests(i,j,mtcars$cyl)
   W_l <- mtcars$hp
   W_minus_l <- rep(1, length(W_l))
   
@@ -258,237 +275,269 @@ test_that("calculate_g_l_3 works for proj_model with usual response", {
   proj_model <- lm(W_l ~ RX + W_minus_l - 1)
   proj_model$rank_terms_indices <- 1
   proj_model$ranked_response <- FALSE
+  proj_model$omega <- 1
   
   original_resid <- resid(original_model)
   coefs <- coef(proj_model)
   proj_usual_predictor <- W_minus_l * coefs[2]
   
-  expected_out <- sapply(1:length(RY), function(i){
+  expected_out <- sapply(1:length(RX), function(i){
     mean(
-      sapply(1:length(RY), function(j){
-        original_resid[j] * (W_l[j] - coefs[1]*I_X[i,j] - proj_usual_predictor[j])
+      sapply(1:length(RX), function(j){
+        original_resid[j] * (W_l[j] - coefs[1]*expected_I_X(i,j) - proj_usual_predictor[j])
       })
     )
   })
   
-  expect_equal(calculate_g_l_3(original_model, proj_model, I_X=I_X),
+  expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
                expected_out)
 })
 
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for ranked response, usual regressors", {
+test_that("extract_nonrank_predictor works when no ranked regressors present", {
   data(mtcars)
-  RY <- frank(mtcars$mpg)
-  I_Y <- compare(mtcars$mpg)
-  W <- as.matrix(mtcars[, c("disp", "hp")])
-  W <- cbind(rep(1, nrow(W)),
-             W)
-  original_model <- lm(RY ~ W - 1)
-  original_model$rank_terms_indices <- integer(0)
-  original_model$ranked_response <- TRUE
-  
-  coefs <- coef(original_model)
-  predictor <- W %*% coefs
-  expected_resid <- sapply(1:length(RY), function(j){
-    I_Y[,j] - predictor[j]
-  })
-  expected_resid <- t(expected_resid)
-  
-  expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-    original_model, I_Y = I_Y
-  ), expected_resid)
-  
+  model <- lmranks(r(mpg) ~ cyl + disp, data=mtcars)
+  expected <- model$fitted.values
+  names(expected) <- NULL
+  expect_equal(extract_nonrank_predictor(model),
+               expected)
 })
 
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for usual response, ranked regressors", {
-    data(mtcars)
-    RX <- frank(mtcars$cyl)
-    I_X <- compare(mtcars$cyl)
-    Y <- frank(mtcars$mpg)
-    W <- as.matrix(mtcars[, c("hp")])
-    W <- cbind(rep(1, nrow(W)),
-               W)
-    original_model <- lm(Y ~ RX + W - 1)
-    original_model$rank_terms_indices <- 1
-    original_model$ranked_response <- FALSE
-    
-    coefs <- coef(original_model)
-    predictor <- W %*% coefs[-1]
-    expected_resid <- sapply(1:length(Y), function(j){
-      Y[j] - coefs[1] * I_X[,j] - predictor[j]
-    })
-    expected_resid <- t(expected_resid)
-    
-    expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-      original_model, I_X = I_X
-    ), expected_resid)
-})
-
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for ranked response, ranked regressors", {
-    data(mtcars)
-    RX <- frank(mtcars$cyl)
-    I_X <- compare(mtcars$cyl)
-    RY <- frank(mtcars$mpg)
-    I_Y <- compare(mtcars$mpg)
-    W <- as.matrix(mtcars[, c("hp")])
-    W <- cbind(rep(1, nrow(W)),
-               W)
-    original_model <- lm(RY ~ RX + W - 1)
-    original_model$rank_terms_indices <- 1
-    original_model$ranked_response <- TRUE
-    
-    coefs <- coef(original_model)
-    predictor <- W %*% coefs[-1]
-    expected_resid <- sapply(1:length(RY), function(j){
-      I_Y[,j] - coefs[1] * I_X[,j] - predictor[j]
-    })
-    expected_resid <- t(expected_resid)
-    
-    expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-      original_model, I_X = I_X, I_Y = I_Y
-    ), expected_resid)
-})
-
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for singular fit", {
+test_that("extract_nonrank_predictor works in singular case", {
   data(mtcars)
-  RX <- frank(mtcars$cyl)
-  I_X <- compare(mtcars$cyl)
-  RY <- frank(mtcars$mpg)
-  I_Y <- compare(mtcars$mpg)
-  W <- cbind(mtcars[, c("hp")],mtcars[, c("hp")])
-  W <- cbind(rep(1, nrow(W)),
-             W)
-  original_model <- lm(RY ~ RX + W - 1)
-  original_model$rank_terms_indices <- 1
-  original_model$ranked_response <- TRUE
-  
-  coefs <- coef(original_model)
-  predictor <- W[,-3] %*% coefs[c(2:3)]
-  expected_resid <- sapply(1:length(RY), function(j){
-    I_Y[,j] - coefs[1] * I_X[,j] - predictor[j]
-  })
-  expected_resid <- t(expected_resid)
-  
-  expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-    original_model, I_X = I_X, I_Y = I_Y
-  ), expected_resid)
+  mtcars$disp2 <- mtcars$disp
+  model <- lmranks(r(mpg) ~ disp + disp2, data=mtcars)
+  expected_nonrank_predictor <- coef(model)[1] + coef(model)[2] * mtcars$disp
+  expect_equal(extract_nonrank_predictor(model),
+               expected_nonrank_predictor)
 })
 
+test_that("extract_nonrank_predictor works when ranked regressors present", {
+  data(mtcars)
+  model <- lmranks(r(mpg) ~ r(cyl) + disp, data=mtcars)
+  expected_nonrank_predictor <- coef(model)[1] + coef(model)[3] * mtcars$disp
+  expect_equal(extract_nonrank_predictor(model),
+               expected_nonrank_predictor)
+})
 
+test_that("get_ineq_indicator_function returns functions with identical arguments", {
+  v <- 1:10
+  f1 <- get_ineq_indicator_function(FALSE, v)
+  f2 <- get_ineq_indicator_function(TRUE, v)
+  
+  expect_equal(args(f1), args(f2))
+})
 
-test_that("vcov produces correct asymptotic variance estimate of rank-rank slope", {
-  set.seed(100)
+test_that("get_ineq_indicator_function remembers vector values across calls", {
+  v1 <- 1:3
+  v2 <- 4:6
+  v3 <- 7:9
+  
+  f1 <- get_ineq_indicator_function(FALSE, v1)
+  f2 <- get_ineq_indicator_function(FALSE, v2)
+  f3 <- get_ineq_indicator_function(FALSE, v3)
+  
+  expect_equal(f1(1,2,3), v1)
+  expect_equal(f2(1,2,3), v2)
+  expect_equal(f2(1,2,3), v2)
+})
 
-  for (covariates in c(TRUE,FALSE)) {
+test_that("get_ineq_indicator works for sorted data", {
+  original_v <- c(1,3,4,4,4,7,7,10)
+  n_lequal_lesser <- list(n_lequal = c(1,2,5,5,5,7,7,8),
+                          n_lesser = c(0,1,2,2,2,5,5,7),
+                          inverse_ranking = c(1,2,3,4,5,6,7,8))
+  for(i in 1:length(original_v)){
+    expected_om0 <- sapply(1:length(original_v), function(j)
+      compare_for_tests(i,j,original_v,omega=0))
+    expected_om0.4 <- sapply(1:length(original_v), function(j)
+      compare_for_tests(i,j,original_v,omega=0.4))
+    expected_om1 <- sapply(1:length(original_v), function(j)
+      compare_for_tests(i,j,original_v,omega=1))
     
-    # draw data
-    n <- 10000
-    if (covariates) {
-      X <- rnorm(n)
-      W <- matrix(rnorm(n*2), n, 2)
-      Y <- X + rowSums(W) + rnorm(n,0,0.5)  
-      W <- cbind(1,W)  
-    } else {
-      X <- rnorm(n)
-      Y <- X + rnorm(n,0,0.5) 
-      W <- matrix(1,n,1)
-    }
-
-    # compute ranks
-    RY <- frank(Y, increasing=TRUE)
-    RX <- frank(X, increasing=TRUE)
-
-
-    # ------- compute asymptotic variance "by hand"
-      
-      Ifn <- function(u, v) return( u<=v )
-
-      # first stage
-      res <- lm(RX ~ W-1)
-      Wgammahat <- predict(res)
-      nuhat <- resid(res)
-      gammahat <- coef(res)
-
-      # outcome equation
-      res <- lm(RY~RX+W-1)
-      rhohat <- coef(res)[1]
-      betahat <- coef(res)[-1]
-      epsilonhat <- resid(res)
-
-      # construct h1
-      h1 <- epsilonhat * nuhat
-
-      # construct h2
-      h2fn <- function(xy) mean((Ifn(xy[2],Y)-rhohat*Ifn(xy[1],X)-c(W%*%betahat)) * nuhat)
-      h2 <- apply(cbind(X,Y), 1, h2fn)
-
-      # construct h3
-      h3fn <- function(x) mean(epsilonhat * (Ifn(x,X)-Wgammahat))
-      h3 <- sapply(X, h3fn)
-
-      # compute asymptotic variance
-      sigma2hat <- mean((h1+h2+h3)^2) / var(nuhat)^2
-
-
-    # ------- compute asymptotic variance using lmranks
-
-      if (covariates) { 
-        res <- lmranks(r(Y) ~ r(X) + W - 1)
-        sigma2hat.lmranks <- vcov(res)[1,1]*n
-      } else {
-        res <- lmranks(r(Y) ~ r(X))
-        sigma2hat.lmranks <- vcov(res)[2,2]*n
-      }
-
-      
-    # ------- test equality
-    
-      expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
+                 expected_om0)
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
+                 expected_om0.4)
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
+                 expected_om1)
   }
 })
 
+test_that("get_ineq_indicator works for unsorted data", {
+  original_v <- c(4,4,4,3,1,10,7,7)
+  n_lequal_lesser <- matrix(c(
+    5,2,3,
+    5,2,4,
+    5,2,5,
+    2,1,2,
+    1,0,1,
+    8,7,8,
+    7,5,6,
+    7,5,7
+  ), byrow=TRUE, ncol = 3)
+  n_lequal_lesser <- list(n_lequal = c(5,5,5,2,1,8,7,7),
+                          n_lesser = c(2,2,2,1,0,7,5,5),
+                          inverse_ranking = c(3,4,5,2,1,8,6,7))
+  for(i in 1:length(original_v)){
+    expected_om0 <- sapply(1:length(original_v), function(j)
+      compare_for_tests(i,j,original_v,omega=0))
+    expected_om0.4 <- sapply(1:length(original_v), function(j)
+      compare_for_tests(i,j,original_v,omega=0.4))
+    expected_om1 <- sapply(1:length(original_v), function(j)
+      compare_for_tests(i,j,original_v,omega=1))
+    
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
+                 expected_om0)
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
+                 expected_om0.4)
+    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
+                 expected_om1)
+  }
+})
 
+test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
+          for usual regressors", {
+            data(mtcars)
+            i <- 5
+            RY <- frank(mtcars$mpg)
+            I_Y <- sapply(1:length(mtcars$mpg), function(j)
+              compare_for_tests(i, j, mtcars$mpg))
+            W <- as.matrix(mtcars[, c("disp", "hp")])
+            W <- cbind(rep(1, nrow(W)),
+                       W)
+            original_model <- lm(RY ~ W - 1)
+            original_model$rank_terms_indices <- integer(0)
+            original_model$ranked_response <- TRUE
+            
+            coefs <- coef(original_model)
+            predictor <- W %*% coefs
+            expected_resid <- I_Y - predictor
+            
+            expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
+              original_model, nonrank_predictor = predictor, I_Y = I_Y
+            ), expected_resid)
+            
+          })
+
+test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
+          for ranked regressors", {
+            data(mtcars)
+            i <- 5
+            RX <- frank(mtcars$cyl)
+            I_X <- sapply(1:length(mtcars$cyl), function(j)
+              compare_for_tests(i, j, mtcars$cyl))
+            RY <- frank(mtcars$mpg)
+            I_Y <- sapply(1:length(mtcars$mpg), function(j)
+              compare_for_tests(i, j, mtcars$mpg))
+            W <- as.matrix(mtcars[, c("hp")])
+            W <- cbind(rep(1, nrow(W)),
+                       W)
+            original_model <- lm(RY ~ RX + W - 1)
+            original_model$rank_terms_indices <- 1
+            original_model$ranked_response <- TRUE
+            
+            coefs <- coef(original_model)
+            predictor <- W %*% coefs[-1]
+            expected_resid <- I_Y - coefs[1] * I_X - predictor
+            
+            expect_equal(replace_ranks_with_ineq_indicator_and_calculate_residuals(
+              original_model, nonrank_predictor = predictor, I_X = I_X, I_Y = I_Y
+            ), expected_resid)
+          })
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with covariates present", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X) + W - 1)
+  sigma2hat.lmranks <- vcov(res)[1,1]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+})
+
+######################################################
+### High-level checks against by-hand calculations ###
+######################################################
+
+test_that("h1 works for ranked regressor with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  proj_model <- get_projection_model(res, 2)
+  
+  h1_lmranks <- calculate_g_l_1(res, proj_model)
+  expect_equal(h1_lmranks, h1)
+})
+
+test_that("h2 works for ranked regressor with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y <- count_lequal_lesser(Y, return_inverse_ranking=TRUE)
+  
+  h2_lmranks <- calculate_g_l_2(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X,
+                                n_lequal_lesser_Y=n_lequal_lesser_Y)
+  expect_equal(h2_lmranks, h2)
+})
+
+test_that("h3 works for ranked regressor with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  
+  h3_lmranks <- calculate_g_l_3(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X)
+  
+  expect_equal(h3_lmranks, h3)
+})
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with no covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+})
+
+test_that("h1 works for ranked regressor with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X) + W)
+  proj_model <- get_projection_model(res, 2)
+  
+  h1_lmranks <- calculate_g_l_1(res, proj_model)
+  expect_equal(h1_lmranks, h1)
+})
+
+test_that("h2 works for ranked regressor with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  n_lequal_lesser_Y <- count_lequal_lesser(Y, return_inverse_ranking=TRUE)
+  
+  h2_lmranks <- calculate_g_l_2(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X,
+                                n_lequal_lesser_Y=n_lequal_lesser_Y)
+  expect_equal(h2_lmranks, h2)
+})
+
+test_that("h3 works for ranked regressor with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  proj_model <- get_projection_model(res, 2)
+  n_lequal_lesser_X <- count_lequal_lesser(X, return_inverse_ranking=TRUE)
+  
+  h3_lmranks <- calculate_g_l_3(res, proj_model, n_lequal_lesser_X=n_lequal_lesser_X)
+  
+  expect_equal(h3_lmranks, h3)
+})
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with covariates", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+})
 
 test_that("vcov produces asymptotic variance estimate of rank-rank slope equal to that of Hoeffding (1948)", {
-  set.seed(100)
-
-    # draw data
-    n <- 1000
-    X <- rnorm(n)
-    Y <- X + rnorm(n,0,0.5) 
-
-    # ------- compute Hoeffding's variance "by hand"
-      
-      n <- length(Y)
-      rhohat <- cor(frank(Y, omega=1/2, increasing=TRUE),frank(X, omega=1/2, increasing=TRUE))
-      oX <- outer(X,X,'<=')
-      oY <- outer(Y,Y,'<=')
-      FhatX <- colMeans(oX)
-      FhatY <- colMeans(oY)
-      FhatAvgX <- function(x) mean(colMeans(outer(X,rep(x,n),'<=')*oY))
-      FhatAvgY <- function(y) mean(colMeans(outer(Y,rep(y,n),'<=')*oX))
-      psihatX <- sapply(X, FhatAvgX) - FhatX*mean(FhatY)
-      psihatY <- sapply(Y, FhatAvgY) - mean(FhatX)*FhatY
-
-      W <- 3*( (2*FhatX-1)*(2*FhatY-1) + 4*psihatX + 4*psihatY )
-      
-      # compute asymptotic variance
-      sigma2hat <- var(W)
-
-
-    # ------- compute asymptotic variance using lmranks
-
-      res <- lmranks(r(Y) ~ r(X))
-      sigma2hat.lmranks <- vcov(res)[2,2]*n
-
-      
-    # ------- test equality
-    
-      expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-3)
-  }
+  load(test_path("testdata", "lmranks_cov_sigmahat_Hoefding.rda"))
+  res <- lmranks(r(Y) ~ r(X))
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-3)
 })
 
 
