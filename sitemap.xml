@@ -40,9 +40,18 @@
     <loc>/reference/irank.html</loc>
   </url>
   <url>
+    <loc>/reference/irank_against.html</loc>
+  </url>
+  <url>
+    <loc>/reference/lmranks.html</loc>
+  </url>
+  <url>
     <loc>/reference/pisa.html</loc>
   </url>
   <url>
     <loc>/reference/plotranking.html</loc>
+  </url>
+  <url>
+    <loc>/reference/summary.lmranks.html</loc>
   </url>
 </urlset>
