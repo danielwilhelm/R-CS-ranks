@@ -1,21 +1,10 @@
-#' @export
-vcov.grouped_lmranks <- function(object, ...){
-  lapply(object, vcov, ...)
-}
-
-#' @importFrom sandwich vcovHC
-#' @export
-vcovHC.grouped_lmranks <- function(x, ...){
-  lapply(x, sandwich::vcovHC, ...)
-}
-
 # Some of the functions used here are defined in lmranks_summary
 #' @export
-calculate_grouped_lmranks_covariances <- function(object, complete = TRUE, ...){
+vcov.grouped_lmranks <- function(object, ...){
   global_RX <- attr(object, "RX")
   global_RY <- attr(object, "RY")
   
-  covariances <- lapply(1:length(object), function(j){
+  h_list <- lapply(1:length(object), function(j){
     group_model <- object[[j]]
     l <- get_and_separate_regressors(group_model)
     group_RX <- l$RX; rank_column_index <- l$rank_column_index
@@ -48,15 +37,18 @@ calculate_grouped_lmranks_covariances <- function(object, complete = TRUE, ...){
       var_estimate <- sum(resid(proj_model)^2) / length(global_RX)
       (h_1 + h_2 + h_3) / var_estimate
     })
-    sigmahat <- (t(h_sum) %*% h_sum) / (length(global_RX) ^ 2)
-    # first division by n caused by E[h^2] estimate, second by CLT correction
-    colnames(sigmahat) <- names(coef(group_model))
-    rownames(sigmahat) <- colnames(sigmahat)
-    sigmahat
+    group_name <- names(object)[j]
+    colnames(h_sum) <- paste0(names(coef(group_model)), ":G_", group_name)
+    h_sum
   })
   
-  names(covariances) <- names(object)
-  return(covariances)
+  h_matrix <- do.call(cbind, h_list)
+  # first division by n caused by E[h^2] estimate, second by CLT correction
+  sigmahat <- (t(h_matrix) %*% h_matrix) / (length(global_RX) ^ 2)
+  colnames(sigmahat) <- colnames(h_matrix)
+  rownames(sigmahat) <- colnames(sigmahat)
+  
+  return(sigmahat)
 }
 
 calculate_h_1 <- function(original_model, proj_model, group_indicator){
