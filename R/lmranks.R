@@ -93,8 +93,11 @@ lmranks <- function(formula, data, subset,
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
                     omega=1, na.rm=FALSE, ...){
-  l <- process_lmranks_formula(formula)
+  # From this environment lm will take the definition of r()
+  rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
+  l <- process_lmranks_formula(formula, rank_env)
   rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
+  corrected_formula <- l$formula
   original_call <- match.call() # for the final output
   if(length(rank_terms_indices) == 0 && !ranked_response){
     cli::cli_warn("{.var lmranks} called with no ranked terms. Using regular lm...")
@@ -103,8 +106,8 @@ lmranks <- function(formula, data, subset,
     return(out)
   }
   lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
-  # From this environment lm will take the definition of r()
-  rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
+  lm_call$formula <- substitute(corrected_formula)
+  
   # It will mask "r" objects from higher frames inside lm, but not modify them
   # It is also inheriting from parent.frame, so evaluations of all other expressions
   # will be taken from there
@@ -144,7 +147,7 @@ lmranks <- function(formula, data, subset,
 #' * It will not detect func(r(expr)). 
 #' 
 #' @noRd
-process_lmranks_formula <- function(formula){
+process_lmranks_formula <- function(formula, rank_env){
   if(!inherits(formula, "formula")){
     cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
                    "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."))
@@ -182,16 +185,18 @@ process_lmranks_formula <- function(formula){
       interacting_var <- interaction_term_column == 2
       interacting_var[regressor_variable_index] <- FALSE
       var_interacts_with_every_other_variable <- all(variable_table[interacting_var,] == 2)
-      if(!var_interacts_with_every_other_variable){
+      exception <- !attr(formula_terms, "intercept") && sum(variable_table[interacting_var,] == 1) == 1 && sum(variable_table[interacting_var,] == 2) == (length(variable_table[interacting_var,]) - 1)
+      if(!var_interacts_with_every_other_variable || exception){
         cli::cli_abort("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
                        "x" = "The grouping variable does not interact with every other term in the formula.")
       }
+      rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 2]
       # We need to exclude intercept and replace it with the grouping factor
       if(attr(formula_terms, "intercept")){
-        new_formula <- reformulate(c(attr(formula_terms, "term.labels"), rownames(variable_table)[interacting_var]), 
-                                   formula_terms[[2]], intercept = FALSE)
+        formula <- reformulate(c(attr(formula_terms, "term.labels"), rownames(variable_table)[interacting_var]), 
+                              formula_terms[[2]], intercept = FALSE,
+                              env = rank_env)
       }
-      rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 2]
     } else {
       rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
     }
@@ -199,7 +204,8 @@ process_lmranks_formula <- function(formula){
                                              keep.order = FALSE) # default used later inside lm
     rank_terms_indices <- which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
     return(list(rank_terms_indices = rank_terms_indices, 
-                ranked_response = ranked_response)) 
+                ranked_response = ranked_response,
+                formula=formula)) 
   }
 }
 
