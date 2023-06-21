@@ -95,6 +95,10 @@ lmranks <- function(formula, data, subset,
                     omega=1, na.rm=FALSE, ...){
   # From this environment lm will take the definition of r()
   rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
+  # It will mask "r" objects from higher frames inside lm, but not modify them
+  # It is also inheriting from parent.frame, so evaluations of all other expressions
+  # will be taken from there
+  
   l <- process_lmranks_formula(formula, rank_env)
   rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
   corrected_formula <- l$formula
@@ -107,10 +111,6 @@ lmranks <- function(formula, data, subset,
   }
   lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
   lm_call$formula <- substitute(corrected_formula)
-  
-  # It will mask "r" objects from higher frames inside lm, but not modify them
-  # It is also inheriting from parent.frame, so evaluations of all other expressions
-  # will be taken from there
   
   # Call (evaluate) lm
   main_model <- eval(lm_call, rank_env)
@@ -191,7 +191,7 @@ process_lmranks_formula <- function(formula, rank_env){
                        "x" = "The grouping variable does not interact with every other term in the formula.")
       }
       rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 2]
-      # We need to exclude intercept and replace it with the grouping factor
+      # We need to replace intercept with the grouping factor
       if(attr(formula_terms, "intercept")){
         formula <- reformulate(c(attr(formula_terms, "term.labels"), rownames(variable_table)[interacting_var]), 
                               formula_terms[[2]], intercept = FALSE,
