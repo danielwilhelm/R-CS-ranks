@@ -1,3 +1,6 @@
+# csranks 1.1.1
+* Optimized `vcov.lmranks` method
+
 # csranks 1.1.0
 
 * Added `lmranks` function for linear modelling of ranks using single rank
