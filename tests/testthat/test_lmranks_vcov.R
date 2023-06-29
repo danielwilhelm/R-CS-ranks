@@ -97,6 +97,20 @@ test_that("get_projection_residual_matrix works for singular matrix", {
   expect_equivalent(expected_resids, X %*% actual)
 })
 
+test_that("H2 handles no ranked regressor case without error", {
+  data(mtcars)
+  m <- lmranks(r(mpg) ~ ., data=mtcars)
+  projection_residuals <- model.matrix(m) %*% get_projection_residual_matrix(m)
+  expect_silent(calculate_H2(m, projection_residuals))
+})
+
+test_that("H2 handles not ranked response case without error", {
+  data(mtcars)
+  m <- lmranks(mpg ~r(disp) +., data=mtcars)
+  projection_residuals <- model.matrix(m) %*% get_projection_residual_matrix(m)
+  expect_silent(calculate_H2(m, projection_residuals))
+})
+
 test_that("get_and_separate_regressors works",{
   data(mtcars)
   model_1 <- lm(mpg ~ disp + cyl + hp, data=mtcars)
@@ -110,6 +124,7 @@ test_that("get_and_separate_regressors works",{
   
   RX <- mtcars$disp
   Y <- mtcars$mpg
+  W <- as.matrix(mtcars[,c("cyl", "hp")])
   model_2 <- lm(Y ~ W + RX)
   model_2$rank_terms_indices <- 2
   expected_out_2 <- expected_out_1
@@ -142,7 +157,7 @@ test_that("prepare_mat_om0 works without duplicates when mat has 1 column", {
   expected <- matrix(expected, ncol=1)
   
   actual <- apply(prepare_mat_om0(mat, v), 2, cumsum)
-  expect_equal(actual, expected)
+  expect_equivalent(actual, expected)
 })
 
 test_that("prepare_mat_om0 works with duplicates when mat has 1 column", {
@@ -157,7 +172,7 @@ test_that("prepare_mat_om0 works with duplicates when mat has 1 column", {
   expected <- matrix(expected, ncol=1)
   
   actual <- apply(prepare_mat_om0(mat, v), 2, cumsum)
-  expect_equal(actual, expected)
+  expect_equivalent(actual, expected)
 })
 
 test_that("prepare_mat_om1 works with duplicates when mat has 1 column", {
@@ -172,7 +187,7 @@ test_that("prepare_mat_om1 works with duplicates when mat has 1 column", {
   expected <- matrix(expected, ncol=1)
   
   actual <- apply(prepare_mat_om1(mat, v), 2, cumsum)
-  expect_equal(actual, expected)
+  expect_equivalent(actual, expected)
 })
 
 test_that("prepare_mat_om0 works with duplicates when mat has many columns", {
@@ -217,7 +232,7 @@ test_that("ineq_indicator_matmult works for sorted input", {
   expected <- t(expected)
   
   actual <- ineq_indicator_matmult(v, mat, 0.4)
-  expect_equal(actual, expected)
+  expect_equivalent(actual, expected)
 })
 
 test_that("ineq_indicator_matmult works for unsorted input", {
@@ -232,220 +247,19 @@ test_that("ineq_indicator_matmult works for unsorted input", {
   expected <- t(expected)
   
   actual <- ineq_indicator_matmult(v, mat, 0.4)
-  expect_equal(actual, expected)
+  expect_equivalent(actual, expected)
 })
 
-# test_that("calculate_g_l_3 works for no ranked regressors case", {
-#   data(mtcars)
-#   n_lequal_lesser_X <- NULL
-#   W <- as.matrix(mtcars[, c("cyl", "hp")])
-#   W <- cbind(rep(1, nrow(W)),
-#              W)
-#   
-#   original_model <- lmranks(r(mpg) ~ cyl + hp, data=mtcars)
-#   RY <- original_model$model$`r(mpg)`
-#   W_l <- W[,2]
-#   W_minus_l <- W[,-2]
-#   proj_model <- lm(W_l ~ W_minus_l - 1)
-#   proj_model$rank_terms_indices <- integer(0)
-#   proj_model$ranked_response <- FALSE
-#   
-#   expected_out <- rep(0, nrow(mtcars))
-#   
-#   expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
-#                expected_out)
-# })
-# 
-# test_that("calculate_g_l_3 works for proj_model with ranked response", {
-#   data(mtcars)
-#   original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars, omega=1)
-#   RX <- original_model$model$`r(cyl)`
-#   n_lequal_lesser_X <- count_lequal_lesser(mtcars$cyl, return_inverse_ranking = TRUE)
-#   expected_I_X <- function(i,j) compare_for_tests(i,j,mtcars$cyl)
-#   W <- as.matrix(mtcars[, c("hp")])
-#   W <- cbind(rep(1, nrow(W)),
-#              W)
-#   
-#   proj_model <- lm(RX ~ W - 1)
-#   proj_model$rank_terms_indices <- integer(0)
-#   proj_model$ranked_response <- TRUE
-#   proj_model$omega <- 1
-#   
-#   original_resid <- resid(original_model)
-#   predictor <- proj_model$fitted.values
-#   
-#   expected_out <- sapply(1:length(RX), function(i){
-#     mean(
-#       sapply(1:length(RX), function(j){
-#         original_resid[j] * (expected_I_X(i,j) - predictor[j])
-#       })
-#     )
-#   })
-#   
-#   expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
-#                expected_out)
-# })
-# 
-# test_that("calculate_g_l_3 works for proj_model with usual response", {
-#   data(mtcars)
-#   original_model <- lmranks(r(mpg) ~ r(cyl) + hp, data=mtcars, omega=1)
-#   RX <- original_model$model$`r(cyl)`
-#   n_lequal_lesser_X <- count_lequal_lesser(mtcars$cyl, return_inverse_ranking = TRUE)
-#   expected_I_X <- function(i,j) compare_for_tests(i,j,mtcars$cyl)
-#   W_l <- mtcars$hp
-#   W_minus_l <- rep(1, length(W_l))
-#   
-#   
-#   proj_model <- lm(W_l ~ RX + W_minus_l - 1)
-#   proj_model$rank_terms_indices <- 1
-#   proj_model$ranked_response <- FALSE
-#   proj_model$omega <- 1
-#   
-#   original_resid <- resid(original_model)
-#   coefs <- coef(proj_model)
-#   proj_usual_predictor <- W_minus_l * coefs[2]
-#   
-#   expected_out <- sapply(1:length(RX), function(i){
-#     mean(
-#       sapply(1:length(RX), function(j){
-#         original_resid[j] * (W_l[j] - coefs[1]*expected_I_X(i,j) - proj_usual_predictor[j])
-#       })
-#     )
-#   })
-#   
-#   expect_equal(calculate_g_l_3(original_model, proj_model, n_lequal_lesser_X=n_lequal_lesser_X),
-#                expected_out)
-# })
+test_that("findIntervalIncreasing works", {
+  v <- c(10,7,7,4,4,4,3,1)
+  # v_{i_j} >= v_j > v_{i_{j+1}}
+  expected <- c(1,3,3,6,6,6,7,8)
+  expect_equal(findIntervalIncreasing(v, left.open=FALSE), expected)
+  # v_{i_j} > v_j >= v_{i_{j+1}}
+  expected <- c(0,1,1,3,3,3,6,7)
+  expect_equal(findIntervalIncreasing(v, left.open=TRUE), expected)
+})
 
-# test_that("get_ineq_indicator_function returns functions with identical arguments", {
-#   v <- 1:10
-#   M <- matrix(v, nrow=1)
-#   omega <- 0.5
-#   f1 <- get_ineq_indicator_function(FALSE, M, omega, v)
-#   f2 <- get_ineq_indicator_function(TRUE, M, omega, v)
-#   
-#   expect_equal(args(f1), args(f2))
-# })
-# 
-# test_that("get_ineq_indicator_function remembers vector values across calls", {
-#   v1 <- 1:3
-#   v2 <- 4:6
-#   v3 <- 7:9
-#   M <- matrix(v, nrow=1)
-#   omega <- 0.5
-#   
-#   f1 <- get_ineq_indicator_function(FALSE, M, omega, v1)
-#   f2 <- get_ineq_indicator_function(FALSE, M, omega, v2)
-#   f3 <- get_ineq_indicator_function(FALSE, M, omega, v3)
-#   
-#   expect_equal(f1(1,2,3), v1)
-#   expect_equal(f2(1,2,3), v2)
-#   expect_equal(f2(1,2,3), v2)
-# })
-# 
-# test_that("get_ineq_indicator works for sorted data", {
-#   original_v <- c(1,3,4,4,4,7,7,10)
-#   n_lequal_lesser <- list(n_lequal = c(1,2,5,5,5,7,7,8),
-#                           n_lesser = c(0,1,2,2,2,5,5,7),
-#                           inverse_ranking = c(1,2,3,4,5,6,7,8))
-#   for(i in 1:length(original_v)){
-#     expected_om0 <- sapply(1:length(original_v), function(j)
-#       compare_for_tests(i,j,original_v,omega=0))
-#     expected_om0.4 <- sapply(1:length(original_v), function(j)
-#       compare_for_tests(i,j,original_v,omega=0.4))
-#     expected_om1 <- sapply(1:length(original_v), function(j)
-#       compare_for_tests(i,j,original_v,omega=1))
-#     
-#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
-#                  expected_om0)
-#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
-#                  expected_om0.4)
-#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
-#                  expected_om1)
-#   }
-# })
-# 
-# test_that("get_ineq_indicator works for unsorted data", {
-#   original_v <- c(4,4,4,3,1,10,7,7)
-#   n_lequal_lesser <- matrix(c(
-#     5,2,3,
-#     5,2,4,
-#     5,2,5,
-#     2,1,2,
-#     1,0,1,
-#     8,7,8,
-#     7,5,6,
-#     7,5,7
-#   ), byrow=TRUE, ncol = 3)
-#   n_lequal_lesser <- list(n_lequal = c(5,5,5,2,1,8,7,7),
-#                           n_lesser = c(2,2,2,1,0,7,5,5),
-#                           inverse_ranking = c(3,4,5,2,1,8,6,7))
-#   for(i in 1:length(original_v)){
-#     expected_om0 <- sapply(1:length(original_v), function(j)
-#       compare_for_tests(i,j,original_v,omega=0))
-#     expected_om0.4 <- sapply(1:length(original_v), function(j)
-#       compare_for_tests(i,j,original_v,omega=0.4))
-#     expected_om1 <- sapply(1:length(original_v), function(j)
-#       compare_for_tests(i,j,original_v,omega=1))
-#     
-#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
-#                  expected_om0)
-#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
-#                  expected_om0.4)
-#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
-#                  expected_om1)
-#   }
-# })
-
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for usual regressors", {
-            data(mtcars)
-            i <- 5
-            RY <- frank(mtcars$mpg)
-            I_Y <- sapply(1:length(mtcars$mpg), function(j)
-              compare_for_tests(i, j, mtcars$mpg))
-            W <- as.matrix(mtcars[, c("disp", "hp")])
-            W <- cbind(rep(1, nrow(W)),
-                       W)
-            original_model <- lm(RY ~ W - 1)
-            original_model$rank_terms_indices <- integer(0)
-            original_model$ranked_response <- TRUE
-            
-            coefs <- coef(original_model)
-            predictor <- W %*% coefs
-            expected_resid <- I_Y - predictor
-            
-            expect_equivalent(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-              original_model, I_Y = I_Y
-            ), expected_resid)
-            
-          })
-
-test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
-          for ranked regressors", {
-            data(mtcars)
-            i <- 5
-            RX <- frank(mtcars$cyl)
-            I_X <- sapply(1:length(mtcars$cyl), function(j)
-              compare_for_tests(i, j, mtcars$cyl))
-            RY <- frank(mtcars$mpg)
-            I_Y <- sapply(1:length(mtcars$mpg), function(j)
-              compare_for_tests(i, j, mtcars$mpg))
-            W <- as.matrix(mtcars[, c("hp")])
-            W <- cbind(rep(1, nrow(W)),
-                       W)
-            original_model <- lm(RY ~ RX + W - 1)
-            original_model$rank_terms_indices <- 1
-            original_model$ranked_response <- TRUE
-            
-            coefs <- coef(original_model)
-            predictor <- W %*% coefs[-1]
-            expected_resid <- I_Y - coefs[1] * I_X - predictor
-            
-            expect_equivalent(replace_ranks_with_ineq_indicator_and_calculate_residuals(
-              original_model, I_X = I_X, I_Y = I_Y
-            ), expected_resid)
-          })
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with covariates present", {
   load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
   res <- lmranks(r(Y) ~ r(X) + W - 1)
@@ -462,8 +276,8 @@ test_that("h1 works for ranked regressor with no covariates", {
   res <- lmranks(r(Y) ~ r(X))
   proj_residuals <- model.matrix(res) %*% get_projection_residual_matrix(res)
   
-  h1_lmranks <- calculate_H2(res, proj_residuals)
-  expect_equal(h1_lmranks[,2], h1)
+  h1_lmranks <- calculate_H1(res, proj_residuals)
+  expect_equivalent(h1_lmranks[,2], h1)
 })
 
 test_that("h2 works for ranked regressor with no covariates", {
@@ -498,8 +312,8 @@ test_that("h1 works for ranked regressor with covariates", {
   res <- lmranks(r(Y) ~ r(X) + W)
   proj_residuals <- model.matrix(res) %*% get_projection_residual_matrix(res)
   
-  h1_lmranks <- calculate_H2(res, proj_residuals)
-  expect_equal(h1_lmranks[,2], h1)
+  h1_lmranks <- calculate_H1(res, proj_residuals)
+  expect_equivalent(h1_lmranks[,2], h1)
 })
 
 test_that("h2 works for ranked regressor with covariates", {
@@ -535,6 +349,3 @@ test_that("vcov produces asymptotic variance estimate of rank-rank slope equal t
   sigma2hat.lmranks <- vcov(res)[2,2]*n
   expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-3)
 })
-
-
-

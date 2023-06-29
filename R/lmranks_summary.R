@@ -63,7 +63,7 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
 #' @export
 vcov.lmranks <- function(object, complete = TRUE, ...){
   projection_residual_matrix <- get_projection_residual_matrix(object)
-  X <- model.matrix(object)
+  X <- stats::model.matrix(object)
   projection_residuals <- X %*% projection_residual_matrix
   original_resids <- resid(object)
   H1 <- calculate_H1(object, projection_residuals)
@@ -86,20 +86,34 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   return(sigmahat)
 }
 
+#' Calculate matrix giving projection residuals
+#' 
+#' Projections are linear models where one of X's columns is a response in terms
+#' of the remaining columns.
+#' 
+#' @return Matrix M s.t.
+#' M[i,j] = negative ith coefficient in jth projection if i != j
+#' M[i,j] = 1 if i == j
+#' 
+#' Note, that X %*% M gives n x p matrix with residuals of jth projection in jth column.
+#' 
+#' Turns out, that M is closely related to V=(X^T %*% X)⁻¹:
+#' M = V / diag(V), division row-wise. Proof via block matrix inverse.
+#' @noRd
 get_projection_residual_matrix <- function(object){
   regressor_dropped <- is.na(coef(object))
   if(any(regressor_dropped)){
-    X <- model.matrix(object)[,!regressor_dropped]
+    X <- stats::model.matrix(object)[,!regressor_dropped]
     R <- qr.R(qr(X))
   } else if(is.null(object$qr)){
-    R <- qr.R(qr(model.matrix(object)))
+    R <- qr.R(qr(stats::model.matrix(object)))
   } else {
     R <- qr.R(object$qr)
   }
   
   XTX_inv <- chol2inv(R)
-  prec <- 1/diag(XTX_inv)
-  out <- t(t(XTX_inv) * prec)
+  diagonal <- diag(XTX_inv)
+  out <- t(t(XTX_inv) / diagonal)
   
   if(!any(regressor_dropped)){
     return(out)
@@ -111,14 +125,21 @@ get_projection_residual_matrix <- function(object){
   return(full_out)
 }
 
+#' Calculate H1 component for covariance estimation
+#' 
+#' Originally defined as h_1(x,y) = (R_Y(Y)-rhoR_X(X)-Wbeta)(R_X(X) - Wgamma)
+#' 
+#' @return n x p matrix
+#' @noRd
+
 calculate_H1 <- function(object, projection_residuals){
   original_resids <- resid(object)
-  projection_residuals * original_resids # n x p matrix  
+  projection_residuals * original_resids
 }
 
 #' Calculate H2 component for covariance estimation
 #' 
-#' Originally defined as h_2(x,y) = E[I(y,Y)-rhoI(x,X)-Wbeta)(R_X(X) - Wgamma)]
+#' Originally defined as h_2(x,y) = E[(I(y,Y)-rhoI(x,X)-Wbeta)(R_X(X) - Wgamma)]
 #' Estymator in matrix notation:
 #' (I_Y-rhoI_X-(Wbeta)') %*% (R_X(X)-Wgamma) / n
 #' Equal to
@@ -129,27 +150,44 @@ calculate_H1 <- function(object, projection_residuals){
 calculate_H2 <- function(object, projection_residuals){
   l <- get_and_separate_regressors(object)
   rank_column_index <- l$rank_column_index; RX <- l$RX
-  RY <- model.response(model.frame(object))
+  RY <- stats::model.response(stats::model.frame(object))
   if(length(rank_column_index) > 0){
     I_X_times_proj_resid <- ineq_indicator_matmult(RX, projection_residuals,omega=object$omega)
     rho <- coef(object)[rank_column_index]
+    non_rank_predictor <- stats::fitted.values(object) - rho*RX
   }
   else {
     I_X_times_proj_resid <- 0
     rho <- 0
+    non_rank_predictor <- stats::fitted.values(object)
   }
   
   if(object$ranked_response)
     I_Y_times_proj_resid <- ineq_indicator_matmult(RY, projection_residuals,omega=object$omega)
   else
-    I_Y_times_proj_resid <- RY %*% projection_residuals
+    I_Y_times_proj_resid <- as.vector(RY %*% projection_residuals)
   
-  weighted_predictor <- extract_nonrank_predictor(object) %*% projection_residuals
+  predictor_times_proj_resid <- as.vector(non_rank_predictor %*% projection_residuals)
   out <- I_Y_times_proj_resid - rho*I_X_times_proj_resid
-  out <- t(t(out) - as.vector(weighted_predictor))
-  return(out / nobs(object))
+  out <- t(t(out) - predictor_times_proj_resid)
+  return(out / stats::nobs(object))
 }
 
+#' Calculate H3 component for covariance estimation
+#' 
+#' Originally defined as h_3(x) = E[(R_Y(Y)-rhoR_X(X)-Wbeta)(I_X(x,X) - Wgamma)];
+#' The second component depends on which projection model is considered
+#' 
+#' Estimator in matrix notation:
+#' h_3(x) = (R_Y(Y)-rhoR_X(X)-Wbeta)' %*% [I_(x,X); W] %*% R_S / n
+#' Where R_S is the projection residual matrix.
+#' 
+#' For a given x this higly resembles colMeans(H1).
+#' The difference H3(x) - colMeans(H1)is
+#'  (R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I_X(x,X) - RX)%*%R_S[r,] / n
+#' (last element is a row vector from R_S matrix corresponding to ranked regressor)
+#'
+#' @noRd
 calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   l <- get_and_separate_regressors(object)
   rank_column_index <- l$rank_column_index; RX <- l$RX
@@ -158,12 +196,13 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   
   X_projection_coef <- projection_residual_matrix[rank_column_index,]
   original_resids <- resid(object)
-  weighted_X_diff <- ineq_indicator_matmult(RX, matrix(original_resids, ncol=1),
-                                            omega=object$omega) - 
-    as.vector(RX %*% original_resids)
-  H3_minus_H1_mean <- as.vector(weighted_X_diff) %o% 
-    X_projection_coef / 
-    nobs(object)
+  I_X_times_orig_resids <- as.vector(ineq_indicator_matmult(RX, 
+                                                matrix(original_resids, ncol=1),
+                                                omega=object$omega)) # length n
+  RX_times_orig_resids <- as.vector(RX %*% original_resids) # length 1
+  delta_X_times_orig_resids <- I_X_times_orig_resids -  RX_times_orig_resids
+  H3_minus_H1_mean <- delta_X_times_orig_resids %o% X_projection_coef / 
+    stats::nobs(object)
   
   t(t(H3_minus_H1_mean) + H1_mean)
 }
@@ -172,39 +211,26 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
 #' 
 #' @return a list with entries:
 #' - RX: vector of ranks of ranked regressor. May be empty.
-#' - W: matrix of non-ranked regressors.
 #' - rank_column_index: which column in model.matrix corresponds to ranked regressor?
 #' @noRd
 get_and_separate_regressors <- function(model){
   if(length(model$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
-  rank_column_index <- get_ranked_column_index(model)
+  rank_column_index <- which(model$assign %in% model$rank_terms_indices)
   if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
   if(length(rank_column_index) > 0){
-    W <- stats::model.matrix(model)[,-rank_column_index,drop=FALSE]
     RX <- stats::model.matrix(model)[,rank_column_index]
   } else {
-    W <- stats::model.matrix(model)
-    attr(W, "assign") <- NULL
     RX <- integer(0)
   }
   return(list(RX=RX,
-              W=W,
               rank_column_index=rank_column_index))
 }
-
-#' Which column in model.matrix corresponds to ranked regressor?
-#' @return integer vector. Could be empty.
-#' @noRd
-get_ranked_column_index <- function(model){
-  rank_column_index <- which(model$assign %in% model$rank_terms_indices)
-}
-
 
 #' Calculate inequality indicators and multiply with a matrix
 #' 
 #' @param v numeric vector
 #' @param mat A matrix s.t. nrow(mat) == length(v)
-#' @param omega
+#' @param omega single number
 #' Inequality indicator: A matrix I_v, s.t.
 #' I_v[i,j] = 1 if v[i] < v[j];
 #' I_v[i,j] = omega if v[i] == v[j]; and
@@ -212,25 +238,27 @@ get_ranked_column_index <- function(model){
 #' 
 #' @return I_v %*% mat
 #' 
-#' The trick is we do not have to do this naively (first calc I_v, then multiply)
-#' We don't want to, cause a) I_v needs n² memory and b) we repeat a lot of (simple) calculations 
+#' The trick is we do not have to do this naively (first calc I_v, then multiply).
+#' And we don't want to, cause 
+#' a) I_v needs O(n²) memory and 
+#' b) Whole operation would take O(n²p) compute, but we repeat a lot of (simple) calculations.
 #' 
-#' Start with simple case: v is ordered decreasingly and has no repeating elements
+#' Start with simple case: v is ordered decreasingly and has no repeating elements.
 #' Then I_v is an lower triangular matrix with ones below the diagonal, 
-#' omegas on diagonal and zeroes above
-#' And I_v %*% mat is equivalent to taking cumsum() columnwise
-#' And then correcting for omegas on the diagonal. Or, more generally: 
+#' omegas on diagonal and zeroes above.
+#' I_v %*% mat is equivalent to taking cumsum() columnwise,
+#' and then correcting for omegas on the diagonal: 
 #' for C in columns of mat: 
 #'    C=cumsum(omega*C + (1-omega)*c(0, C[-n]))
 #' 
-#' Now for a single column instead of doing O(n²) operations, we do O(n).
+#' Now for a single column instead of doing O(n²) operations, we do O(n). 
 #' 
 #' For more general case(v ordered, with duplicates), we can use the definition of I:
 #' I(a,b) = omega*i(a<=b) + (1-omega)*i(a<b)
-#' And prepare the `mat` by summing entries corresponding to equal values in v
+#' And prepare the `mat` by summing entries corresponding to equal values in v.
 #'
 #' Finally, if v is not ordered, all we have to do is 
-#' 1) permute the v and rows of mat with sorting permutation of v
+#' 1) permute the v and rows of mat with sorting (decrasingly) permutation of v
 #' 2) proceed as in former case
 #' 3) permute the rows of the result with *inverse* of sorting permutation of v
 #' @noRd
@@ -254,6 +282,12 @@ ineq_indicator_matmult <- function(v, mat, omega){
   return(mat[inverse_v_order,,drop=FALSE])
 }
 
+#' @param mat Matrix s.t. nrow(mat) == length(v)
+#' @param v numeric vector, sorted decreasingly
+#' @return Matrix M s.t.
+#' apply(M,2,cumsum) == I_v %*% mat
+#' Where I_v is the inequality indicator matrix for omega = 0
+#' @noRd
 prepare_mat_om0 <- function(mat, v){
   
   d2 <- diff(c(0, findIntervalIncreasing(v, TRUE)))
@@ -268,6 +302,12 @@ prepare_mat_om0 <- function(mat, v){
   return(mat)
 }
 
+#' @param mat Matrix s.t. nrow(mat) == length(v)
+#' @param v numeric vector, sorted decreasingly
+#' @return Matrix M s.t.
+#' apply(M,2,cumsum) == I_v %*% mat
+#' Where I_v is the inequality indicator matrix for omega = 1
+#' @noRd
 prepare_mat_om1 <- function(mat, v){
   d1 <- diff(c(0, findIntervalIncreasing(v, FALSE)))
   if(all(d1==1)) return(mat)
@@ -279,115 +319,16 @@ prepare_mat_om1 <- function(mat, v){
   return(mat)
 }
 
+#' Find Interval indices
+#'
+#' Given a vector of non-increasing breakpoints, find the interval containing each element;
+#' If i <- findIntervalIncreasing(v), for each index j in v
+#' v_{i_j} >= v_j > v_{i_{j+1}}
+#' @param left.open If true, the intervals are open at left and closed at right
+#' @seealso [findInterval()]
+#'@noRd
 findIntervalIncreasing <- function(v, left.open){
   length(v) - rev(findInterval(rev(v), rev(v), left.open = !left.open))
-}
-
-#' @return Numeric vector; the linear predictor part calculated from non-rank regressors.
-#' @noRd
-extract_nonrank_predictor <- function(model){
-  l <- get_and_separate_regressors(model)
-  W <- l$W; rank_column_index <- l$rank_column_index
-  has_ranked_regressors <- length(rank_column_index) > 0
-  if(has_ranked_regressors)
-    betahat <- coef(model)[-rank_column_index]
-  else
-    betahat <- coef(model)
-  
-  # in singular fit case, some coefficients are NA
-  predictor <- as.vector(W[,!is.na(betahat), drop=FALSE] %*% betahat[!is.na(betahat)])
-  return(predictor)
-}
-
-
-get_ineq_indicator_function <- function(object, var_name){
-  if(var_name=="X"){
-    l <- get_and_separate_regressors(object)
-    rank_column_index <- l$rank_column_index
-    v <- l$RX
-    is_ranked <- length(rank_column_index) == 1
-  } else if(var_name == "Y"){
-    v <- stats::model.response(stats::model.frame(object))
-    is_ranked <- object$ranked_response
-  } else cli::abort("Wrong var_name argument")
-  
-  if(!is_ranked){
-    f <- function(i){
-      return(v)
-    }
-    return(f)
-  } 
-  
-  n_lequal_lesser <- count_lequal_lesser(v, return_inverse_ranking=TRUE)
-  omega <- object$omega
-  f <- function(i){
-      return(get_ineq_indicator(n_lequal_lesser = n_lequal_lesser,
-                                i=i,
-                                omega=omega))
-  }
-  return(f)
-}
-
-#' Compare a certain (ith) observation against all others in (*the same*) vector 
-#' of interest. The vector of interest is not passed explicitly;
-#' All the required info about it is in `count_lequal_lesser`. Here the vector of interest
-#' might actually be a ranked regressor or response.
-#' 
-#' @param count_lequal_lesser output of count_lequal_lesser function for the vector of interest.
-#' To reiterate: its third element, called `inverse_ranking`, is a vector J of indices that rearrange 
-#' a sorted vector of interest into its original order.
-#' In other words, it is an *inverse* of sorting permutation of vector of interest
-#' @param i single integer; index of the vector of interest.
-#' @param omega for the definition of rank, as in irank.
-#' 
-#' @return A vector I of same length as vector of interest x. 
-#' I[j] = 1 if x[i] < x[j];
-#' I[j] = omega if x[i] == x[j]; and
-#' I[j] = 0 if x[i] > x[j].
-#' In other words, I[j] = I(x[i], x[j]), where the I() is the indicator function
-#' as described in references
-#' @noRd
-get_ineq_indicator <- function(n_lequal_lesser, i, omega){
-  n_lesser_or_equal <- n_lequal_lesser$n_lequal[i] # Number of observations lower or equal than ith observation
-  n_lesser <- n_lequal_lesser$n_lesser[i]
-  n_equal <- n_lesser_or_equal - n_lesser
-  n_higher <- length(n_lequal_lesser$inverse_ranking) - n_lesser_or_equal
-  # If the vector of interest were sorted (in increasing order), 
-  # then the output would look like this:
-  out <- rep(c(0, omega, 1), times = c(n_lesser, n_equal, n_higher))[
-    # However, for generality, it has to be rearranged
-               n_lequal_lesser$inverse_ranking]
-  out
-}
-
-#' Here we consider inequality indicators I for a single observation (x_i, y_i). 
-#' 
-#' @return a numeric vector V s.t.
-#' V[j] = I(y_i, Y_j) - rho*I(x_i, X_j) - beta %*% W[,j]
-#' where rho and beta - respective coefficients from `model`. 
-#' Note, that this function has a lot of usecases; the `model` might be the original
-#' or one of the projection models (in which case, a different notation is used in references).
-#' 
-#' @param nonrank_predictor Numeric vector; the linear predictor part calculated from non-rank regressors.
-#' @param I_X Numeric vector; Indicator whether jth X (ranked regressor) value is larger/equal/smaller 
-#' than a certain (implicit & fixed for a single funtion call) ith value. Can be NULL.
-#' @param I_Y Same as X, but for response. Can be simply the response, if it's not ranked. TODO: make a test for this case 
-#' @noRd
-replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
-    model, I_X, I_Y){
-  l <- get_and_separate_regressors(model)
-  RX <- l$RX
-  RY <- stats::model.response(stats::model.frame(model))
-  rank_column_index <- l$rank_column_index
-  has_ranked_regressors <- length(rank_column_index) > 0
-  if(has_ranked_regressors){
-    rhohat <- coef(model)[rank_column_index]
-    X_diff <- (RX - I_X) * rhohat
-  }
-  else
-    X_diff <- 0
-  out <- resid(model) - RY + I_Y - X_diff
-  return(out)
 }
 
 #' @importFrom stats sigma
