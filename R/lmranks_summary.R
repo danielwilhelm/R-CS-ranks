@@ -62,35 +62,21 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
 #' @importFrom stats vcov
 #' @export
 vcov.lmranks <- function(object, complete = TRUE, ...){
-  l <- get_and_separate_regressors(object)
-  RX <- l$RX
-  RY <- stats::model.response(stats::model.frame(object))
-  if(object$ranked_response){
-    n_lequal_lesser_Y <- count_lequal_lesser(RY, return_inverse_ranking=TRUE)
-  } else {
-    n_lequal_lesser_Y <- NULL
-  }
+  projection_residual_matrix <- get_projection_residual_matrix(object)
+  X <- model.matrix(object)
+  projection_residuals <- X %*% projection_residual_matrix
+  original_resids <- resid(object)
+  H1 <- calculate_H1(object, projection_residuals)
   
-  if(length(object$rank_terms_indices) == 1){
-    n_lequal_lesser_X <- count_lequal_lesser(RX, return_inverse_ranking=TRUE)
-  } else if(length(object$rank_terms_indices) == 0) {
-    n_lequal_lesser_X <- NULL
-  } else {
-    cli::cli_abort("Not implemented")
-  }
+  H2 <- calculate_H2(object, projection_residuals)
   
-  psi_sample <- sapply(1:length(coef(object)), function(i){
-    if(is.na(coef(object))[i]){
-      return(rep(NA, length(RY)))
-    }
-    proj_model <- get_projection_model(object, i)
-    g_l_1 <- calculate_g_l_1(object, proj_model)
-    g_l_2 <- calculate_g_l_2(object, proj_model, n_lequal_lesser_X=n_lequal_lesser_X, n_lequal_lesser_Y=n_lequal_lesser_Y)
-    g_l_3 <- calculate_g_l_3(object, proj_model, n_lequal_lesser_X=n_lequal_lesser_X)
-    (g_l_1 + g_l_2 + g_l_3) / var(resid(proj_model))
-  })
+  H1_mean <- colMeans(H1)
+  H3 <- calculate_H3(object, projection_residual_matrix, H1_mean)
   
-  sigmahat <- (t(psi_sample) %*% psi_sample) / (nrow(psi_sample) ^ 2)
+  projection_variances <- apply(projection_residuals, 2, var)
+  psi <- t(t(H1 + H2 + H3) / projection_variances)
+  
+  sigmahat <- (t(psi) %*% psi) / (nrow(psi) ^ 2)
   colnames(sigmahat) <- names(coef(object))
   rownames(sigmahat) <- colnames(sigmahat)
   if(!complete){
@@ -98,6 +84,79 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
                          !is.na(coef(object))]
   }
   return(sigmahat)
+}
+
+get_projection_residual_matrix <- function(object){
+  regressor_dropped <- is.na(coef(object))
+  if(any(regressor_dropped)){
+    X <- model.matrix(object)[,!regressor_dropped]
+    R <- qr.R(qr(X))
+  } else if(is.null(object$qr)){
+    R <- qr.R(qr(model.matrix(object)))
+  } else {
+    R <- qr.R(object$qr)
+  }
+  
+  XTX_inv <- chol2inv(R)
+  prec <- 1/diag(XTX_inv)
+  out <- t(t(XTX_inv) * prec)
+  
+  if(!any(regressor_dropped)){
+    return(out)
+  }
+  full_out <- matrix(NA, nrow=length(coef(object)),
+                     ncol=length(coef(object)))
+  full_out[!regressor_dropped, !regressor_dropped] <- out
+  full_out[regressor_dropped, !regressor_dropped] <- 0
+  return(full_out)
+}
+
+calculate_H1 <- function(object, projection_residuals){
+  original_resids <- resid(object)
+  projection_residuals * original_resids # n x p matrix  
+}
+
+#' Calculate H2 component for covariance estimation
+#' 
+#' Originally defined as h_2(x,y) = E[I(y,Y)-rhoI(x,X)-Wbeta)(R_X(X) - Wgamma)]
+#' Estymator in matrix notation:
+#' (R_X(X)-Wgamma) %*% (I_Y-rhoI_X-Wbeta) / n
+#' Equal to
+#' (R_X(X)-Wgamma) %*% I_Y / n - 
+#' (R_X(X)-Wgamma) %*% I_X \* rho / n - 
+#' (R_X(X)-Wgamma) %*% Wbeta) / n
+#' @noRd
+calculate_H2 <- function(object, projection_residuals){
+  get_x_ineq <- get_ineq_indicator_function(object, "X")
+  get_y_ineq <- get_ineq_indicator_function(object, "Y")
+  H2 <- sapply(1:nobs(object), function(i){
+    I_x_i <- get_x_ineq(i)
+    I_Y_i <- get_y_ineq(i)
+    ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
+      object, I_x_i, I_Y_i)
+    t(ineq_resids) %*% projection_residuals / nobs(object) 
+    # ineq_resids could be delivered in batches nxp
+  }) 
+  t(H2)
+}
+
+calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
+  l <- get_and_separate_regressors(object)
+  rank_column_index <- l$rank_column_index; RX <- l$RX
+  if(length(rank_column_index)==0)
+    return(0)
+  get_x_ineq <- get_ineq_indicator_function(object, "X")
+  X_projection_coef <- projection_residual_matrix[rank_column_index,]
+  original_resids <- resid(object)
+  weighted_X_diff <- sapply(1:nobs(object), function(i){
+    ineq_X <- get_x_ineq(i)
+    t(original_resids) %*% (ineq_X-RX)
+  })
+  H3_minus_H1_mean <- weighted_X_diff %o% 
+    X_projection_coef / 
+    nobs(object)
+  
+  t(t(H3_minus_H1_mean) + H1_mean)
 }
 
 #' Extract regressors from a model object and separate rank- from usual ones
@@ -112,15 +171,11 @@ get_and_separate_regressors <- function(model){
   rank_column_index <- get_ranked_column_index(model)
   if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
   if(length(rank_column_index) > 0){
-    W <- stats::model.matrix(model)[,-rank_column_index,drop=FALSE]
     RX <- stats::model.matrix(model)[,rank_column_index]
   } else {
-    W <- stats::model.matrix(model)
-    attr(W, "assign") <- NULL
     RX <- integer(0)
   }
   return(list(RX=RX,
-              W=W,
               rank_column_index=rank_column_index))
 }
 
@@ -131,133 +186,32 @@ get_ranked_column_index <- function(model){
   rank_column_index <- which(model$assign %in% model$rank_terms_indices)
 }
 
-#' Construct a *projection* onto a selected regressor
-#' i.e. a linear model with one of regressors as response variable
-#' in terms of the rest of the regressors (but not the original response)
-#' Used heavily in vcov
-#' @noRd
-get_projection_model <- function(original_model, projected_regressor_index){
-  l <- get_and_separate_regressors(original_model)
-  RX <- l$RX; W <- l$W; rank_column_index <- l$rank_column_index
-  if(length(rank_column_index) == 0){
-    l <- projected_regressor_index
-    W_minus_l <- W[,-l,drop=FALSE]
-    W_l <- W[,l]
-    if(ncol(W_minus_l) > 0)
-      proj_model <- lm(W_l ~ W_minus_l - 1)
-    else
-      cli::cli_abort("Not theoretically developped yet.")
-    proj_model$rank_terms_indices <- integer(0)
-    proj_model$ranked_response <- FALSE
-    proj_model$omega <- original_model$omega
-    return(proj_model)
-  }
-  if(projected_regressor_index %in% rank_column_index){
-    proj_model <- lm(RX ~ W-1)
-    proj_model$rank_terms_indices <- numeric(0)
-    proj_model$ranked_response <- TRUE  
-  } else {
-    l <- projected_regressor_index - sum(projected_regressor_index > rank_column_index)
-    W_minus_l <- W[,-l,drop=FALSE]
-    W_l <- W[,l]
-    if(ncol(W_minus_l) > 0)
-      proj_model <- lm(W_l ~ RX + W_minus_l - 1)
-    else
-      proj_model <- lm(W_l ~ RX - 1)
-    proj_model$rank_terms_indices <- 1
-    proj_model$ranked_response <- FALSE
-  }
-  proj_model$omega <- original_model$omega
-  return(proj_model)
-}
-
-calculate_g_l_1 <- function(original_model, proj_model){
-  epsilonhat <- resid(original_model)
-  nuhat <- resid(proj_model)
-  return(epsilonhat * nuhat)
-}
-
-calculate_g_l_2 <- function(original_model, proj_model, n_lequal_lesser_X, n_lequal_lesser_Y){
- nuhat <- resid(proj_model)
-  return(calculate_weighted_ineq_resid_means(
-    original_model, weights=nuhat, n_lequal_lesser_X=n_lequal_lesser_X, n_lequal_lesser_Y=n_lequal_lesser_Y
-  ))
-}
-
-calculate_g_l_3 <- function(original_model, proj_model, n_lequal_lesser_X){
-  if(is.null(n_lequal_lesser_X)){
-    return(rep(0, stats::nobs(original_model)))
-  }
-  epsilonhat <- resid(original_model)
-  if(proj_model$ranked_response){
-    return(calculate_weighted_ineq_resid_means(
-      proj_model, weights=epsilonhat, n_lequal_lesser_Y=n_lequal_lesser_X))
-  } else {
-    return(calculate_weighted_ineq_resid_means(
-      proj_model, weights=epsilonhat, n_lequal_lesser_X=n_lequal_lesser_X))
-  }
-}
-
-#' Sometimes, instead of regular residuals, we are interested in residuals in a model,
-#' where we replace ranks with indicator of relation (>=).
-#' So instead of sth like RY = a*RX + b*W + c
-#' we will have I_Y = a*I_X + b*W + c
-#' 
-#' Easier done in paper than here, hence we have a separate method that does just that.
-#' It has several use cases (ranked response and regressor / only response / only regressor). 
-#'
-#' @param weights Numeric vector. Usually the ordinary residuals of "the other model"
-#' (if `model` is the main model, the "other" is one of the projected models and vice versa).
-#' @param n_lequal_lesser_X output of count_lequal_lesser function for the ranked regressor. Could be NULL.
-#' @param n_lequal_lesser_Y Same as above, but for the response. Also could be NULL.
-#' @return A vector of length equal to number of observations in `model`.
-#' Its ith element is an estimate of expected weighted difference between prediction and response
-#' In a situation when we use the `model` to predict inequality indicator I(y_i,Y) instead of response's rank
-#' Using I(x_i, X) instead of a rank of regressor X.
-#' @noRd
-calculate_weighted_ineq_resid_means <- function(
-    model, weights, n_lequal_lesser_X=NULL, n_lequal_lesser_Y=NULL){
-  predictor <- extract_nonrank_predictor(model)
-  has_ranked_regressors <- !is.null(n_lequal_lesser_X)
-  get_x_ineq <- get_ineq_indicator_function(has_ranked_regressors, 
-                                            rep(0, stats::nobs(model)))
-  has_ranked_response <- !is.null(n_lequal_lesser_Y)
-  get_y_ineq <- get_ineq_indicator_function(has_ranked_response, 
-                                            stats::model.response(stats::model.frame(model)))
-  return(sapply(1:(stats::nobs(model)), function(i){
-      I_x_i <- get_x_ineq(n_lequal_lesser_X, i, model$omega)
-      I_Y_i <- get_y_ineq(n_lequal_lesser_Y, i, model$omega)
-      ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-        model, predictor, I_x_i, I_Y_i)
-      mean(ineq_resids * weights)
-    }))
-}
-
-get_ineq_indicator_function <- function(has_ranked, v){
-  if(has_ranked){
-    return(get_ineq_indicator)
-  } else {
-    f <- function(n_lequal_lesser, i, omega){
+get_ineq_indicator_function <- function(object, var_name){
+  if(var_name=="X"){
+    l <- get_and_separate_regressors(object)
+    rank_column_index <- l$rank_column_index
+    v <- l$RX
+    is_ranked <- length(rank_column_index) == 1
+  } else if(var_name == "Y"){
+    v <- stats::model.response(stats::model.frame(object))
+    is_ranked <- object$ranked_response
+  } else cli::abort("Wrong var_name argument")
+  
+  if(!is_ranked){
+    f <- function(i){
       return(v)
     }
     return(f)
-  }
-}
-
-#' @return Numeric vector; the linear predictor part calculated from non-rank regressors.
-#' @noRd
-extract_nonrank_predictor <- function(model){
-  l <- get_and_separate_regressors(model)
-  W <- l$W; rank_column_index <- l$rank_column_index
-  has_ranked_regressors <- length(rank_column_index) > 0
-  if(has_ranked_regressors)
-    betahat <- coef(model)[-rank_column_index]
-  else
-    betahat <- coef(model)
+  } 
   
-  # in singular fit case, some coefficients are NA
-  predictor <- as.vector(W[,!is.na(betahat), drop=FALSE] %*% betahat[!is.na(betahat)])
-  return(predictor)
+  n_lequal_lesser <- count_lequal_lesser(v, return_inverse_ranking=TRUE)
+  omega <- object$omega
+  f <- function(i){
+      return(get_ineq_indicator(n_lequal_lesser = n_lequal_lesser,
+                                i=i,
+                                omega=omega))
+  }
+  return(f)
 }
 
 #' Compare a certain (ith) observation against all others in (*the same*) vector 
@@ -306,16 +260,20 @@ get_ineq_indicator <- function(n_lequal_lesser, i, omega){
 #' @param I_Y Same as X, but for response. Can be simply the response, if it's not ranked. TODO: make a test for this case 
 #' @noRd
 replace_ranks_with_ineq_indicator_and_calculate_residuals <- function(
-    model, nonrank_predictor, I_X, I_Y){
-  rank_column_index <- get_ranked_column_index(model)
+    model, I_X, I_Y){
+  l <- get_and_separate_regressors(model)
+  RX <- l$RX
+  RY <- stats::model.response(stats::model.frame(model))
+  rank_column_index <- l$rank_column_index
   has_ranked_regressors <- length(rank_column_index) > 0
   if(has_ranked_regressors){
     rhohat <- coef(model)[rank_column_index]
-    rank_predictor <- I_X * rhohat
+    X_diff <- (RX - I_X) * rhohat
   }
   else
-    rank_predictor <- 0
-  return(I_Y - rank_predictor - nonrank_predictor)
+    X_diff <- 0
+  out <- resid(model) - RY + I_Y - X_diff
+  return(out)
 }
 
 #' @importFrom stats sigma
