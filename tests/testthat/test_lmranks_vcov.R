@@ -130,6 +130,111 @@ test_that("get_and_separate_regressors works for no ranked regressors",{
                expected_out)
 })
 
+test_that("prepare_mat_om0 works without duplicates when mat has 1 column", {
+  data(mtcars)
+  v <- nrow(mtcars):1
+  mat <- matrix(mtcars$mpg, ncol=1)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=0))
+    I %*% mat
+  })
+  expected <- matrix(expected, ncol=1)
+  
+  actual <- apply(prepare_mat_om0(mat, v), 2, cumsum)
+  expect_equal(actual, expected)
+})
+
+test_that("prepare_mat_om0 works with duplicates when mat has 1 column", {
+  data(mtcars)
+  v <- sort(mtcars$disp, decreasing = TRUE)
+  mat <- matrix(mtcars$mpg, ncol=1)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=0))
+    I %*% mat
+  })
+  expected <- matrix(expected, ncol=1)
+  
+  actual <- apply(prepare_mat_om0(mat, v), 2, cumsum)
+  expect_equal(actual, expected)
+})
+
+test_that("prepare_mat_om1 works with duplicates when mat has 1 column", {
+  data(mtcars)
+  v <- nrow(mtcars):1
+  mat <- matrix(mtcars$mpg, ncol=1)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=1))
+    I %*% mat
+  })
+  expected <- matrix(expected, ncol=1)
+  
+  actual <- apply(prepare_mat_om1(mat, v), 2, cumsum)
+  expect_equal(actual, expected)
+})
+
+test_that("prepare_mat_om0 works with duplicates when mat has many columns", {
+  data(mtcars)
+  v <- sort(mtcars$disp, decreasing = TRUE)
+  mat <- as.matrix(mtcars)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=0))
+    I %*% mat
+  })
+  expected <- t(expected)
+  
+  actual <- apply(prepare_mat_om0(mat, v), 2, cumsum)
+  expect_equivalent(actual, expected)
+})
+
+test_that("prepare_mat_om1 works with duplicates when mat has many columns", {
+  data(mtcars)
+  v <- sort(mtcars$disp, decreasing = TRUE)
+  mat <- as.matrix(mtcars)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=1))
+    I %*% mat
+  })
+  expected <- t(expected)
+  
+  actual <- apply(prepare_mat_om1(mat, v), 2, cumsum)
+  expect_equivalent(actual, expected)
+})
+
+test_that("ineq_indicator_matmult works for sorted input", {
+  data(mtcars)
+  v <- sort(mtcars$disp, TRUE)
+  mat <- as.matrix(mtcars)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=0.4))
+    I %*% mat
+  })
+  expected <- t(expected)
+  
+  actual <- ineq_indicator_matmult(v, mat, 0.4)
+  expect_equal(actual, expected)
+})
+
+test_that("ineq_indicator_matmult works for unsorted input", {
+  data(mtcars)
+  v <- mtcars$disp
+  mat <- as.matrix(mtcars)
+  
+  expected <- sapply(1:length(v), function(i){
+    I <- sapply(1:length(v), function(j) compare_for_tests(i,j,v,omega=0.4))
+    I %*% mat
+  })
+  expected <- t(expected)
+  
+  actual <- ineq_indicator_matmult(v, mat, 0.4)
+  expect_equal(actual, expected)
+})
+
 # test_that("calculate_g_l_3 works for no ranked regressors case", {
 #   data(mtcars)
 #   n_lequal_lesser_X <- NULL
@@ -212,85 +317,85 @@ test_that("get_and_separate_regressors works for no ranked regressors",{
 #                expected_out)
 # })
 
-test_that("get_ineq_indicator_function returns functions with identical arguments", {
-  v <- 1:10
-  M <- matrix(v, nrow=1)
-  omega <- 0.5
-  f1 <- get_ineq_indicator_function(FALSE, M, omega, v)
-  f2 <- get_ineq_indicator_function(TRUE, M, omega, v)
-  
-  expect_equal(args(f1), args(f2))
-})
-
-test_that("get_ineq_indicator_function remembers vector values across calls", {
-  v1 <- 1:3
-  v2 <- 4:6
-  v3 <- 7:9
-  M <- matrix(v, nrow=1)
-  omega <- 0.5
-  
-  f1 <- get_ineq_indicator_function(FALSE, M, omega, v1)
-  f2 <- get_ineq_indicator_function(FALSE, M, omega, v2)
-  f3 <- get_ineq_indicator_function(FALSE, M, omega, v3)
-  
-  expect_equal(f1(1,2,3), v1)
-  expect_equal(f2(1,2,3), v2)
-  expect_equal(f2(1,2,3), v2)
-})
-
-test_that("get_ineq_indicator works for sorted data", {
-  original_v <- c(1,3,4,4,4,7,7,10)
-  n_lequal_lesser <- list(n_lequal = c(1,2,5,5,5,7,7,8),
-                          n_lesser = c(0,1,2,2,2,5,5,7),
-                          inverse_ranking = c(1,2,3,4,5,6,7,8))
-  for(i in 1:length(original_v)){
-    expected_om0 <- sapply(1:length(original_v), function(j)
-      compare_for_tests(i,j,original_v,omega=0))
-    expected_om0.4 <- sapply(1:length(original_v), function(j)
-      compare_for_tests(i,j,original_v,omega=0.4))
-    expected_om1 <- sapply(1:length(original_v), function(j)
-      compare_for_tests(i,j,original_v,omega=1))
-    
-    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
-                 expected_om0)
-    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
-                 expected_om0.4)
-    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
-                 expected_om1)
-  }
-})
-
-test_that("get_ineq_indicator works for unsorted data", {
-  original_v <- c(4,4,4,3,1,10,7,7)
-  n_lequal_lesser <- matrix(c(
-    5,2,3,
-    5,2,4,
-    5,2,5,
-    2,1,2,
-    1,0,1,
-    8,7,8,
-    7,5,6,
-    7,5,7
-  ), byrow=TRUE, ncol = 3)
-  n_lequal_lesser <- list(n_lequal = c(5,5,5,2,1,8,7,7),
-                          n_lesser = c(2,2,2,1,0,7,5,5),
-                          inverse_ranking = c(3,4,5,2,1,8,6,7))
-  for(i in 1:length(original_v)){
-    expected_om0 <- sapply(1:length(original_v), function(j)
-      compare_for_tests(i,j,original_v,omega=0))
-    expected_om0.4 <- sapply(1:length(original_v), function(j)
-      compare_for_tests(i,j,original_v,omega=0.4))
-    expected_om1 <- sapply(1:length(original_v), function(j)
-      compare_for_tests(i,j,original_v,omega=1))
-    
-    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
-                 expected_om0)
-    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
-                 expected_om0.4)
-    expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
-                 expected_om1)
-  }
-})
+# test_that("get_ineq_indicator_function returns functions with identical arguments", {
+#   v <- 1:10
+#   M <- matrix(v, nrow=1)
+#   omega <- 0.5
+#   f1 <- get_ineq_indicator_function(FALSE, M, omega, v)
+#   f2 <- get_ineq_indicator_function(TRUE, M, omega, v)
+#   
+#   expect_equal(args(f1), args(f2))
+# })
+# 
+# test_that("get_ineq_indicator_function remembers vector values across calls", {
+#   v1 <- 1:3
+#   v2 <- 4:6
+#   v3 <- 7:9
+#   M <- matrix(v, nrow=1)
+#   omega <- 0.5
+#   
+#   f1 <- get_ineq_indicator_function(FALSE, M, omega, v1)
+#   f2 <- get_ineq_indicator_function(FALSE, M, omega, v2)
+#   f3 <- get_ineq_indicator_function(FALSE, M, omega, v3)
+#   
+#   expect_equal(f1(1,2,3), v1)
+#   expect_equal(f2(1,2,3), v2)
+#   expect_equal(f2(1,2,3), v2)
+# })
+# 
+# test_that("get_ineq_indicator works for sorted data", {
+#   original_v <- c(1,3,4,4,4,7,7,10)
+#   n_lequal_lesser <- list(n_lequal = c(1,2,5,5,5,7,7,8),
+#                           n_lesser = c(0,1,2,2,2,5,5,7),
+#                           inverse_ranking = c(1,2,3,4,5,6,7,8))
+#   for(i in 1:length(original_v)){
+#     expected_om0 <- sapply(1:length(original_v), function(j)
+#       compare_for_tests(i,j,original_v,omega=0))
+#     expected_om0.4 <- sapply(1:length(original_v), function(j)
+#       compare_for_tests(i,j,original_v,omega=0.4))
+#     expected_om1 <- sapply(1:length(original_v), function(j)
+#       compare_for_tests(i,j,original_v,omega=1))
+#     
+#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
+#                  expected_om0)
+#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
+#                  expected_om0.4)
+#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
+#                  expected_om1)
+#   }
+# })
+# 
+# test_that("get_ineq_indicator works for unsorted data", {
+#   original_v <- c(4,4,4,3,1,10,7,7)
+#   n_lequal_lesser <- matrix(c(
+#     5,2,3,
+#     5,2,4,
+#     5,2,5,
+#     2,1,2,
+#     1,0,1,
+#     8,7,8,
+#     7,5,6,
+#     7,5,7
+#   ), byrow=TRUE, ncol = 3)
+#   n_lequal_lesser <- list(n_lequal = c(5,5,5,2,1,8,7,7),
+#                           n_lesser = c(2,2,2,1,0,7,5,5),
+#                           inverse_ranking = c(3,4,5,2,1,8,6,7))
+#   for(i in 1:length(original_v)){
+#     expected_om0 <- sapply(1:length(original_v), function(j)
+#       compare_for_tests(i,j,original_v,omega=0))
+#     expected_om0.4 <- sapply(1:length(original_v), function(j)
+#       compare_for_tests(i,j,original_v,omega=0.4))
+#     expected_om1 <- sapply(1:length(original_v), function(j)
+#       compare_for_tests(i,j,original_v,omega=1))
+#     
+#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0),
+#                  expected_om0)
+#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 0.4),
+#                  expected_om0.4)
+#     expect_equal(get_ineq_indicator(n_lequal_lesser, i, 1),
+#                  expected_om1)
+#   }
+# })
 
 test_that("replace_ranks_with_ineq_indicator_and_calculate_residuals works 
           for usual regressors", {

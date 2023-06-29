@@ -120,24 +120,34 @@ calculate_H1 <- function(object, projection_residuals){
 #' 
 #' Originally defined as h_2(x,y) = E[I(y,Y)-rhoI(x,X)-Wbeta)(R_X(X) - Wgamma)]
 #' Estymator in matrix notation:
-#' (R_X(X)-Wgamma) %*% (I_Y-rhoI_X-Wbeta) / n
+#' (I_Y-rhoI_X-(Wbeta)') %*% (R_X(X)-Wgamma) / n
 #' Equal to
-#' (R_X(X)-Wgamma) %*% I_Y / n - 
-#' (R_X(X)-Wgamma) %*% I_X \* rho / n - 
-#' (R_X(X)-Wgamma) %*% Wbeta) / n
+#' I_Y %*% (R_X(X)-Wgamma) / n - 
+#' rho \* I_X %*% (R_X(X)-Wgamma) / n - 
+#' (Wbeta)' %*% (R_X(X)-Wgamma) / n
 #' @noRd
 calculate_H2 <- function(object, projection_residuals){
-  get_x_ineq <- get_ineq_indicator_function(object, "X")
-  get_y_ineq <- get_ineq_indicator_function(object, "Y")
-  H2 <- sapply(1:nobs(object), function(i){
-    I_x_i <- get_x_ineq(i)
-    I_Y_i <- get_y_ineq(i)
-    ineq_resids <- replace_ranks_with_ineq_indicator_and_calculate_residuals(
-      object, I_x_i, I_Y_i)
-    t(ineq_resids) %*% projection_residuals / nobs(object) 
-    # ineq_resids could be delivered in batches nxp
-  }) 
-  t(H2)
+  l <- get_and_separate_regressors(object)
+  rank_column_index <- l$rank_column_index; RX <- l$RX
+  RY <- model.response(model.frame(object))
+  if(length(rank_column_index) > 0){
+    I_X_times_proj_resid <- ineq_indicator_matmult(RX, projection_residuals,omega=object$omega)
+    rho <- coef(object)[rank_column_index]
+  }
+  else {
+    I_X_times_proj_resid <- 0
+    rho <- 0
+  }
+  
+  if(object$ranked_response)
+    I_Y_times_proj_resid <- ineq_indicator_matmult(RY, projection_residuals,omega=object$omega)
+  else
+    I_Y_times_proj_resid <- RY %*% projection_residuals
+  
+  weighted_predictor <- extract_nonrank_predictor(object) %*% projection_residuals
+  out <- I_Y_times_proj_resid - rho*I_X_times_proj_resid
+  out <- t(t(out) - as.vector(weighted_predictor))
+  return(out / nobs(object))
 }
 
 calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
@@ -145,14 +155,13 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   rank_column_index <- l$rank_column_index; RX <- l$RX
   if(length(rank_column_index)==0)
     return(0)
-  get_x_ineq <- get_ineq_indicator_function(object, "X")
+  
   X_projection_coef <- projection_residual_matrix[rank_column_index,]
   original_resids <- resid(object)
-  weighted_X_diff <- sapply(1:nobs(object), function(i){
-    ineq_X <- get_x_ineq(i)
-    t(original_resids) %*% (ineq_X-RX)
-  })
-  H3_minus_H1_mean <- weighted_X_diff %o% 
+  weighted_X_diff <- ineq_indicator_matmult(RX, matrix(original_resids, ncol=1),
+                                            omega=object$omega) - 
+    as.vector(RX %*% original_resids)
+  H3_minus_H1_mean <- as.vector(weighted_X_diff) %o% 
     X_projection_coef / 
     nobs(object)
   
@@ -171,11 +180,15 @@ get_and_separate_regressors <- function(model){
   rank_column_index <- get_ranked_column_index(model)
   if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
   if(length(rank_column_index) > 0){
+    W <- stats::model.matrix(model)[,-rank_column_index,drop=FALSE]
     RX <- stats::model.matrix(model)[,rank_column_index]
   } else {
+    W <- stats::model.matrix(model)
+    attr(W, "assign") <- NULL
     RX <- integer(0)
   }
   return(list(RX=RX,
+              W=W,
               rank_column_index=rank_column_index))
 }
 
@@ -185,6 +198,107 @@ get_and_separate_regressors <- function(model){
 get_ranked_column_index <- function(model){
   rank_column_index <- which(model$assign %in% model$rank_terms_indices)
 }
+
+
+#' Calculate inequality indicators and multiply with a matrix
+#' 
+#' @param v numeric vector
+#' @param mat A matrix s.t. nrow(mat) == length(v)
+#' @param omega
+#' Inequality indicator: A matrix I_v, s.t.
+#' I_v[i,j] = 1 if v[i] < v[j];
+#' I_v[i,j] = omega if v[i] == v[j]; and
+#' I_v[i,j] = 0 if v[i] > v[j].
+#' 
+#' @return I_v %*% mat
+#' 
+#' The trick is we do not have to do this naively (first calc I_v, then multiply)
+#' We don't want to, cause a) I_v needs n² memory and b) we repeat a lot of (simple) calculations 
+#' 
+#' Start with simple case: v is ordered decreasingly and has no repeating elements
+#' Then I_v is an lower triangular matrix with ones below the diagonal, 
+#' omegas on diagonal and zeroes above
+#' And I_v %*% mat is equivalent to taking cumsum() columnwise
+#' And then correcting for omegas on the diagonal. Or, more generally: 
+#' for C in columns of mat: 
+#'    C=cumsum(omega*C + (1-omega)*c(0, C[-n]))
+#' 
+#' Now for a single column instead of doing O(n²) operations, we do O(n).
+#' 
+#' For more general case(v ordered, with duplicates), we can use the definition of I:
+#' I(a,b) = omega*i(a<=b) + (1-omega)*i(a<b)
+#' And prepare the `mat` by summing entries corresponding to equal values in v
+#'
+#' Finally, if v is not ordered, all we have to do is 
+#' 1) permute the v and rows of mat with sorting permutation of v
+#' 2) proceed as in former case
+#' 3) permute the rows of the result with *inverse* of sorting permutation of v
+#' @noRd
+ineq_indicator_matmult <- function(v, mat, omega){
+  v_order <- order(v, decreasing = TRUE)
+  v_ordered <- v[v_order]
+  mat <- mat[v_order,,drop=FALSE]
+  
+  if(omega == 0){
+    mat <- prepare_mat_om0(mat, v_ordered)
+  } else if(omega == 1){
+    mat <- prepare_mat_om1(mat, v_ordered)  
+  } else {
+    mat_om0 <- prepare_mat_om0(mat, v_ordered)  
+    mat_om1 <- prepare_mat_om1(mat, v_ordered)
+    mat <- omega*mat_om1 + (1-omega)*mat_om0
+  }
+  mat <- apply(mat, 2, cumsum)
+  inverse_v_order <- order(v_order)
+  colnames(mat) <- NULL; rownames(mat) <- NULL
+  return(mat[inverse_v_order,,drop=FALSE])
+}
+
+prepare_mat_om0 <- function(mat, v){
+  
+  d2 <- diff(c(0, findIntervalIncreasing(v, TRUE)))
+  orig_mat <- mat
+  mat[-1,] <- mat[-nrow(mat),]
+  mat[d2==0,] <- 0
+  if(all(d2[-1]==1)) return(mat)
+  om0_eq_sums <- sapply((1:nrow(mat))[d2>1], function(i){
+    return(colSums(orig_mat[(i-d2[i]):(i-1),,drop=FALSE]))
+  })
+  mat[d2>1,] <- t(om0_eq_sums)
+  return(mat)
+}
+
+prepare_mat_om1 <- function(mat, v){
+  d1 <- diff(c(0, findIntervalIncreasing(v, FALSE)))
+  if(all(d1==1)) return(mat)
+  om1_eq_sums <- sapply((1:nrow(mat))[d1>1], function(i){
+    return(colSums(mat[i:(i+d1[i]-1),,drop=FALSE]))
+  })
+  mat[d1==0,] <- 0
+  mat[d1>1,] <- t(om1_eq_sums)
+  return(mat)
+}
+
+findIntervalIncreasing <- function(v, left.open){
+  length(v) - rev(findInterval(rev(v), rev(v), left.open = !left.open))
+}
+
+#' @return Numeric vector; the linear predictor part calculated from non-rank regressors.
+#' @noRd
+extract_nonrank_predictor <- function(model){
+  l <- get_and_separate_regressors(model)
+  W <- l$W; rank_column_index <- l$rank_column_index
+  has_ranked_regressors <- length(rank_column_index) > 0
+  if(has_ranked_regressors)
+    betahat <- coef(model)[-rank_column_index]
+  else
+    betahat <- coef(model)
+  
+  # in singular fit case, some coefficients are NA
+  predictor <- as.vector(W[,!is.na(betahat), drop=FALSE] %*% betahat[!is.na(betahat)])
+  return(predictor)
+}
+
 
 get_ineq_indicator_function <- function(object, var_name){
   if(var_name=="X"){
