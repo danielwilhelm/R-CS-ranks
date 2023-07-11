@@ -133,44 +133,78 @@ test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
   expect_error(process_lmranks_formula(r(y) ~ r(x) * w))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(x):w + w))
-  expect_error(process_lmranks_formula(r(y) ~ r(x):w + w))
   expect_error(process_lmranks_formula(r(y) ~ r(x):w:z + w))
   
   expect_silent(process_lmranks_formula(r(y) ~ r(x) + w))
   expect_silent(process_lmranks_formula(r(y) ~ (r(x) + w):G))
+  expect_silent(process_lmranks_formula(r(y) ~ r(x):G))
+  expect_silent(process_lmranks_formula(r(y) ~ r(x):G + G))
+  expect_silent(process_lmranks_formula(r(y) ~ r(x):G - 1))
 })
 
 test_that("process_lmranks_formula returns correct indices", {
-  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w),
-               list(rank_terms_indices = 1,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x)),
-               list(rank_terms_indices = 3,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w + z + w:z + r(x)),
-               list(rank_terms_indices = 3,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x) - z),
-               list(rank_terms_indices = 2,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w * z),
-               list(rank_terms_indices = integer(0),
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(y ~ w * z + r(x)),
-               list(rank_terms_indices = 3,
-                    ranked_response = FALSE))
-  expect_equal(process_lmranks_formula(y ~ w * z),
-               list(rank_terms_indices = integer(0),
-                    ranked_response = FALSE))
+  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w)$rank_terms_indices,
+               1)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x))$rank_terms_indices,
+               3)
+  expect_equal(process_lmranks_formula(r(y) ~ w + z + w:z + r(x))$rank_terms_indices,
+               3)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x) - z)$rank_terms_indices,
+               2)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z)$rank_terms_indices,
+               integer(0))
+  
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G - 1)$rank_terms_indices,
+               1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G)$rank_terms_indices,
+                2)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G + G)$rank_terms_indices,
+                2)
+})
+
+test_that("process_lmranks_formula returns correct ranked_response flag", {
+  expect_true(process_lmranks_formula(r(y) ~ r(x) + w)$ranked_response)
+  expect_false(process_lmranks_formula(y ~ r(x) + w)$ranked_response)
+})
+
+test_that("process_lmranks_formula returns corrected formula", {
+  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w:G)$formula,
+               r(y) ~ r(x) + w:G)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G - 1)$formula,
+               r(y) ~ (r(x) + w):G - 1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G)$formula,
+               r(y) ~ r(x):G + w:G + G - 1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G + G - 1)$formula,
+               r(y) ~ (r(x) + w):G + G - 1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G + G)$formula,
+               r(y) ~ r(x):G + w:G + G - 1)
+})
+
+test_that("process_lmranks_formula env to formula", {
+  env <- new.env()
+  
+  actual <- process_lmranks_formula(r(y) ~ r(x) + w, env)$formula
+  expect_equal(environment(actual),
+               env)
+  
+  actual <- process_lmranks_formula(r(y) ~ r(x):G, env)$formula
+  expect_equal(environment(actual),
+               env)
+  
+  actual <- process_lmranks_formula(r(y) ~ r(x):G - 1, env)$formula
+  expect_equal(environment(actual),
+               env)
 })
 
 test_that("process_lmranks_formula returns correct index for simplest fits", {
   expect_equal(process_lmranks_formula(r(y) ~ r(x) - 1),
                list(rank_terms_indices = 1,
-                    ranked_response = TRUE))
+                    ranked_response = TRUE,
+                    formula = r(y) ~ r(x) - 1))
   expect_equal(process_lmranks_formula(r(y) ~ r(x)),
                list(rank_terms_indices = 1,
-                    ranked_response = TRUE))
+                    ranked_response = TRUE,
+                    formula = r(y) ~ r(x)))
 })
 
 test_that("prepare_lm_call works", {

@@ -539,6 +539,3 @@ test_that("vcov produces asymptotic variance estimate of rank-rank slope equal t
   sigma2hat.lmranks <- vcov(res)[2,2]*n
   expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-3)
 })
-
-
-
