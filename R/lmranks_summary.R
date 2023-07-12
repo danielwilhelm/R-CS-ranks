@@ -152,13 +152,23 @@ calculate_H2 <- function(object, projection_residuals){
   rank_column_index <- l$rank_column_index; RX <- l$RX
   RY <- stats::model.response(stats::model.frame(object))
   if(length(rank_column_index) > 0){
-    I_X_times_proj_resid <- ineq_indicator_matmult(RX, projection_residuals,omega=object$omega)
+    if(is.matrix(RX)){
+      global_RX <- rowSums(RX)
+    } else {
+      global_RX <- RX
+    }
+    I_X_times_proj_resid <- ineq_indicator_matmult(global_RX, projection_residuals,omega=object$omega)
     rho <- coef(object)[rank_column_index]
-    non_rank_predictor <- stats::fitted.values(object) - rho*RX
+    non_rank_predictor <- stats::fitted.values(object) - RX %*% rho
+    if(is.matrix(RX)){
+      rowwise_rho <- RX %*% rho 
+    } else {
+      rowwise_rho <- rho
+    }
   }
   else {
     I_X_times_proj_resid <- 0
-    rho <- 0
+    rowwise_rho <- 0
     non_rank_predictor <- stats::fitted.values(object)
   }
   
