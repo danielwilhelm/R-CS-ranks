@@ -159,14 +159,15 @@ calculate_H2 <- function(object, projection_residuals){
     }
     I_X_times_proj_resid <- ineq_indicator_matmult(global_RX, projection_residuals,omega=object$omega)
     rho <- coef(object)[rank_column_index]
-    non_rank_predictor <- stats::fitted.values(object) - RX %*% rho
-    if(is.matrix(RX)){
-      rowwise_rho <- RX %*% rho 
-    } else {
+    non_rank_predictor <- stats::fitted.values(object) - as.vector(RX %*% rho)
+    
+    if(length(rho) == 1){
       rowwise_rho <- rho
+    } else {
+      coef_group_indices <- get_coef_groups(object)
+      rowwise_rho <- rho[coef_group_indices]
     }
-  }
-  else {
+  } else {
     I_X_times_proj_resid <- 0
     rowwise_rho <- 0
     non_rank_predictor <- stats::fitted.values(object)
@@ -178,8 +179,8 @@ calculate_H2 <- function(object, projection_residuals){
     I_Y_times_proj_resid <- as.vector(RY %*% projection_residuals)
   
   predictor_times_proj_resid <- as.vector(non_rank_predictor %*% projection_residuals)
-  out <- I_Y_times_proj_resid - rho*I_X_times_proj_resid
-  out <- t(t(out) - predictor_times_proj_resid)
+  out <- t(I_Y_times_proj_resid) - rowwise_rho*t(I_X_times_proj_resid)
+  out <- t(out - predictor_times_proj_resid)
   return(out / stats::nobs(object))
 }
 
@@ -203,15 +204,15 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   rank_column_index <- l$rank_column_index; RX <- l$RX
   if(length(rank_column_index)==0)
     return(0)
-  
-  X_projection_coef <- projection_residual_matrix[rank_column_index,]
+  global_RX <- ...
+  X_projection_coef <- projection_residual_matrix[rank_column_index,,drop=FALSE]
   original_resids <- resid(object)
-  I_X_times_orig_resids <- as.vector(ineq_indicator_matmult(RX, 
+  I_X_times_orig_resids <- as.vector(ineq_indicator_matmult(global_RX, 
                                                 matrix(original_resids, ncol=1),
                                                 omega=object$omega)) # length n
-  RX_times_orig_resids <- as.vector(RX %*% original_resids) # length 1
+  RX_times_orig_resids <- as.vector(global_RX %*% original_resids) # length 1
   delta_X_times_orig_resids <- I_X_times_orig_resids -  RX_times_orig_resids
-  H3_minus_H1_mean <- delta_X_times_orig_resids %o% X_projection_coef / 
+  H3_minus_H1_mean <- delta_X_times_orig_resids %*% X_projection_coef / #TODO correct for grouped case
     stats::nobs(object)
   
   t(t(H3_minus_H1_mean) + H1_mean)
@@ -226,7 +227,6 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
 get_and_separate_regressors <- function(model){
   if(length(model$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
   rank_column_index <- which(model$assign %in% model$rank_terms_indices)
-  if(length(rank_column_index) > 1) cli::cli_abort("Not implemented yet")
   if(length(rank_column_index) > 0){
     RX <- stats::model.matrix(model)[,rank_column_index]
   } else {
@@ -234,6 +234,39 @@ get_and_separate_regressors <- function(model){
   }
   return(list(RX=RX,
               rank_column_index=rank_column_index))
+}
+
+#' @noRd 
+get_coef_groups <- function(object){
+  XX <- model.matrix(object)
+  G <- get_group_indicators(object)
+  sapply(1:ncol(XX), function(j){
+    out <- which(sapply(1:ncol(G), function(g) all(XX[!G[,g],j] == 0)))
+    if(length(out) > 1){
+      cli::cli_warn("Group undetermined. Returning first")
+      out <- out[1]
+    }
+    out
+  })
+  # alternative: grep
+}
+
+#' @noRd
+get_group_indicators <- function(object){
+  rank_terms_indices <- object$rank_terms_indices
+  formula_terms <- terms(formula(object), specials = "r")
+  rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
+  response_variable_index <- attr(formula_terms, "response")
+  regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
+  variable_table <- attr(formula_terms, "factors")
+  grouping_variable_index <- setdiff(which(variable_table[,rank_terms_indices] != 0),
+                                     regressor_variable_index)
+  if(length(grouping_variable_index) == 0){
+    return(matrix(1,nrow=stats::nobs(object),
+                  ncol=1))
+  } 
+  grouping_factor <- model.frame(object)[,grouping_variable_index]
+  model.matrix(~grouping_factor-1)
 }
 
 #' @noRd

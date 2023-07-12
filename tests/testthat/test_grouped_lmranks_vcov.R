@@ -134,7 +134,26 @@ test_that("get_projection_residual_matrix works for singular matrix in grouped c
   expect_equivalent(expected, actual)
 })
 
+test_that("get_and_separate_regressors works with grouping",{
+  data(mtcars)
+  mtcars2 <- mtcars
+  mtcars2$cyl <- factor(mtcars2$cyl)
+  n_groups <- length(levels(mtcars2$cyl))
+  model_1 <- lm(mpg ~ disp:cyl, data=mtcars2)
+  model_1$rank_terms_indices <- 1
+  expected_RX <- model.matrix(model_1)[,1:n_groups + 1] # Intercept
+  expected_out_1 <- list(RX = expected_RX,
+                         rank_column_index = 1:n_groups+1) # Intercept
+  expect_equal(get_and_separate_regressors(model_1),
+               expected_out_1)
+})
 
+test_that("get_group_indicators works with grouping",{
+  m <- lmranks(r(mpg) ~ r(disp):G + cyl:G, data=mtcars2)
+  expected <- model.matrix(~G-1, data=mtcars2)
+  actual <- get_group_indicators(m)
+  expect_equivalent(actual, expected)
+})
 
 #########################
 ### High-level checks ###
@@ -155,26 +174,14 @@ test_that("h1 works for ranked regressor with no covariates with grouping", {
 
 test_that("h2 works for ranked regressor with no covariates with grouping", {
   load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
-  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ r(X):G, omega=1)
+  proj_residuals <- model.matrix(res) %*% get_projection_residual_matrix(res)
   
-  n_lequal_lesser_X_1 <- count_lequal_lesser(X, X[G==1], 
-                                             return_inverse_ranking=TRUE)
-  n_lequal_lesser_Y_1 <- count_lequal_lesser(Y, Y[G==1], 
-                                             return_inverse_ranking=TRUE)
-  proj_model_1 <- get_projection_model(res[[1]], 2)
-  h21_lmranks <- calculate_h_2(res[[1]], proj_model_1, 
-                               n_lequal_lesser_X=n_lequal_lesser_X_1, 
-                               n_lequal_lesser_Y=n_lequal_lesser_Y_1)
+  h2_lmranks <- calculate_H2(res, proj_residuals)
+  h21_lmranks <- h2_lmranks[,3]
+  h22_lmranks <- h2_lmranks[,4]
   expect_equivalent(h21_lmranks, H21)
-  
-  n_lequal_lesser_X_2 <- count_lequal_lesser(X, X[G==2], 
-                                             return_inverse_ranking=TRUE)
-  n_lequal_lesser_Y_2 <- count_lequal_lesser(Y, Y[G==2], 
-                                             return_inverse_ranking=TRUE)
-  proj_model_2 <- get_projection_model(res[[2]], 2)
-  h22_lmranks <- calculate_h_2(res[[2]], proj_model_2, 
-                               n_lequal_lesser_X=n_lequal_lesser_X_2, 
-                               n_lequal_lesser_Y=n_lequal_lesser_Y_2)
   expect_equivalent(h22_lmranks, H22)
 })
 
