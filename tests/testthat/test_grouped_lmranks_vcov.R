@@ -143,16 +143,32 @@ test_that("get_and_separate_regressors works with grouping",{
   model_1$rank_terms_indices <- 1
   expected_RX <- model.matrix(model_1)[,1:n_groups + 1] # Intercept
   expected_out_1 <- list(RX = expected_RX,
-                         rank_column_index = 1:n_groups+1) # Intercept
+                         rank_column_index = 1:n_groups+1, # Intercept
+                         global_RX = rowSums(expected_RX))
   expect_equal(get_and_separate_regressors(model_1),
                expected_out_1)
 })
 
-test_that("get_group_indicators works with grouping",{
-  m <- lmranks(r(mpg) ~ r(disp):G + cyl:G, data=mtcars2)
-  expected <- model.matrix(~G-1, data=mtcars2)
-  actual <- get_group_indicators(m)
-  expect_equivalent(actual, expected)
+test_that("get_coef_groups works",{
+  nasty_df <- mtcars2
+  nasty_df$G <- factor(c("AB", "AC", "AD", "AE")[as.integer(G)])
+  nasty_df$GA <- sample(G)
+  
+  m1 <- lmranks(r(mpg) ~ r(disp):G + GA:G - 1, data=nasty_df)
+  m2 <- lmranks(r(mpg) ~ GA:G + r(disp):G - 1, data=nasty_df)
+  m3 <- lmranks(r(mpg) ~ (r(disp) + .):G, data=nasty_df[,c("mpg", "disp", "GA", "hp", "G")])
+  
+  expected_1 <- c(1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4)
+  expected_2 <- c(1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,1,2,3,4)
+  expected_3 <- rep(1:4, times=7)
+  
+  actual <- get_coef_groups(m1)
+  expect_equivalent(actual, expected_1)
+  actual <- get_coef_groups(m2)
+  expect_equivalent(actual, expected_2)
+  actual <- get_coef_groups(m3)
+  expect_equivalent(actual, expected_3)
+  
 })
 
 #########################

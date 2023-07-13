@@ -168,6 +168,7 @@ process_lmranks_formula <- function(formula, rank_env=NULL){
   }
   ranked_response <- response_variable_index %in% rank_variables_indices
   if(length(regressor_variable_index) == 0){
+    environment(formula) <- rank_env
     return(list(rank_terms_indices = integer(0), 
                 ranked_response = ranked_response,
                 formula=formula))

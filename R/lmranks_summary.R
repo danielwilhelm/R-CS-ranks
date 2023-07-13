@@ -150,16 +150,12 @@ calculate_H1 <- function(object, projection_residuals){
 calculate_H2 <- function(object, projection_residuals){
   l <- get_and_separate_regressors(object)
   rank_column_index <- l$rank_column_index; RX <- l$RX
+  global_RX <- l$global_RX
   RY <- stats::model.response(stats::model.frame(object))
   if(length(rank_column_index) > 0){
-    if(is.matrix(RX)){
-      global_RX <- rowSums(RX)
-    } else {
-      global_RX <- RX
-    }
-    I_X_times_proj_resid <- ineq_indicator_matmult(global_RX, projection_residuals,omega=object$omega)
+    I_X_times_proj_resid <- t(ineq_indicator_matmult(global_RX, projection_residuals,omega=object$omega))
     rho <- coef(object)[rank_column_index]
-    non_rank_predictor <- stats::fitted.values(object) - as.vector(RX %*% rho)
+    non_rank_predictor <- stats::fitted.values(object) - as.vector(as.matrix(RX) %*% rho)
     
     if(length(rho) == 1){
       rowwise_rho <- rho
@@ -174,13 +170,13 @@ calculate_H2 <- function(object, projection_residuals){
   }
   
   if(object$ranked_response)
-    I_Y_times_proj_resid <- ineq_indicator_matmult(RY, projection_residuals,omega=object$omega)
+    I_Y_times_proj_resid <- t(ineq_indicator_matmult(RY, projection_residuals,omega=object$omega))
   else
     I_Y_times_proj_resid <- as.vector(RY %*% projection_residuals)
   
   predictor_times_proj_resid <- as.vector(non_rank_predictor %*% projection_residuals)
-  out <- t(I_Y_times_proj_resid) - rowwise_rho*t(I_X_times_proj_resid)
-  out <- t(out - predictor_times_proj_resid)
+  out <- I_Y_times_proj_resid - rowwise_rho*I_X_times_proj_resid  - predictor_times_proj_resid
+  out <- t(out)
   return(out / stats::nobs(object))
 }
 
@@ -204,7 +200,7 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   rank_column_index <- l$rank_column_index; RX <- l$RX
   if(length(rank_column_index)==0)
     return(0)
-  global_RX <- ...
+  global_RX <- l$global_RX
   X_projection_coef <- projection_residual_matrix[rank_column_index,,drop=FALSE]
   original_resids <- resid(object)
   I_X_times_orig_resids <- as.vector(ineq_indicator_matmult(global_RX, 
@@ -232,12 +228,19 @@ get_and_separate_regressors <- function(model){
   } else {
     RX <- integer(0)
   }
+  
+  if(length(rank_column_index)>1){
+    global_RX <- rowSums(RX)
+  } else {
+    global_RX <- RX
+  }
   return(list(RX=RX,
-              rank_column_index=rank_column_index))
+              rank_column_index=rank_column_index,
+              global_RX = global_RX))
 }
 
 #' @noRd 
-get_coef_groups <- function(object){
+get_coef_groups_2 <- function(object){
   XX <- model.matrix(object)
   G <- get_group_indicators(object)
   sapply(1:ncol(XX), function(j){
@@ -252,7 +255,7 @@ get_coef_groups <- function(object){
 }
 
 #' @noRd
-get_group_indicators <- function(object){
+get_coef_groups <- function(object){
   rank_terms_indices <- object$rank_terms_indices
   formula_terms <- terms(formula(object), specials = "r")
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
@@ -262,11 +265,34 @@ get_group_indicators <- function(object){
   grouping_variable_index <- setdiff(which(variable_table[,rank_terms_indices] != 0),
                                      regressor_variable_index)
   if(length(grouping_variable_index) == 0){
-    return(matrix(1,nrow=stats::nobs(object),
-                  ncol=1))
-  } 
-  grouping_factor <- model.frame(object)[,grouping_variable_index]
-  model.matrix(~grouping_factor-1)
+    return(rep(1, length(coef(object))))
+  }
+  
+  group_levels <- levels(model.frame(object)[,grouping_variable_index])
+  regex_special_characters <- c("\\","$", "(", ")", "*", "+", ".", "?", "[", "^", "{", "|")
+  escaped_variable_names <- rownames(variable_table)
+  for(spec_character in regex_special_characters){
+    escaped_variable_names <- gsub(spec_character, paste0("\\", spec_character),
+                                   escaped_variable_names, fixed=TRUE)
+  }
+  
+  group_idx <- sapply(1:length(coef(object)), function(i){
+    var_table_column_idx <- object$assign[i]
+    var_table_column <- variable_table[,var_table_column_idx]
+    grouping_var_local_index <- which(which(var_table_column != 0) == grouping_variable_index)
+    coef_name <- names(coef(object))[i]
+    var_names <- escaped_variable_names[var_table_column != 0]
+    var_names[grouping_var_local_index] <- paste0(var_names[grouping_var_local_index], "(?<group>.*)")
+    var_names[-grouping_var_local_index] <- paste0(var_names[-grouping_var_local_index], ".*")
+    regex <- paste(var_names, collapse = ":")
+    regex <- paste0("^", regex, "$")
+    matches <- regexec(regex, coef_name, perl=TRUE)
+    var_values <- regmatches(coef_name, matches)
+    grouping_var_value <- var_values[[1]]["group"]
+    group_idx <- which(group_levels == grouping_var_value)
+    return(group_idx)
+  })
+  return(group_idx)
 }
 
 #' @noRd
