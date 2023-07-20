@@ -256,18 +256,11 @@ get_coef_groups_2 <- function(object){
 
 #' @noRd
 get_coef_groups <- function(object){
-  rank_terms_indices <- object$rank_terms_indices
-  formula_terms <- terms(formula(object), specials = "r")
-  rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
-  response_variable_index <- attr(formula_terms, "response")
-  regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
-  variable_table <- attr(formula_terms, "factors")
-  grouping_variable_index <- setdiff(which(variable_table[,rank_terms_indices] != 0),
-                                     regressor_variable_index)
+  grouping_variable_index <- get_grouping_var_index(object)
   if(length(grouping_variable_index) == 0){
     return(rep(1, length(coef(object))))
   }
-  
+  variable_table <- attr(terms(object), "factors")
   group_levels <- levels(model.frame(object)[,grouping_variable_index])
   regex_special_characters <- c("\\","$", "(", ")", "*", "+", ".", "?", "[", "^", "{", "|")
   escaped_variable_names <- rownames(variable_table)

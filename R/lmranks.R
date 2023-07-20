@@ -114,13 +114,18 @@ lmranks <- function(formula, data, subset,
   
   # Call (evaluate) lm
   main_model <- eval(lm_call, rank_env)
+  main_model$rank_terms_indices <- rank_terms_indices
   
-  #TODO Check whether grouping factor is a factor
+  grouping_var_index <- get_grouping_var_index(main_model)
+  if(length(grouping_var_index) > 0){
+    grouping_var <- model.frame(main_model)[,grouping_var_index]
+    grouping_var_name <- colnames(model.frame(main_model))[grouping_var_index]
+    assert_is_factor(grouping_var, grouping_var_name)
+  }
   
   # Correct the output
   main_model$call <- original_call
   main_model$df.residual <- NA
-  main_model$rank_terms_indices <- rank_terms_indices
   main_model$omega <- omega
   main_model$ranked_response <- ranked_response
   class(main_model) <- c("lmranks", class(main_model))
@@ -293,6 +298,18 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   assign(".r_cache", list(), envir = rank_env)
   assign(".r_predict", FALSE, envir = rank_env)
   return(rank_env)
+}
+
+get_grouping_var_index <- function(object){
+  rank_terms_indices <- object$rank_terms_indices
+  formula_terms <- terms(formula(object), specials = "r")
+  rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
+  response_variable_index <- attr(formula_terms, "response")
+  regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
+  variable_table <- attr(formula_terms, "factors")
+  grouping_variable_index <- setdiff(which(variable_table[,rank_terms_indices] != 0),
+                                     regressor_variable_index)
+  return(grouping_variable_index)
 }
 
 # Inherited `lm` methods:

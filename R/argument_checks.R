@@ -285,6 +285,12 @@ assert_is_character <- function(x, name, factor_ok = FALSE){
   assert_has_no_NAs(x, name)
 }
 
+assert_is_factor <- function(x, name){
+  if(!is.factor(x))
+    cli::cli_abort(c("{.var {name}} must be a factor.",
+                     "x" = "{.var {name}} is of {.cls {typeof(x)}} type, {.cls {class(x)}} class."))
+}
+
 assert_has_no_NAs <- function(x, name){
   if(any(is.na(x))){
     na_indices <- utils::head(which(is.na(x)))

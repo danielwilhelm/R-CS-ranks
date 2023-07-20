@@ -128,6 +128,15 @@ test_that("lmranks raises error if NA is encountered in data", {
   expect_error(lmranks(r(mpg) ~ r(hp) + disp, data=mtcars), "missing values")
 })
 
+test_that("lmranks raises error if grouping variable is not a factor", {
+  data(mtcars)
+  mtcars$vs <- mtcars$vs + 1
+  expect_error(lmranks(r(mpg) ~ (r(hp) + disp):vs, data=mtcars), "factor")
+  
+  mtcars$vs <- factor(mtcars$vs)
+  expect_silent(lmranks(r(mpg) ~ (r(hp) + disp):vs, data=mtcars))
+})
+
 test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula("y ~ x + w"))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
