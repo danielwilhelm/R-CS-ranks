@@ -203,28 +203,25 @@ test_that("h2 works for ranked regressor with no covariates with grouping", {
 
 test_that("h3 works for ranked regressor with no covariates with grouping", {
   load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
-  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ r(X):G, omega=1)
+  proj_residual_matrix <- get_projection_residual_matrix(res)
+  H1 <- calculate_H1(res, model.matrix(res) %*% proj_residual_matrix)
+  H1_mean <- colMeans(H1)
+  h3_lmranks <- calculate_H3(res, proj_residual_matrix, H1_mean)
+  h31_lmranks <- h3_lmranks[,3]
+  h32_lmranks <- h3_lmranks[,4]
   
-  n_lequal_lesser_X_1 <- count_lequal_lesser(X, X[G==1], 
-                                             return_inverse_ranking=TRUE)
-  proj_model_1 <- get_projection_model(res[[1]], 2)
-  h31_lmranks <- calculate_h_3(res[[1]], proj_model_1, 
-                               n_lequal_lesser_X=n_lequal_lesser_X_1)
   expect_equivalent(h31_lmranks, H31)
-  
-  n_lequal_lesser_X_2 <- count_lequal_lesser(X, X[G==2], 
-                                             return_inverse_ranking=TRUE)
-  proj_model_2 <- get_projection_model(res[[2]], 2)
-  h32_lmranks <- calculate_h_3(res[[2]], proj_model_2, 
-                               n_lequal_lesser_X=n_lequal_lesser_X_2)
   expect_equivalent(h32_lmranks, H32)
 })
 
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with no covariates", {
   load(test_path("testdata", "grouped_lmranks_cov_sigmahat_covariates_FALSE.rda"))
-  res <- grouped_lmranks(r(Y) ~ r(X), data=data.frame(Y=Y,X=X), grouping_factor=G, omega=1)
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ r(X):G, omega=1)
   cov_mat <- vcov(res)
-  sigma2hat.grouped_lmranks <- c(cov_mat[2,2]*n, cov_mat[4,4]*n)
+  sigma2hat.grouped_lmranks <- c(cov_mat[3,3]*n, cov_mat[4,4]*n)
   expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
 })
 

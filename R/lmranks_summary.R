@@ -73,7 +73,7 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   H1_mean <- colMeans(H1)
   H3 <- calculate_H3(object, projection_residual_matrix, H1_mean)
   
-  projection_variances <- apply(projection_residuals, 2, var)
+  projection_variances <- colMeans(projection_residuals^2)
   psi <- t(t(H1 + H2 + H3) / projection_variances)
   
   sigmahat <- (t(psi) %*% psi) / (nrow(psi) ^ 2)
@@ -194,6 +194,10 @@ calculate_H2 <- function(object, projection_residuals){
 #'  (R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I_X(x,X) - RX)%*%R_S[r,] / n
 #' (last element is a row vector from R_S matrix corresponding to ranked regressor)
 #'
+#' In the grouped case, the last element is a matrix with g rows, each corresponding
+#' to regressor times indicator of grouping variable
+#' And the left element is also a matrix with g rows, each with original residuals
+#' times indicator of grouping variable
 #' @noRd
 calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   l <- get_and_separate_regressors(object)
@@ -201,14 +205,15 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean){
   if(length(rank_column_index)==0)
     return(0)
   global_RX <- l$global_RX
-  X_projection_coef <- projection_residual_matrix[rank_column_index,,drop=FALSE]
-  original_resids <- resid(object)
-  I_X_times_orig_resids <- as.vector(ineq_indicator_matmult(global_RX, 
-                                                matrix(original_resids, ncol=1),
-                                                omega=object$omega)) # length n
-  RX_times_orig_resids <- as.vector(global_RX %*% original_resids) # length 1
-  delta_X_times_orig_resids <- I_X_times_orig_resids -  RX_times_orig_resids
-  H3_minus_H1_mean <- delta_X_times_orig_resids %*% X_projection_coef / #TODO correct for grouped case
+  X_projection_coef <- projection_residual_matrix[rank_column_index,,drop=FALSE] # g columns
+  original_resids <- get_original_resid_times_grouping_indicators(object)
+  
+  I_X_times_orig_resids <- ineq_indicator_matmult(global_RX, 
+                                                original_resids, 
+                                                omega=object$omega) # size n x g
+  RX_times_orig_resids <- as.vector(global_RX %*% original_resids) # size g
+  delta_X_times_orig_resids <- t(I_X_times_orig_resids) -  RX_times_orig_resids
+  H3_minus_H1_mean <- t(delta_X_times_orig_resids) %*% X_projection_coef / 
     stats::nobs(object)
   
   t(t(H3_minus_H1_mean) + H1_mean)
@@ -286,6 +291,18 @@ get_coef_groups <- function(object){
     return(group_idx)
   })
   return(group_idx)
+}
+
+#' @noRd
+get_original_resid_times_grouping_indicators <- function(object){
+  original_resids <- resid(object)
+  grouping_var_index <- get_grouping_var_index(object)
+  if(length(grouping_var_index) > 0){
+    grouping_var <- as.vector(model.frame(object)[,grouping_var_index])
+    return(model.matrix(~original_resids:grouping_var - 1))
+  } else {
+    return(matrix(original_resids, ncol=1))
+  }
 }
 
 #' @noRd
