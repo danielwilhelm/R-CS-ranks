@@ -67,10 +67,10 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   projection_residuals <- X %*% projection_residual_matrix
   original_resids <- resid(object)
   H1 <- calculate_H1(object, projection_residuals)
-  
-  H2 <- calculate_H2(object, projection_residuals)
-  
   H1_mean <- colMeans(H1)
+  
+  H2 <- calculate_H2(object, projection_residuals, H1_mean)
+  
   H3 <- calculate_H3(object, projection_residual_matrix, H1_mean)
   
   projection_variances <- colMeans(projection_residuals^2)
@@ -147,37 +147,32 @@ calculate_H1 <- function(object, projection_residuals){
 #' rho \* I_X %*% (R_X(X)-Wgamma) / n - 
 #' (Wbeta)' %*% (R_X(X)-Wgamma) / n
 #' @noRd
-calculate_H2 <- function(object, projection_residuals){
+calculate_H2 <- function(object, projection_residuals, H1_mean){
   l <- get_and_separate_regressors(object)
   rank_column_index <- l$rank_column_index; RX <- l$RX
   global_RX <- l$global_RX
   RY <- stats::model.response(stats::model.frame(object))
   if(length(rank_column_index) > 0){
-    I_X_times_proj_resid <- t(ineq_indicator_matmult(global_RX, projection_residuals,omega=object$omega))
-    rho <- coef(object)[rank_column_index]
-    non_rank_predictor <- stats::fitted.values(object) - as.vector(as.matrix(RX) %*% rho)
-    
-    if(length(rho) == 1){
-      rowwise_rho <- rho
-    } else {
-      coef_group_indices <- get_coef_groups(object)
-      rowwise_rho <- rho[coef_group_indices]
-    }
+    I_X_times_proj_resids <- ineq_indicator_matmult(global_RX, projection_residuals,omega=object$omega)
+    RX_times_proj_resids <- as.vector(global_RX %*% projection_residuals)
+    rowwise_rho <- get_rowwise_rho(object, rank_column_index)
+    delta_X_times_proj_resids <- t(I_X_times_proj_resids) - RX_times_proj_resids
+    delta_X_times_proj_resids <- t(delta_X_times_proj_resids * rowwise_rho)
   } else {
-    I_X_times_proj_resid <- 0
-    rowwise_rho <- 0
-    non_rank_predictor <- stats::fitted.values(object)
+    delta_X_times_proj_resids <- 0
   }
   
-  if(object$ranked_response)
-    I_Y_times_proj_resid <- t(ineq_indicator_matmult(RY, projection_residuals,omega=object$omega))
+  if(object$ranked_response){
+    I_Y_times_proj_resids <- ineq_indicator_matmult(RY, projection_residuals,omega=object$omega)
+    RY_times_proj_resids <- as.vector(RY %*% projection_residuals)
+    delta_Y_times_proj_resids <- t(t(I_Y_times_proj_resids) -  RY_times_proj_resids)
+  }
   else
-    I_Y_times_proj_resid <- as.vector(RY %*% projection_residuals)
+    delta_Y_times_proj_resids <- 0
   
-  predictor_times_proj_resid <- as.vector(non_rank_predictor %*% projection_residuals)
-  out <- I_Y_times_proj_resid - rowwise_rho*I_X_times_proj_resid  - predictor_times_proj_resid
-  out <- t(out)
-  return(out / stats::nobs(object))
+  H2_minus_H1_mean <- (delta_Y_times_proj_resids - delta_X_times_proj_resids) / 
+    stats::nobs(object)
+  t(t(H2_minus_H1_mean) + H1_mean)
 }
 
 #' Calculate H3 component for covariance estimation
@@ -244,19 +239,16 @@ get_and_separate_regressors <- function(model){
               global_RX = global_RX))
 }
 
-#' @noRd 
-get_coef_groups_2 <- function(object){
-  XX <- model.matrix(object)
-  G <- get_group_indicators(object)
-  sapply(1:ncol(XX), function(j){
-    out <- which(sapply(1:ncol(G), function(g) all(XX[!G[,g],j] == 0)))
-    if(length(out) > 1){
-      cli::cli_warn("Group undetermined. Returning first")
-      out <- out[1]
-    }
-    out
-  })
-  # alternative: grep
+#' @noRd
+get_rowwise_rho <- function(object, rank_column_index){
+  rho <- coef(object)[rank_column_index]
+  grouping_var_index <- get_grouping_var_index(object)
+  if(length(grouping_var_index) == 0){
+    return(rho)
+  } else {
+    coef_groups <- get_coef_groups(object)
+    return(rho[coef_groups])
+  }
 }
 
 #' @noRd
