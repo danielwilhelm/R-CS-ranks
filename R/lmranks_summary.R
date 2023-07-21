@@ -297,33 +297,6 @@ get_original_resid_times_grouping_indicators <- function(object){
   }
 }
 
-#' @noRd
-get_global_nobs <- function(n_lequal_lesser_1, n_lequal_lesser_2){
-  if(!is.null(n_lequal_lesser_1)){
-    return(length(n_lequal_lesser_1$n_lequal))
-  } else if(!is.null(n_lequal_lesser_2)){
-    return(length(n_lequal_lesser_2$n_lequal))
-  } else {
-    cli::cli_abort("All regressors and responses are ordinary.")
-  }
-}
-
-#' @return Numeric vector; the linear predictor part calculated from non-rank regressors.
-#' @noRd
-extract_nonrank_predictor <- function(model){
-  l <- get_and_separate_regressors(model)
-  W <- l$W; rank_column_index <- l$rank_column_index
-  has_ranked_regressors <- length(rank_column_index) > 0
-  if(has_ranked_regressors)
-    betahat <- coef(model)[-rank_column_index]
-  else
-    betahat <- coef(model)
-  
-  # in singular fit case, some coefficients are NA
-  predictor <- as.vector(W[,!is.na(betahat), drop=FALSE] %*% betahat[!is.na(betahat)])
-  return(predictor)
-}
-
 #' Calculate inequality indicators and multiply with a matrix
 #' 
 #' @param v numeric vector
