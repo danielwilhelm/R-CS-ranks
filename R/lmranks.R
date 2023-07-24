@@ -1,6 +1,9 @@
 #' Rank-Rank Regression
 #' 
 #' Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
+#' Optionally, the dataset can be divided into groups and rank-rank regressions can be run
+#' separately within each group, but with ranks computed based on entire dataset 
+#' (for that, see corresponding section below).
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
@@ -19,7 +22,10 @@
 #' @details 
 #' This function is useful in case when relationship not between variables themselves, but their rank
 #' (or, put differently, their ECDF value) is of interest. The variables to be ranked
-#' (both dependent and independent) can be marked with \code{r()}. 
+#' (both dependent and independent) can be marked with \code{r()}. A usual formula would looks like
+#' \code{r(X)~r(Y)+W} or \code{r(X)~r(Y)+.}. In the latter case, both \code{r(X)} and \code{X} will be
+#' included in the model. This behavior is consistent with \code{lm}'s behavior;
+#' one can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}.
 #' 
 #' The \code{r()} is a private alias for \code{\link{frank}} with fixed
 #' \code{increasing} argument. \code{omega} argument may be specified globally 
@@ -46,12 +52,15 @@
 #' ranks computed based on entire dataset. 
 #' 
 #' This case is implemented and can be specified using formula interaction notation.
-#' Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{factor}). 
-#' Then a typical formula would look like \code{r(Y)~(r(X)+W):G} or
-#' \code{r(Y)~(r(X)+.):G}. In the latter case, both \code{r(X):G} and \code{X:G} will be
-#' included in the model. This behavior is consistent with \code{lm}'s behavior;
-#' one can exclude \code{X:G} with a \code{-}, i.e.  
-#' \code{r(Y)~(r(X)+.):G-X:G}.
+#' Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{factor}),
+#' \code{r(Y)} is the ranked response, \code{r(X)} is the ranked regressor and
+#' \code{W} are the usual regressors. A formula for this model is \code{r(Y)~(r(X)+W):G}.
+#' 
+#' Since theory for regression with grouped and ungrouped regressors is not developped,
+#' specyfying such a model will raise an error. Also, by default the intercept is 
+#' treated group-wise; \code{r(Y)~(r(X)+W):G} will actually become \code{r(Y)~(r(X)+W):G+G-1}.
+#' 
+#' \code{\link[stats]{contrasts}} of \code{G} must be of "contr.treatment" kind, which is the default.
 #' 
 #' @section Warning:
 #' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
@@ -101,14 +110,15 @@
 #' # Support of `data` argument:
 #' data(mtcars)
 #' lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
+#' # Same as above, but use the `hp` variable only through its rank
+#' lmranks(r(mpg) ~ r(hp) + . - hp, data = mtcars)
 #' 
 #' # Grouped case:
 #' G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
 #' lmranks(r(mpg) ~ r(hp):G, data = mtcars)
 #' # Include all columns of mtcars as usual covariates:
 #' lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
-#' # Same as above, but use the `hp` variable only through its rank
-#' lmranks(r(mpg) ~ (r(hp) + .):G - hp:G, data = mtcars)
+#'
 #' @export
 #' @importFrom stats coef lm resid predict var
 #' 
@@ -139,14 +149,12 @@ lmranks <- function(formula, data, subset,
   
   # Call (evaluate) lm
   main_model <- eval(lm_call, rank_env)
-  main_model$rank_terms_indices <- rank_terms_indices
   
-  grouping_var_index <- get_grouping_var_index(main_model)
-  if(length(grouping_var_index) > 0){
-    grouping_var <- stats::model.frame(main_model)[,grouping_var_index]
-    grouping_var_name <- colnames(stats::model.frame(main_model))[grouping_var_index]
-    assert_is_factor(grouping_var, grouping_var_name)
+  if(method == "model.frame"){
+    return(main_model)
   }
+  main_model$rank_terms_indices <- rank_terms_indices
+  check_grouping_variable(main_model)
   
   # Correct the output
   main_model$call <- original_call

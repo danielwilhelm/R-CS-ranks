@@ -151,6 +151,22 @@ process_irank_against_args <- function(x, v, omega, increasing, na.rm){
   return(list(x=x, v=v))
 }
 
+check_grouping_variable <- function(object){
+  grouping_var_index <- get_grouping_var_index(object)
+  if(length(grouping_var_index) == 0) return()
+  grouping_var <- stats::model.frame(object)[,grouping_var_index]
+  grouping_var_name <- colnames(stats::model.frame(object))[grouping_var_index]
+  assert_is_factor(grouping_var, grouping_var_name)
+  
+  actual_contrast <- object$contrasts[[grouping_var_name]]
+  if(is.null(actual_contrast)){
+    actual_contrast <- object$contrasts[[paste0("`", grouping_var_name, "`")]]
+  }
+  if(actual_contrast != "contr.treatment")
+    cli::cli_abort(c("{.var {grouping_var_name}}'s contrasts must be \"contr.treatment\".",
+                     "x" = "{.var {grouping_var_name}}'s contrasts are \"{actual_contrast}\"."))
+}
+
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name){
   if(!all(lower <= middle)){
     wrong_index <- which(lower > middle)[1]
