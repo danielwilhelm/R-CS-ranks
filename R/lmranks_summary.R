@@ -255,7 +255,7 @@ get_coef_groups <- function(object){
   if(length(grouping_variable_index) == 0){
     return(rep(1, length(coef(object))))
   }
-  group_levels <- levels(model.frame(object)[,grouping_variable_index])
+  group_levels <- levels(stats::model.frame(object)[,grouping_variable_index])
   group_indices <- sapply(1:length(coef(object)), function(i){
     coef_name <- names(coef(object))[i]
     regex <- prepare_regex_capturing_grouping_var(object, i)
@@ -270,7 +270,7 @@ get_coef_groups <- function(object){
 
 #'@noRd
 prepare_regex_capturing_grouping_var <- function(object, i){
-  variable_table <- attr(terms(object), "factors")
+  variable_table <- attr(stats::terms(object), "factors")
   grouping_variable_index <- get_grouping_var_index(object)
   var_table_column <- variable_table[,object$assign[i]]
   grouping_var_local_index <- which(var_table_column != 0) == grouping_variable_index
@@ -300,8 +300,8 @@ get_original_resid_times_grouping_indicators <- function(object){
   original_resids <- resid(object)
   grouping_var_index <- get_grouping_var_index(object)
   if(length(grouping_var_index) > 0){
-    grouping_var <- as.vector(model.frame(object)[,grouping_var_index])
-    return(model.matrix(~original_resids:grouping_var - 1))
+    grouping_var <- as.vector(stats::model.frame(object)[,grouping_var_index])
+    return(stats::model.matrix(~original_resids:grouping_var - 1))
   } else {
     return(matrix(original_resids, ncol=1))
   }
