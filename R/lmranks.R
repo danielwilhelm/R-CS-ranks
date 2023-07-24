@@ -15,9 +15,6 @@
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
 #' @param omega real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.
-#' @param na.rm If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
-#' are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
-#' For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na.action}.
 #'
 #' @details 
 #' This function is useful in case when relationship not between variables themselves, but their rank
@@ -26,7 +23,8 @@
 #' 
 #' The \code{r()} is a private alias for \code{\link{frank}} with fixed
 #' \code{increasing} argument. \code{omega} argument may be specified globally 
-#' (as a specification of rank definition) in the call to \code{lmranks}.
+#' (as a specification of rank definition) in the call to \code{lmranks}. 
+#' By default \code{r}'s outcome identical to \code{\link[stats]{ecdf}}.
 #' 
 #' As a consequence of the order, in which model.frame applies operations, \code{subset} 
 #' and \code{na.action} would be applied after evaluation of \code{r()}. 
@@ -40,6 +38,20 @@
 #' This includes \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
 #' \code{\link[stats]{model.matrix}}, \code{\link[stats]{resid}} and \code{\link[stats]{update}}. 
 #' On the other hand, some would not return correct results. 
+#' 
+#' @section Rank regression with groups/clusters:
+#' 
+#' Sometimes, the data is divided into groups (or \emph{clusters}). The researcher is
+#' interested in running rank-rank regressions separately within each group, but with
+#' ranks computed based on entire dataset. 
+#' 
+#' This case is implemented and can be specified using formula interaction notation.
+#' Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{factor}). 
+#' Then a typical formula would look like \code{r(Y)~(r(X)+W):G} or
+#' \code{r(Y)~(r(X)+.):G}. In the latter case, both \code{r(X):G} and \code{X:G} will be
+#' included in the model. This behavior is consistent with \code{lm}'s behavior;
+#' one can exclude \code{X:G} with a \code{-}, i.e.  
+#' \code{r(Y)~(r(X)+.):G-X:G}.
 #' 
 #' @section Warning:
 #' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
@@ -76,14 +88,27 @@
 #' x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
 #' W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
 #'
-#' lmranks(r(Y) ~ r(X) + W)
+#' lmr <- lmranks(r(Y) ~ r(X) + W)
+#' lmr
 #' # naive version with same regression coefficients, but incorrect 
 #' # standard errors and statistics:
-#' lm(y_frank ~ x_frank + W)
+#' lmm <- lm(y_frank ~ x_frank + W)
 #' 
+#' # Compare:
+#' summary(lmr)
+#' summary(lmm)
+#' 
+#' # Support of `data` argument:
 #' data(mtcars)
 #' lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
 #' 
+#' # Grouped case:
+#' G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
+#' lmranks(r(mpg) ~ r(hp):G, data = mtcars)
+#' # Include all columns of mtcars as usual covariates:
+#' lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
+#' # Same as above, but use the `hp` variable only through its rank
+#' lmranks(r(mpg) ~ (r(hp) + .):G - hp:G, data = mtcars)
 #' @export
 #' @importFrom stats coef lm resid predict var
 #' 
@@ -92,9 +117,9 @@ lmranks <- function(formula, data, subset,
                     na.action = stats::na.fail, 
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
-                    omega=1, na.rm=FALSE, ...){
+                    omega=1, ...){
   # From this environment lm will take the definition of r()
-  rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
+  rank_env <- create_env_to_interpret_r_mark(omega)
   # It will mask "r" objects from higher frames inside lm, but not modify them
   # It is also inheriting from parent.frame, so evaluations of all other expressions
   # will be taken from there
@@ -118,8 +143,8 @@ lmranks <- function(formula, data, subset,
   
   grouping_var_index <- get_grouping_var_index(main_model)
   if(length(grouping_var_index) > 0){
-    grouping_var <- model.frame(main_model)[,grouping_var_index]
-    grouping_var_name <- colnames(model.frame(main_model))[grouping_var_index]
+    grouping_var <- stats::model.frame(main_model)[,grouping_var_index]
+    grouping_var_name <- colnames(stats::model.frame(main_model))[grouping_var_index]
     assert_is_factor(grouping_var, grouping_var_name)
   }
   
@@ -207,7 +232,7 @@ process_lmranks_formula <- function(formula, rank_env=NULL){
       new_terms <- attr(formula_terms, "term.labels")
       if(!rownames(variable_table)[interacting_var] %in% attr(formula_terms, "term.labels"))
         new_terms <- c(new_terms, rownames(variable_table)[interacting_var])
-      formula <- reformulate(new_terms, 
+      formula <- stats::reformulate(new_terms, 
                             response = formula_terms[[2]], intercept = FALSE,
                             env = rank_env)
     }
@@ -274,7 +299,7 @@ prepare_lm_call <- function(lm_call, check_weights = TRUE){
 #' [environment()]
 #' [csranks::frank_against()], [csranks:::compare]
 #' @noRd
-create_env_to_interpret_r_mark <- function(omega, na.rm){
+create_env_to_interpret_r_mark <- function(omega){
   rank_env <- new.env(parent = parent.frame(2))
   r <- function(x) x
   body(r) <- bquote({
@@ -289,8 +314,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
     else if(is.null(cache[[var_name]]))
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     v <- cache[[var_name]]
-    out <- rep(NA, length(was_na))
-    out[!was_na] <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=.(na.rm))
+    out <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=FALSE)
     out
   })
   environment(r) <- rank_env
@@ -302,7 +326,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
 
 get_grouping_var_index <- function(object){
   rank_terms_indices <- object$rank_terms_indices
-  formula_terms <- terms(formula(object), specials = "r")
+  formula_terms <- stats::terms(stats::formula(object), specials = "r")
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
   response_variable_index <- attr(formula_terms, "response")
   regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)

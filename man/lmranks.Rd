@@ -23,7 +23,6 @@ lmranks(
   contrasts = NULL,
   offset = offset,
   omega = 1,
-  na.rm = FALSE,
   ...
 )
 
@@ -76,10 +75,6 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
 
 \item{omega}{real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.}
 
-\item{na.rm}{If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
-are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
-For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na.action}.}
-
 \item{...}{For \code{lm()}: additional arguments to be passed to the low level
     regression fitting functions (see below).}
 
@@ -117,7 +112,8 @@ This function is useful in case when relationship not between variables themselv
 
 The \code{r()} is a private alias for \code{\link{frank}} with fixed
 \code{increasing} argument. \code{omega} argument may be specified globally 
-(as a specification of rank definition) in the call to \code{lmranks}.
+(as a specification of rank definition) in the call to \code{lmranks}. 
+By default \code{r}'s outcome identical to \code{\link[stats]{ecdf}}.
 
 As a consequence of the order, in which model.frame applies operations, \code{subset} 
 and \code{na.action} would be applied after evaluation of \code{r()}. 
@@ -147,6 +143,22 @@ Returns the variance-covariance matrix of the regression coefficients
 (main parameters) of a fitted \code{lmranks} object.
 
 }}
+\section{Rank regression with groups/clusters}{
+
+
+Sometimes, the data is divided into groups (or \emph{clusters}). The researcher is
+interested in running rank-rank regressions separately within each group, but with
+ranks computed based on entire dataset. 
+
+This case is implemented and can be specified using formula interaction notation.
+Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{factor}). 
+Then a typical formula would look like \code{r(Y)~(r(X)+W):G} or
+\code{r(Y)~(r(X)+.):G}. In the latter case, both \code{r(X):G} and \code{X:G} will be
+included in the model. This behavior is consistent with \code{lm}'s behavior;
+one can exclude \code{X:G} with a \code{-}, i.e.  
+\code{r(Y)~(r(X)+.):G-X:G}.
+}
+
 \section{Warning}{
 
 Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
@@ -167,14 +179,27 @@ omega <- 0.5
 x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
 W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
 
-lmranks(r(Y) ~ r(X) + W)
+lmr <- lmranks(r(Y) ~ r(X) + W)
+lmr
 # naive version with same regression coefficients, but incorrect 
 # standard errors and statistics:
-lm(y_frank ~ x_frank + W)
+lmm <- lm(y_frank ~ x_frank + W)
 
+# Compare:
+summary(lmr)
+summary(lmm)
+
+# Support of `data` argument:
 data(mtcars)
 lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
 
+# Grouped case:
+G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
+lmranks(r(mpg) ~ r(hp):G, data = mtcars)
+# Include all columns of mtcars as usual covariates:
+lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
+# Same as above, but use the `hp` variable only through its rank
+lmranks(r(mpg) ~ (r(hp) + .):G - hp:G, data = mtcars)
 }
 \seealso{
 \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
