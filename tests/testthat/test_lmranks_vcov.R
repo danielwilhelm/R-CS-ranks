@@ -287,10 +287,8 @@ test_that("h2 works for ranked regressor with no covariates", {
   load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
   res <- lmranks(r(Y) ~ r(X))
   proj_residuals <- model.matrix(res) %*% get_projection_residual_matrix(res)
-  H1 <- calculate_H1(res, model.matrix(res) %*% proj_residual_matrix)
-  H1_mean <- colMeans(H1)
   
-  h2_lmranks <- calculate_H2(res, proj_residuals, H1_mean)
+  h2_lmranks <- calculate_H2(res, proj_residuals)
   expect_equal(h2_lmranks[,2], h2)
 })
 

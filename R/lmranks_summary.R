@@ -65,7 +65,7 @@ vcov.lmranks <- function(object, complete = TRUE, ...){
   projection_residual_matrix <- get_projection_residual_matrix(object)
   X <- stats::model.matrix(object)
   projection_residuals <- X %*% projection_residual_matrix
-  original_resids <- resid(object)
+  
   H1 <- calculate_H1(object, projection_residuals)
   H1_mean <- colMeans(H1)
   
@@ -147,7 +147,10 @@ calculate_H1 <- function(object, projection_residuals){
 #' rho \* I_X %*% (R_X(X)-Wgamma) / n - 
 #' (Wbeta)' %*% (R_X(X)-Wgamma) / n
 #' @noRd
-calculate_H2 <- function(object, projection_residuals, H1_mean){
+calculate_H2 <- function(object, projection_residuals, H1_mean=NULL){
+  if(is.null(H1_mean)){
+    H1_mean <- colMeans(calculate_H1(object, projection_residuals))
+  }
   l <- get_and_separate_regressors(object)
   rank_column_index <- l$rank_column_index; RX <- l$RX
   global_RX <- l$global_RX
@@ -242,13 +245,8 @@ get_and_separate_regressors <- function(model){
 #' @noRd
 get_rowwise_rho <- function(object, rank_column_index){
   rho <- coef(object)[rank_column_index]
-  grouping_var_index <- get_grouping_var_index(object)
-  if(length(grouping_var_index) == 0){
-    return(rho)
-  } else {
-    coef_groups <- get_coef_groups(object)
-    return(rho[coef_groups])
-  }
+  coef_groups <- get_coef_groups(object)
+  return(rho[coef_groups])
 }
 
 #' @noRd
@@ -257,32 +255,44 @@ get_coef_groups <- function(object){
   if(length(grouping_variable_index) == 0){
     return(rep(1, length(coef(object))))
   }
-  variable_table <- attr(terms(object), "factors")
   group_levels <- levels(model.frame(object)[,grouping_variable_index])
-  regex_special_characters <- c("\\","$", "(", ")", "*", "+", ".", "?", "[", "^", "{", "|")
-  escaped_variable_names <- rownames(variable_table)
-  for(spec_character in regex_special_characters){
-    escaped_variable_names <- gsub(spec_character, paste0("\\", spec_character),
-                                   escaped_variable_names, fixed=TRUE)
-  }
-  
-  group_idx <- sapply(1:length(coef(object)), function(i){
-    var_table_column_idx <- object$assign[i]
-    var_table_column <- variable_table[,var_table_column_idx]
-    grouping_var_local_index <- which(which(var_table_column != 0) == grouping_variable_index)
+  group_indices <- sapply(1:length(coef(object)), function(i){
     coef_name <- names(coef(object))[i]
-    var_names <- escaped_variable_names[var_table_column != 0]
-    var_names[grouping_var_local_index] <- paste0(var_names[grouping_var_local_index], "(?<group>.*)")
-    var_names[-grouping_var_local_index] <- paste0(var_names[-grouping_var_local_index], ".*")
-    regex <- paste(var_names, collapse = ":")
-    regex <- paste0("^", regex, "$")
+    regex <- prepare_regex_capturing_grouping_var(object, i)
     matches <- regexec(regex, coef_name, perl=TRUE)
     var_values <- regmatches(coef_name, matches)
     grouping_var_value <- var_values[[1]]["group"]
     group_idx <- which(group_levels == grouping_var_value)
     return(group_idx)
   })
-  return(group_idx)
+  return(group_indices)
+}
+
+#'@noRd
+prepare_regex_capturing_grouping_var <- function(object, i){
+  variable_table <- attr(terms(object), "factors")
+  grouping_variable_index <- get_grouping_var_index(object)
+  var_table_column <- variable_table[,object$assign[i]]
+  grouping_var_local_index <- which(var_table_column != 0) == grouping_variable_index
+  
+  var_names <- rownames(variable_table)[var_table_column != 0]
+  var_names <- escape_special_characters(var_names)
+  var_names[grouping_var_local_index] <- paste0(var_names[grouping_var_local_index], "(?<group>.*)")
+  var_names[!grouping_var_local_index] <- paste0(var_names[!grouping_var_local_index], ".*")
+  regex <- paste(var_names, collapse = ":")
+  regex <- paste0("^", regex, "$")
+  return(regex)
+}
+
+#' @noRd 
+escape_special_characters <- function(v){
+  regex_special_characters <- c("\\","$", "(", ")", "*", "+", ".", "?", "[", "^", "{", "|")
+  escaped_v <- v
+  for(spec_character in regex_special_characters){
+    escaped_v <- gsub(spec_character, paste0("\\", spec_character),
+                      escaped_v, fixed=TRUE)
+  }
+  return(escaped_v)
 }
 
 #' @noRd

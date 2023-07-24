@@ -1,4 +1,4 @@
-test_that("grouped_lmranks correctly estimates OLS slope and intercept within each group", {
+test_that("lmranks correctly estimates OLS slope and intercept in grouped case", {
   set.seed(100)
   
   for (dist in c("discr", "cont")) {
@@ -10,7 +10,7 @@ test_that("grouped_lmranks correctly estimates OLS slope and intercept within ea
   		X <- rnorm(200)
 		Y <- c(rep(1,100),rep(2,100))*X + rnorm(200)
   	}
-  	G <- c(rep(1,100),rep(2,100))
+  	G <- factor(c(rep(1,100),rep(2,100)))
   	dat <- data.frame(Y=Y, X=X)
 	  	  
 	for (omega in c(0, 0.5, 1)) {
@@ -20,11 +20,27 @@ test_that("grouped_lmranks correctly estimates OLS slope and intercept within ea
 	    RY2 <- RY[101:200]; RX2 <- RX[101:200]
 	    coeffs.lm <- as.numeric(cbind(coef(lm(RY1~RX1)), coef(lm(RY2~RX2))))
 
-	    res <- grouped_lmranks(r(Y) ~ r(X), data=dat, grouping_factor=G, omega=omega)
-	    coeffs.grouped_lmranks <- as.numeric(coef(res))
+	    res <- lmranks(r(Y) ~ r(X):G, data=dat, omega=omega)
+	    coeffs.grouped_lmranks <- as.numeric(coef(res)[c(1,3,2,4)])
 	    expect_equal(coeffs.lm, coeffs.grouped_lmranks)     
 	}
 
   }
  
+})
+
+test_that("lmranks catches non-factor groupings", {
+  X <- rnorm(200)
+  Y <- c(rep(1,100),rep(2,100))*X + rnorm(200)
+  dat <- data.frame(Y=Y, X=X)
+  G <- c(rep(1,100),rep(2,100))
+  
+  expect_error(lmranks(r(Y) ~ r(X):G, data=dat), "factor")
+  
+  G <- matrix(c(rep(1,100),rep(2,100),
+                rep(1,100),rep(2,100)), ncol=2)
+  expect_error(lmranks(r(Y) ~ r(X):G, data=dat), "factor")
+  
+  G <- factor(c(rep(1,100),rep(2,100)))
+  expect_silent(lmranks(r(Y) ~ r(X):G, data=dat))
 })
