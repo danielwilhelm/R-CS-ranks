@@ -1,7 +1,4 @@
-#' Summarizing fits of linear models for ranks
-#' 
-#' Summary method for class "\code{lmranks}". It returns theoretically valid standard
-#' errors, in comparison to naively running \code{summary(lm(...))}.
+#' @describeIn lmranks Summarizing fits of rank-rank regressions
 #' 
 #' @param object A \code{lmranks} object.
 #' @inheritParams stats::summary.lm
@@ -53,7 +50,8 @@ confint.lmranks <- function(object, parm, level = 0.95, ...){
 #' @describeIn lmranks Calculate Variance-Covariance Matrix for a Fitted \code{lmranks} object
 #' 
 #' Returns the variance-covariance matrix of the regression coefficients 
-#' (main parameters) of a fitted \code{lmranks} object.
+#' (main parameters) of a fitted \code{lmranks} object. Its result is theoretically valid 
+#' and asymptotically consistent, in contrast to naively running \code{vcov(lm(...))}.
 #' 
 #' @param complete logical indicating if the full variance-covariance matrix 
 #' should be returned also in case of an over-determined system where 

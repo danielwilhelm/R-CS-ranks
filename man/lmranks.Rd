@@ -5,6 +5,7 @@
 \alias{lmranks}
 \alias{plot.lmranks}
 \alias{predict.lmranks}
+\alias{summary.lmranks}
 \alias{vcov.lmranks}
 \title{Rank-Rank Regression}
 \usage{
@@ -29,6 +30,8 @@ lmranks(
 \method{plot}{lmranks}(x, which = 1, ...)
 
 \method{predict}{lmranks}(object, newdata, ...)
+
+\method{summary}{lmranks}(object, correlation = FALSE, symbolic.cor = FALSE, ...)
 
 \method{vcov}{lmranks}(object, complete = TRUE, ...)
 }
@@ -80,9 +83,15 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
 
 \item{which}{As in \code{\link{plot.lm}}. Currently only no.1 is available.}
 
-\item{object}{\code{lmranks} object.}
+\item{object}{A \code{lmranks} object.}
 
 \item{newdata}{An optional data frame in which to look for variables with which to predict. If omitted, the fitted values are used.}
+
+\item{correlation}{logical; if \code{TRUE}, the correlation matrix of
+    the estimated parameters is returned and printed.}
+
+\item{symbolic.cor}{logical. If \code{TRUE}, print the correlations in
+    a symbolic form (see \code{\link[stats]{symnum}}) rather than as numbers.}
 
 \item{complete}{logical indicating if the full variance-covariance matrix 
 should be returned also in case of an over-determined system where 
@@ -91,10 +100,10 @@ When \code{complete = TRUE}, \code{vcov()} is compatible with \code{coef()} also
 }
 \value{
 An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
-See the \code{\link{lm}} documentation for more.
 
 Additionally, it has an \code{omega} entry, corresponding to \code{omega} argument,
-and a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
+a \code{ranked_response} logical entry, and 
+a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
 of \code{terms(formula)}, which correspond to ranked regressors.
 
 A number of methods defined for \code{lm} does not yield theoretically correct 
@@ -104,35 +113,44 @@ for the rank models is not theoretically established.
 }
 \description{
 Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
-Optionally, the dataset can be divided into groups and rank-rank regressions can be run
+Optionally, when the dataset is divided into groups, rank-rank regressions can be run
 separately within each group, but with ranks computed based on entire dataset 
-(for that, see corresponding section below).
+(for that, see the corresponding section below).
 }
 \details{
-This function is useful in case when relationship not between variables themselves, but their rank
+This function is useful in case when relationship not between variables themselves, but their ranks
 (or, put differently, their ECDF value) is of interest. The variables to be ranked
-(both dependent and independent) can be marked with \code{r()}. A usual formula would looks like
-\code{r(X)~r(Y)+W} or \code{r(X)~r(Y)+.}. In the latter case, both \code{r(X)} and \code{X} will be
-included in the model. This behavior is consistent with \code{lm}'s behavior;
-one can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}.
+(both regressors and response) can be marked with \code{r()}. A typical formula looks like
+\code{r(Y)~r(X)+W1+W2+...} and corresponds to modelling rank of Y
+as a linear function of rank of X and other, non-ranked regressors. 
 
-The \code{r()} is a private alias for \code{\link{frank}} with fixed
-\code{increasing} argument. \code{omega} argument may be specified globally 
-(as a specification of rank definition) in the call to \code{lmranks}. 
-By default \code{r}'s outcome identical to \code{\link[stats]{ecdf}}.
+This function is as consistent with \code{lm} function as possible. For instance, 
+\code{.} in formula means the same as in \code{lm}. Intercept is included by default.
+In model specified as \code{r(Y)~r(X)+.}, both \code{r(X)} and \code{X} will be
+included in the model - as it would have been in \code{lm} and, say, 
+\code{log()} instead of \code{r()}. 
+One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}.
 
-As a consequence of the order, in which model.frame applies operations, \code{subset} 
-and \code{na.action} would be applied after evaluation of \code{r()}. 
-In such a case, returned coefficients and standard errors might no longer be correct.
-The user must handle the NA values and may filter the data on his own.
+The \code{r()} is a private alias for \code{\link{frank}} with \code{increasing} 
+argument fixed as TRUE. \code{omega} argument may be specified globally 
+(as a specification of definition of rank) in the call to \code{lmranks}. 
+By default \code{r}'s outcome is equivalent to \code{\link[stats]{ecdf}}'s.
 
 Currently, only models at most one rank regressor are available. The single 
 response might be either ranked or continuous.
 
 Many functions defined for \code{lm} also work correctly with \code{lmranks}.
-This includes \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
-\code{\link[stats]{model.matrix}}, \code{\link[stats]{resid}} and \code{\link[stats]{update}}. 
-On the other hand, some would not return correct results.
+These include \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
+\code{\link[stats]{model.matrix}}, \code{\link[stats]{resid}}, 
+\code{\link[stats]{update}} and others. 
+On the other hand, some would return incorrect results if they treated
+\code{lmranks} output in the same way as \code{lm}'s. The central contribution of this package
+are \code{vcov}, \code{summary} and \code{confint} implementations using asymptotically consistent theory.
+Another example is \code{AIC},
+which needs the number of parameters of the model. This is not yet theoretically 
+developed for rank-rank regressions and thus NA is returned.
+
+See the \code{\link{lm}} documentation for more.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -143,32 +161,42 @@ plot is available, which plots fitted values against residuals (for homoscedacit
 
 \item \code{predict(lmranks)}: Predict method for Linear Model for Ranks Fits
 
+\item \code{summary(lmranks)}: Summarizing fits of rank-rank regressions
+
 \item \code{vcov(lmranks)}: Calculate Variance-Covariance Matrix for a Fitted \code{lmranks} object
 
 Returns the variance-covariance matrix of the regression coefficients 
-(main parameters) of a fitted \code{lmranks} object.
+(main parameters) of a fitted \code{lmranks} object. Its result is theoretically valid 
+and asymptotically consistent, in contrast to naively running \code{vcov(lm(...))}.
 
 }}
-\section{Rank regression with groups/clusters}{
+\section{Rank regressions with groups/clusters}{
 
 
-Sometimes, the data is divided into groups (or \emph{clusters}). The researcher is
+Sometimes, the data is divided into groups (or \emph{clusters}) and the researcher is
 interested in running rank-rank regressions separately within each group, but with
 ranks computed based on entire dataset. 
 
 This case is implemented and can be specified using formula interaction notation.
-Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{factor}),
+Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{\link{factor}}),
 \code{r(Y)} is the ranked response, \code{r(X)} is the ranked regressor and
 \code{W} are the usual regressors. A formula for this model is \code{r(Y)~(r(X)+W):G}.
 
-Since theory for regression with grouped and ungrouped regressors is not developped,
-specyfying such a model will raise an error. Also, by default the intercept is 
+Since theory for regression with grouped and ungrouped regressors is not yet developed,
+specifying such a model will raise an error. Also, by default the intercept is 
 treated group-wise; \code{r(Y)~(r(X)+W):G} will actually become \code{r(Y)~(r(X)+W):G+G-1}.
 
-\code{\link[stats]{contrasts}} of \code{G} must be of "contr.treatment" kind, which is the default.
+\code{\link[stats]{contrasts}} of \code{G} must be of \code{contr.treatment} kind, 
+which is the default.
 }
 
 \section{Warning}{
+
+As a consequence of the order, in which \code{\link[stats]{model.frame}} applies operations, 
+\code{subset} and \code{na.action} would be applied after evaluation of \code{r()}. 
+That would drop some rank values from the final model frame and returned coefficients 
+and standard errors could no longer be correct.
+The user must handle the NA values and may filter the data on his own.
 
 Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
 recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
@@ -206,13 +234,13 @@ lmranks(r(mpg) ~ r(hp) + . - hp, data = mtcars)
 
 # Grouped case:
 G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
-lmranks(r(mpg) ~ r(hp):G, data = mtcars)
+lmr <- lmranks(r(mpg) ~ r(hp):G, data = mtcars)
+lmr
+model.matrix(lmr)
 # Include all columns of mtcars as usual covariates:
 lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
 
 }
 \seealso{
 \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
-
-\code{\link{summary.lmranks}}
 }
