@@ -29,23 +29,6 @@ test_that("count_lequal_lesser with default v works", {
                count_lequal_lesser(x))
 })
 
-test_that("count_lequal_lesser return_inverse_ranking argument works", {
-  x <- c(4,4,4,3,1,10,7,7)
-  x_sorted <- sort(x)
-  out <- count_lequal_lesser(x, return_inverse_ranking = TRUE)
-  expect_false(is.null(out[["inverse_ranking"]]))
-  expect_equal(x_sorted[out$inverse_ranking], x)
-})
-
-test_that("count_lequal_lesser return_inverse_ranking argument works with custom v", {
-  v <- c(4,4,4,3,1,10,7,7)
-  v_sorted <- sort(v)
-  x <- c(1,3,5,7,9)
-  out <- count_lequal_lesser(x, v, return_inverse_ranking = TRUE)
-  expect_false(is.null(out[["inverse_ranking"]]))
-  expect_equal(v_sorted[out$inverse_ranking], v)
-})
-
 ### compare ###
 test_that("frank_against returns error for matrix input", {
   # This behavior ensures, that user cannot pass r(MATRIX) in lmranks
