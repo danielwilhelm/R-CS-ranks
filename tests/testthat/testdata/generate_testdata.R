@@ -53,7 +53,7 @@ for (covariates in c(TRUE,FALSE)) {
   h3 <- sapply(X, h3fn)
   
   # compute asymptotic variance
-  sigma2hat <- mean((h1+h2+h3)^2) / var(nuhat)^2
+  sigma2hat <- mean((h1+h2+h3)^2) / mean(nuhat^2)^2
   
   # save the result
   save(sigma2hat, Y, W, X, n, h1, h2, h3, 
