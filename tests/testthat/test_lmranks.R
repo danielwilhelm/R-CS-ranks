@@ -59,6 +59,13 @@ test_that("lmranks and lm provide coherent results", {
   expect_equal(raw_rank_m, expected_m)
 })
 
+test_that("lmranks falls back to lm in no rank case", {
+  expect_warning(m <- lmranks(mpg ~ disp + cyl, data=mtcars),
+                 "no ranked terms")
+  m2 <- stats::lm(mpg~disp + cyl, data=mtcars)
+  expect_equivalent(m, m2)
+})
+
 test_that("lmranks correctly estimates rank correlation", {
   set.seed(100)
   
@@ -103,6 +110,7 @@ test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula(r(y) ~ r(x) * w))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(x):w + w))
   expect_error(process_lmranks_formula(r(y) ~ r(x):w:z + w))
+  expect_error(process_lmranks_formula(r(y) ~ r(x):w + z))
   
   expect_silent(process_lmranks_formula(r(y) ~ r(x) + w))
   expect_silent(process_lmranks_formula(r(y) ~ (r(x) + w):G))
