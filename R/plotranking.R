@@ -85,7 +85,7 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
   } else {
     pl <- pl + geom_errorbar(aes(xmin = L, xmax = U),
                   width = errorbar_width,
-                  size = 1, position = position_dodge(0.1)) + 
+                  linewidth = 1, position = position_dodge(0.1)) + 
       scale_x_continuous(limits = c(1, p), breaks = unique(c(1, seq(5, p, by = 5), p)), labels = unique(c(1, seq(5, p, by = 5), p)))
   }
     
