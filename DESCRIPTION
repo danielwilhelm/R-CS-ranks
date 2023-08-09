@@ -1,15 +1,15 @@
 Package: csranks
 Type: Package
-Title: Confidence Sets for Ranks
+Title: Statistical Tools for Ranks
 Version: 1.1.1.9000
 Authors@R: c(
     person("Daniel", "Wilhelm", ,"d.wilhelm@ucl.ac.uk", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
   )
-Description: Construct confidence sets for positions of populations in a ranking 
+Description: Account for uncertainty when working with ranks. 
+    Estimate standard errors consistently in linear regression with ranked variables.
+    Construct confidence sets of various kinds for positions of populations in a ranking 
     based on values of a certain feature and their estimation errors. 
-    Both simultaneous and marginal confidence sets are available, as well as 
-    confidence sets with populations occupying top-n positions in the ranking.
     Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023)<doi:10.1093/restud/rdad006>.
 License: MIT + file LICENSE
 Encoding: UTF-8

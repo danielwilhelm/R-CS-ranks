@@ -8,12 +8,19 @@
 [![R-CMD-check](https://github.com/danielwilhelm/R-CS-ranks/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/danielwilhelm/R-CS-ranks/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The `R` package `csranks` implements confidence sets for positions of
-populations in a ranking based on values of a certain feature and their
-estimation errors. Both simultaneous and marginal confidence sets are
-available, as well as confidence sets with populations occupying top-n
-positions in the ranking. Work based on [Mogstad, Romano, Shaikh, and
-Wilhelm (2023)](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf).
+The `R` package `csranks` provides statistical tools when working with
+ranks. Two central functions are `csranks` for confidence sets and
+`lmranks` for linear regression.
+
+`csranks` implements confidence sets for positions of populations in a
+ranking based on values of a certain feature and their estimation
+errors. Both simultaneous and marginal confidence sets are available, as
+well as confidence sets with populations occupying top-n positions in
+the ranking. Work based on [Mogstad, Romano, Shaikh, and Wilhelm
+(2023)](http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf).
+
+`lmranks` implements linear regression with consistent estimation of
+standard errors and covariance matrix of regression parameters $\beta$.
 
 ## Installation
 
