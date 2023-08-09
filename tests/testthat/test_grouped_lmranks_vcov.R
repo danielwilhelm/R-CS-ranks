@@ -69,7 +69,7 @@ test_that("get_projection_residual_matrix works in grouped case", {
       X_minusj <- X[mtcars2$G == g,-j]
       Y <- X[mtcars2$G == g,j]
       m <- lm(Y~X_minusj-1)
-      coef_vector <- numeric(ncol(X))
+      coef_vector <- numeric(ncol(X)) # Filled with 0s
       coef_vector[-j] <- -coef(m)
       coef_vector[j] <- 1
       group_indices <- 1:ncol(X) + ncol(X)*(k-1)
@@ -173,6 +173,65 @@ test_that("get_coef_groups works",{
   actual <- get_coef_groups(m3)
   expect_equivalent(actual, expected_3)
   
+})
+
+test_that("prepare_regex_capturing_grouping_var works",{
+  nasty_df <- mtcars2
+  nasty_df$G <- factor(c("AB", "AC", "AD", "AE")[as.integer(G)])
+  nasty_df$GA <- sample(G)
+  
+  m1 <- lmranks(r(mpg) ~ GA:G + r(disp):G  - 1, data=nasty_df)
+  m2 <- lmranks(r(mpg) ~ G:r(disp) + G:GA - 1, data=nasty_df)
+  
+  expected_1 <- "^G(?<group>.*):r\\(disp\\).*$"
+  expected_2 <- "^GA.*:G(?<group>.*)$"
+  expected_3 <- "^G(?<group>.*):GA.*$"
+  
+  actual <- prepare_regex_capturing_grouping_var(m1, 17)
+  expect_equivalent(actual, expected_1)
+  actual <- prepare_regex_capturing_grouping_var(m1, 5)
+  expect_equivalent(actual, expected_2)
+  actual <- prepare_regex_capturing_grouping_var(m2, 5)
+  expect_equivalent(actual, expected_3)
+  
+})
+
+test_that("get_original_resid_times_grouping_indicators works", {
+  m <- lmranks(r(mpg) ~ (r(disp) + cyl):G, data=mtcars2)
+  G <- mtcars2$G
+  res <- resid(m)
+  expected <- sapply(levels(G), function(g) res * (G == g))
+  actual <- get_original_resid_times_grouping_indicators(m)
+  expect_equivalent(actual, expected)
+  
+  m2 <- lmranks(r(mpg) ~ r(disp) + cyl, data=mtcars)
+  res <- resid(m2)
+  expected <- matrix(res, ncol = 1)
+  actual <- get_original_resid_times_grouping_indicators(m2)
+  expect_equal(actual, expected)
+})
+
+test_that("findIntervalIncreasing works with no duplicates", {
+  v <- c(10, 7, 4, 3, 1)
+  expected <- c(1,2,3,4,5)
+  
+  actual <- findIntervalIncreasing(v, left.open=TRUE)
+  expect_equal(actual, expected-1)
+  
+  actual <- findIntervalIncreasing(v, left.open=FALSE)
+  expect_equal(actual, expected)
+})
+
+test_that("findIntervalIncreasing works with duplicates", {
+  v <- c(10, 7, 7, 4, 4, 4, 3, 1)
+  
+  expected <- c(1,3,3,6,6,6,7,8)
+  actual <- findIntervalIncreasing(v, left.open=FALSE)
+  expect_equal(actual, expected)
+  
+  expected <- c(0,1,1,3,3,3,6,7)
+  actual <- findIntervalIncreasing(v, left.open=TRUE)
+  expect_equal(actual, expected)
 })
 
 #########################

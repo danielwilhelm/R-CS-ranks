@@ -43,6 +43,8 @@ test_that("lmranks catches non-factor groupings", {
   
   G <- factor(c(rep(1,100),rep(2,100)))
   expect_silent(lmranks(r(Y) ~ r(X):G, data=dat))
+  expect_silent(lmranks(r(Y) ~ r(X):I(G), data=dat))
+  expect_silent(lmranks(r(Y) ~ r(X):as.factor(G), data=dat))
 })
 
 test_that("lmranks catches wrong contrasts", {

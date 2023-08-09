@@ -31,7 +31,7 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   
   if(correlation)
     outcome$correlation <- stats::cov2cor(cov_matrix)
-  cli::cli_warn(c("The number of residual degrees of freedom is not correct.", 
+  cli::cli_inform(c("The number of residual degrees of freedom is not correct.", 
                 "Also, z-value, not t-value, since the distribution used for p-value calculation is standard normal."))
   class(outcome) <- c("summary.lmranks", class(outcome))
   outcome
@@ -240,6 +240,11 @@ get_and_separate_regressors <- function(model){
               global_RX = global_RX))
 }
 
+#' Each column of model.matrix(object) AKA coefficient belongs to a certain group.
+#' And for each group we have 1 coefficient corresponding to ranked regressor.
+#' @return a numeric vector of length same as number of coefficients 
+#' (number of regressor variables times number of groups) with corresponding
+#' ranked coefficient (element of rho vector).
 #' @noRd
 get_rowwise_rho <- function(object, rank_column_index){
   rho <- coef(object)[rank_column_index]
@@ -247,6 +252,7 @@ get_rowwise_rho <- function(object, rank_column_index){
   return(rho[coef_groups])
 }
 
+#' To which group do the regression coefficients belong?
 #' @noRd
 get_coef_groups <- function(object){
   grouping_variable_index <- get_grouping_var_index(object)
@@ -266,6 +272,12 @@ get_coef_groups <- function(object){
   return(group_indices)
 }
 
+#' @param object lmranks object
+#' @param i a single integer. Index of term (regression coefficient) of interest
+#' 
+#' @return A single character with a regular expression (regex).
+#' This expression will be used later to capture the group name
+#' of the ith term.
 #'@noRd
 prepare_regex_capturing_grouping_var <- function(object, i){
   variable_table <- attr(stats::terms(object), "factors")
@@ -366,18 +378,28 @@ ineq_indicator_matmult <- function(v, mat, omega){
 #' @return Matrix M s.t.
 #' apply(M,2,cumsum) == I_v %*% mat
 #' Where I_v is the inequality indicator matrix for omega = 0
+#' 
+#' If the v vector had no duplicates, we could just return `mat`.
+#' Unfortunately it can. Implementation is optimized for the case
+#' when the duplicates are few.
+#' 
+#' The strategy is to identify rows of `mat` corresponding to equal 
+#' entries in `v` and to replace them. The last row will carry sums of 
+#' previous rows (column-wise) and the rest will have zeroes.
+#' That's for omega=0; for omega=1 the first row will have the sums.
 #' @noRd
 prepare_mat_om0 <- function(mat, v){
-  
-  d2 <- diff(c(0, findIntervalIncreasing(v, TRUE)))
+  equal_block_sizes <- diff(findIntervalIncreasing(v, TRUE))
+  # 1 if the value is unique, 0 if not the last equal, k>1 if last of k equal values
   orig_mat <- mat
-  mat[-1,] <- mat[-nrow(mat),]
-  mat[d2==0,] <- 0
-  if(all(d2[-1]==1)) return(mat)
-  om0_eq_sums <- sapply((1:nrow(mat))[d2>1], function(i){
-    return(colSums(orig_mat[(i-d2[i]):(i-1),,drop=FALSE]))
+  mat[-1,] <- mat[-nrow(mat),] # shift 1 row, because of 0s on diagonal of I_v
+  mat[1, ] <- 0 # first row of I_v is always 0
+  if(all(equal_block_sizes==1)) return(mat)
+  mat[which(equal_block_sizes==0)+1,] <- 0 
+  om0_eq_sums <- sapply(which(equal_block_sizes>1), function(i){
+    return(colSums(orig_mat[(i-equal_block_sizes[i]+1):i,,drop=FALSE]))
   })
-  mat[d2>1,] <- t(om0_eq_sums)
+  mat[which(equal_block_sizes>1)+1,] <- t(om0_eq_sums)
   return(mat)
 }
 
@@ -388,13 +410,13 @@ prepare_mat_om0 <- function(mat, v){
 #' Where I_v is the inequality indicator matrix for omega = 1
 #' @noRd
 prepare_mat_om1 <- function(mat, v){
-  d1 <- diff(c(0, findIntervalIncreasing(v, FALSE)))
-  if(all(d1==1)) return(mat)
-  om1_eq_sums <- sapply((1:nrow(mat))[d1>1], function(i){
-    return(colSums(mat[i:(i+d1[i]-1),,drop=FALSE]))
+  equal_block_sizes <- diff(c(0, findIntervalIncreasing(v, FALSE)))
+  if(all(equal_block_sizes==1)) return(mat)
+  om1_eq_sums <- sapply((1:nrow(mat))[equal_block_sizes>1], function(i){
+    return(colSums(mat[i:(i+equal_block_sizes[i]-1),,drop=FALSE]))
   })
-  mat[d1==0,] <- 0
-  mat[d1>1,] <- t(om1_eq_sums)
+  mat[equal_block_sizes==0,] <- 0
+  mat[equal_block_sizes>1,] <- t(om1_eq_sums)
   return(mat)
 }
 

@@ -5,7 +5,7 @@ compare_for_tests <- function(i,j,v,omega=1){
 
 test_that("summary does not raise errors", {
   mod <- lmranks(r(mpg) ~ r(cyl) + disp, data=mtcars)
-  expect_warning(summary(mod), "degrees of freedom")
+  expect_message(summary(mod), "degrees of freedom")
 })
 
 test_that("vcov passes shallow checks", {
