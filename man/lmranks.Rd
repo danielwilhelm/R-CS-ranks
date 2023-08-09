@@ -109,7 +109,7 @@ of \code{terms(formula)}, which correspond to ranked regressors.
 A number of methods defined for \code{lm} does not yield theoretically correct 
 results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
 Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
-for the rank models is not theoretically established.
+for the rank models is not theoretically established (at time of 1.2 release).
 }
 \description{
 Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
@@ -125,18 +125,20 @@ This function is useful in case when relationship not between variables themselv
 as a linear function of rank of X and other, non-ranked regressors. 
 
 This function is as consistent with \code{lm} function as possible. For instance, 
-\code{.} in formula means the same as in \code{lm}. Intercept is included by default.
+\code{.} in formula means 'all columns not otherwise in the formula' - same as in \code{lm}. 
+Intercept is included by default.
 In model specified as \code{r(Y)~r(X)+.}, both \code{r(X)} and \code{X} will be
 included in the model - as it would have been in \code{lm} and, say, 
 \code{log()} instead of \code{r()}. 
-One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}.
+One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}. See
+\code{\link{formula}} for more about model specification.
 
 The \code{r()} is a private alias for \code{\link{frank}} with \code{increasing} 
 argument fixed as TRUE. \code{omega} argument may be specified globally 
 (as a specification of definition of rank) in the call to \code{lmranks}. 
 By default \code{r}'s outcome is equivalent to \code{\link[stats]{ecdf}}'s.
 
-Currently, only models at most one rank regressor are available. The single 
+In version 1.2, only models with at most one rank regressor are available. The single 
 response might be either ranked or continuous.
 
 Many functions defined for \code{lm} also work correctly with \code{lmranks}.
@@ -147,8 +149,8 @@ On the other hand, some would return incorrect results if they treated
 \code{lmranks} output in the same way as \code{lm}'s. The central contribution of this package
 are \code{vcov}, \code{summary} and \code{confint} implementations using asymptotically consistent theory.
 Another example is \code{AIC},
-which needs the number of parameters of the model. This is not yet theoretically 
-developed for rank-rank regressions and thus NA is returned.
+which needs the number of parameters of the model. At the moment of 1.2 release this
+is not theoretically developed for rank-rank regressions and thus NA is returned.
 
 See the \code{\link{lm}} documentation for more.
 }
@@ -196,7 +198,7 @@ As a consequence of the order, in which \code{\link[stats]{model.frame}} applies
 \code{subset} and \code{na.action} would be applied after evaluation of \code{r()}. 
 That would drop some rank values from the final model frame and returned coefficients 
 and standard errors could no longer be correct.
-The user must handle the NA values and may filter the data on his own.
+The user must handle the NA values and may filter the data on his/her own.
 
 Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
 recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
@@ -243,4 +245,9 @@ lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
 }
 \seealso{
 \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
+
+Generic funcions \code{\link[stats]{coef}}, \code{\link[stats]{effects}}, 
+\code{\link[stats]{residuals}},
+\code{\link[stats]{fitted}}, \code{\link[stats]{model.frame}},
+\code{\link[stats]{model.matrix}}, \code{\link[stats]{update}} .
 }
