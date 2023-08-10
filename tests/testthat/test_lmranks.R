@@ -59,6 +59,13 @@ test_that("lmranks and lm provide coherent results", {
   expect_equal(raw_rank_m, expected_m)
 })
 
+test_that("lmranks falls back to lm in no rank case", {
+  expect_warning(m <- lmranks(mpg ~ disp + cyl, data=mtcars),
+                 "no ranked terms")
+  m2 <- stats::lm(mpg~disp + cyl, data=mtcars)
+  expect_equivalent(m, m2)
+})
+
 test_that("lmranks correctly estimates rank correlation", {
   set.seed(100)
   
@@ -102,41 +109,79 @@ test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
   expect_error(process_lmranks_formula(r(y) ~ r(x) * w))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(x):w + w))
+  expect_error(process_lmranks_formula(r(y) ~ r(x):w:z + w))
+  expect_error(process_lmranks_formula(r(y) ~ r(x):w + z))
   
   expect_silent(process_lmranks_formula(r(y) ~ r(x) + w))
+  expect_silent(process_lmranks_formula(r(y) ~ (r(x) + w):G))
+  expect_silent(process_lmranks_formula(r(y) ~ r(x):G))
+  expect_silent(process_lmranks_formula(r(y) ~ r(x):G + G))
+  expect_silent(process_lmranks_formula(r(y) ~ r(x):G - 1))
 })
 
 test_that("process_lmranks_formula returns correct indices", {
-  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w),
-               list(rank_terms_indices = 1,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x)),
-               list(rank_terms_indices = 3,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w + z + w:z + r(x)),
-               list(rank_terms_indices = 3,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x) - z),
-               list(rank_terms_indices = 2,
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(r(y) ~ w * z),
-               list(rank_terms_indices = integer(0),
-                    ranked_response = TRUE))
-  expect_equal(process_lmranks_formula(y ~ w * z + r(x)),
-               list(rank_terms_indices = 3,
-                    ranked_response = FALSE))
-  expect_equal(process_lmranks_formula(y ~ w * z),
-               list(rank_terms_indices = integer(0),
-                    ranked_response = FALSE))
+  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w)$rank_terms_indices,
+               1)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x))$rank_terms_indices,
+               3)
+  expect_equal(process_lmranks_formula(r(y) ~ w + z + w:z + r(x))$rank_terms_indices,
+               3)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z + r(x) - z)$rank_terms_indices,
+               2)
+  expect_equal(process_lmranks_formula(r(y) ~ w * z)$rank_terms_indices,
+               integer(0))
+  
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G - 1)$rank_terms_indices,
+               1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G)$rank_terms_indices,
+                2)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G + G)$rank_terms_indices,
+                2)
+})
+
+test_that("process_lmranks_formula returns correct ranked_response flag", {
+  expect_true(process_lmranks_formula(r(y) ~ r(x) + w)$ranked_response)
+  expect_false(process_lmranks_formula(y ~ r(x) + w)$ranked_response)
+})
+
+test_that("process_lmranks_formula returns corrected formula", {
+  expect_equal(process_lmranks_formula(r(y) ~ r(x) + w:G)$formula,
+               r(y) ~ r(x) + w:G)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G - 1)$formula,
+               r(y) ~ (r(x) + w):G - 1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G)$formula,
+               r(y) ~ r(x):G + w:G + G - 1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G + G - 1)$formula,
+               r(y) ~ (r(x) + w):G + G - 1)
+  expect_equal(process_lmranks_formula(r(y) ~ (r(x) + w):G + G)$formula,
+               r(y) ~ r(x):G + w:G + G - 1)
+})
+
+test_that("process_lmranks_formula env to formula", {
+  env <- new.env()
+  
+  actual <- process_lmranks_formula(r(y) ~ r(x) + w, env)$formula
+  expect_equal(environment(actual),
+               env)
+  
+  actual <- process_lmranks_formula(r(y) ~ r(x):G, env)$formula
+  expect_equal(environment(actual),
+               env)
+  
+  actual <- process_lmranks_formula(r(y) ~ r(x):G - 1, env)$formula
+  expect_equal(environment(actual),
+               env)
 })
 
 test_that("process_lmranks_formula returns correct index for simplest fits", {
   expect_equal(process_lmranks_formula(r(y) ~ r(x) - 1),
                list(rank_terms_indices = 1,
-                    ranked_response = TRUE))
+                    ranked_response = TRUE,
+                    formula = r(y) ~ r(x) - 1))
   expect_equal(process_lmranks_formula(r(y) ~ r(x)),
                list(rank_terms_indices = 1,
-                    ranked_response = TRUE))
+                    ranked_response = TRUE,
+                    formula = r(y) ~ r(x)))
 })
 
 test_that("prepare_lm_call works", {
@@ -174,10 +219,9 @@ test_that("create_env_to_interpret_r_mark has a correct parent env", {
   expected_parent_env <- new.env()
   caller_env <- new.env(parent = expected_parent_env)
   assign("wrapper", 
-         function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
-                                                               na.rm=na.rm)},
+         function(omega){create_env_to_interpret_r_mark(omega=omega)},
          envir = expected_parent_env)
-  created_env <- eval(quote(wrapper(0.4, FALSE)), envir = expected_parent_env)
+  created_env <- eval(quote(wrapper(0.4)), envir = expected_parent_env)
   expect_reference(parent.env(created_env), expected_parent_env)
 })
 
@@ -186,7 +230,7 @@ test_that("create_env_to_interpret_r_mark has correct contents", {
                                 .r_cache = list(),
                                 r = function(x, increasing=TRUE){})
   
-  created_env <- create_env_to_interpret_r_mark(omega=0.4,na.rm=FALSE)
+  created_env <- create_env_to_interpret_r_mark(omega=0.4)
   actual_env_contents <- as.list(created_env, all.names = TRUE)
   expect_equal(names(actual_env_contents), 
                names(expected_env_contents))
@@ -198,19 +242,18 @@ test_that("create_env_to_interpret_r_mark has correct contents", {
 test_that("create_env_to_interpret_r_mark's r function behaves correctly in fitting", {
   x_1 <- c(4,4,4,3,1,10,7,7)
   expected_r_output <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)
-  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
-                                                               na.rm=na.rm)}
-  created_env <- wrapper(0.4, FALSE)
+  wrapper <- function(omega){create_env_to_interpret_r_mark(omega=omega)}
+  created_env <- wrapper(0.4)
   actual_r_output <- eval(quote(r(x_1)), created_env)
   expect_equal(actual_r_output, expected_r_output)
   
   expected_r_output_om0 <- c(0.375, 0.375, 0.375, 0.250, 0.125, 1.000, 0.750, 0.750)
-  created_env <- wrapper(0, FALSE)
+  created_env <- wrapper(0)
   actual_r_output <- eval(quote(r(x_1)), created_env)
   expect_equal(actual_r_output, expected_r_output_om0)
   
   expected_r_output_om1 <- c(0.625, 0.625, 0.625, 0.25, 0.125, 1.0, 0.875, 0.875)
-  created_env <- wrapper(1, FALSE)
+  created_env <- wrapper(1)
   actual_r_output <- eval(quote(r(x_1)), created_env)
   expect_equal(actual_r_output, expected_r_output_om1)
 })
@@ -219,9 +262,8 @@ test_that("create_env_to_interpret_r_mark's r function behaves correctly in pred
   x_1 <- c(4,4,4,3,1,10,7,7)
   x_pred <- c(0,1,2,3,4,5,7,8,10,11)
   expected_r_output <- ecdf(x_1)(x_pred)
-  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
-                                                                   na.rm=na.rm)}
-  created_env <- wrapper(1.0, FALSE)
+  wrapper <- function(omega){create_env_to_interpret_r_mark(omega=omega)}
+  created_env <- wrapper(1.0)
   
   assign(".r_cache", list(x_pred = x_1), envir = created_env)
   assign(".r_predict", TRUE, envir = created_env)
@@ -230,14 +272,18 @@ test_that("create_env_to_interpret_r_mark's r function behaves correctly in pred
   expect_equal(actual_r_output, expected_r_output)
 })
 
-test_that("create_env_to_interpret_r_mark's r function handles NA", {
-  x_1 <- c(4,4,NA,4,3,NA,1,10,7,7)
-  expected_r_output <- expected_r_output <- c(0.475, 0.475, NA, 0.475, 0.250, 
-                                              NA, 0.125, 1.000, 0.800, 0.800)
-  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega,
-                                                                   na.rm=na.rm)}
-  created_env <- wrapper(0.4, TRUE)
-  actual_r_output <- eval(quote(r(x_1)), created_env)
+test_that("create_env_to_interpret_r_mark's r function handles NA in prediction", {
+  x_1 <- c(4,4,4,3,1,10,7,7)
+  x_pred <- c(0,1,NA,3,4,5,7,NA,10,11)
+  expected_r_output <- ecdf(x_1)(x_pred)
+  
+  wrapper <- function(omega, na.rm){create_env_to_interpret_r_mark(omega=omega)}
+  created_env <- wrapper(1.0)
+  
+  assign(".r_cache", list(x_pred = x_1), envir = created_env)
+  assign(".r_predict", TRUE, envir = created_env)
+  
+  actual_r_output <- eval(quote(r(x_pred)), created_env)
   expect_equal(actual_r_output, expected_r_output)
 })
 

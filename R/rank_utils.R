@@ -71,26 +71,18 @@ irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
 #'     and lower or equal (returned in n_lequal element) than this element.
 #' 
 #' @param v If NULL - set it as x. An often usecase.
-#' @param return_inverse_ranking Logical. If TRUE, add a third column to the matrix s.t.
-#' `sorted_v[third_column] == v`. In other words: inverse of sorting permutation of v.
-#' Used in `get_ineq_indicator`.
 #' @return A list with 2 (or 3 in case of return_inverse_ranking) elements.
 #' 
 #' @noRd
 count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
   if(is.null(v))
     v <- x
-  else if(return_inverse_ranking){
-    cli::cli_abort("Not implemented")
-  }
   assert_has_no_NAs(v, "v")
   ranking <- order(v)
   n_lower_or_equal <- findInterval(x, v[ranking], left.open = FALSE)
   n_lower <- findInterval(x, v[ranking], left.open = TRUE)
   out <- list(n_lequal=stats::setNames(n_lower_or_equal, NULL), 
        n_lesser=stats::setNames(n_lower, NULL))
-  if(return_inverse_ranking)
-    out$inverse_ranking <- order(ranking)
   return(out)
 }
 

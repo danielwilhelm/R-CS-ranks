@@ -5,7 +5,7 @@ compare_for_tests <- function(i,j,v,omega=1){
 
 test_that("summary does not raise errors", {
   mod <- lmranks(r(mpg) ~ r(cyl) + disp, data=mtcars)
-  expect_warning(summary(mod), "degrees of freedom")
+  expect_message(summary(mod), "degrees of freedom")
 })
 
 test_that("vcov passes shallow checks", {
@@ -118,7 +118,8 @@ test_that("get_and_separate_regressors works",{
   expected_RX <- mtcars$disp
   names(expected_RX) <- rownames(mtcars)
   expected_out_1 <- list(RX = expected_RX,
-                         rank_column_index = 2) # Intercept
+                         rank_column_index = 2, # Intercept
+                         global_RX = expected_RX)
   expect_equal(get_and_separate_regressors(model_1),
                expected_out_1)
   
@@ -129,6 +130,7 @@ test_that("get_and_separate_regressors works",{
   model_2$rank_terms_indices <- 2
   expected_out_2 <- expected_out_1
   names(expected_out_2$RX) <- 1:length(RX)
+  names(expected_out_2$global_RX) <- 1:length(RX)
   expected_out_2$rank_column_index <- 4
   expect_equal(get_and_separate_regressors(model_2),
                expected_out_2)
@@ -139,7 +141,8 @@ test_that("get_and_separate_regressors works for no ranked regressors",{
   model$rank_terms_indices <- numeric(0)
   
   expected_out <- list(RX = integer(0),
-                       rank_column_index = integer(0))
+                       rank_column_index = integer(0),
+                       global_RX = integer(0))
   
   expect_equal(get_and_separate_regressors(model),
                expected_out)

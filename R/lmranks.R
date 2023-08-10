@@ -1,6 +1,9 @@
 #' Rank-Rank Regression
 #' 
 #' Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
+#' Optionally, when the dataset is divided into groups, rank-rank regressions can be run
+#' separately within each group, but with ranks computed based on entire dataset 
+#' (for that, see the corresponding section below).
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
@@ -15,33 +18,69 @@
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
 #' @param omega real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.
-#' @param na.rm If \code{FALSE}, raises an error is any \code{NA} values in ranked regressors or response
-#' are encountered. If \code{TRUE}, ranks for non-\code{NA} entries are calculated by ignoring \code{NA} values.
-#' For \code{NA} values, \code{NA} ranks are returned and handled later by \code{na.action}.
 #'
 #' @details 
-#' This function is useful in case when relationship not between variables themselves, but their rank
+#' This function is useful in case when relationship not between variables themselves, but their ranks
 #' (or, put differently, their ECDF value) is of interest. The variables to be ranked
-#' (both dependent and independent) can be marked with \code{r()}. 
+#' (both regressors and response) can be marked with \code{r()}. A typical formula looks like
+#' \code{r(Y)~r(X)+W1+W2+...} and corresponds to modelling rank of Y
+#' as a linear function of rank of X and other, non-ranked regressors. 
 #' 
-#' The \code{r()} is a private alias for \code{\link{frank}} with fixed
-#' \code{increasing} argument. \code{omega} argument may be specified globally 
-#' (as a specification of rank definition) in the call to \code{lmranks}.
+#' This function is as consistent with \code{lm} function as possible. For instance, 
+#' \code{.} in formula means 'all columns not otherwise in the formula' - same as in \code{lm}. 
+#' Intercept is included by default.
+#' In model specified as \code{r(Y)~r(X)+.}, both \code{r(X)} and \code{X} will be
+#' included in the model - as it would have been in \code{lm} and, say, 
+#' \code{log()} instead of \code{r()}. 
+#' One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}. See
+#' \code{\link{formula}} for more about model specification.
 #' 
-#' As a consequence of the order, in which model.frame applies operations, \code{subset} 
-#' and \code{na.action} would be applied after evaluation of \code{r()}. 
-#' In such a case, returned coefficients and standard errors might no longer be correct.
-#' The user must handle the NA values and may filter the data on his own.
+#' The \code{r()} is a private alias for \code{\link{frank}} with \code{increasing} 
+#' argument fixed as TRUE. \code{omega} argument may be specified globally 
+#' (as a specification of definition of rank) in the call to \code{lmranks}. 
+#' By default \code{r}'s outcome is equivalent to \code{\link[stats]{ecdf}}'s.
 #' 
-#' Currently, only models at most one rank regressor are available. The single 
+#' In version 1.2, only models with at most one rank regressor are available. The single 
 #' response might be either ranked or continuous.
 #' 
 #' Many functions defined for \code{lm} also work correctly with \code{lmranks}.
-#' This includes \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
-#' \code{\link[stats]{model.matrix}}, \code{\link[stats]{resid}} and \code{\link[stats]{update}}. 
-#' On the other hand, some would not return correct results. 
+#' These include \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
+#' \code{\link[stats]{model.matrix}}, \code{\link[stats]{resid}}, 
+#' \code{\link[stats]{update}} and others. 
+#' On the other hand, some would return incorrect results if they treated
+#' \code{lmranks} output in the same way as \code{lm}'s. The central contribution of this package
+#' are \code{vcov}, \code{summary} and \code{confint} implementations using asymptotically consistent theory.
+#' Another example is \code{AIC},
+#' which needs the number of parameters of the model. At the moment of 1.2 release this
+#' is not theoretically developed for rank-rank regressions and thus NA is returned.
+#' 
+#' See the \code{\link{lm}} documentation for more.
+#'
+#' @section Rank regressions with groups/clusters:
+#' 
+#' Sometimes, the data is divided into groups (or \emph{clusters}) and the researcher is
+#' interested in running rank-rank regressions separately within each group, but with
+#' ranks computed based on entire dataset. 
+#' 
+#' This case is implemented and can be specified using formula interaction notation.
+#' Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{\link{factor}}),
+#' \code{r(Y)} is the ranked response, \code{r(X)} is the ranked regressor and
+#' \code{W} are the usual regressors. A formula for this model is \code{r(Y)~(r(X)+W):G}.
+#' 
+#' Since theory for regression with grouped and ungrouped regressors is not yet developed,
+#' specifying such a model will raise an error. Also, by default the intercept is 
+#' treated group-wise; \code{r(Y)~(r(X)+W):G} will actually become \code{r(Y)~(r(X)+W):G+G-1}.
+#' 
+#' \code{\link[stats]{contrasts}} of \code{G} must be of \code{contr.treatment} kind, 
+#' which is the default.
 #' 
 #' @section Warning:
+#' As a consequence of the order, in which \code{\link[stats]{model.frame}} applies operations, 
+#' \code{subset} and \code{na.action} would be applied after evaluation of \code{r()}. 
+#' That would drop some rank values from the final model frame and returned coefficients 
+#' and standard errors could no longer be correct.
+#' The user must handle the NA values and may filter the data on his/her own.
+#' 
 #' Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
 #' recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
 #' The ranks will be calculated correctly, but their transformation will be treated later in \code{lm} as a regular
@@ -53,21 +92,26 @@
 #' 
 #' @return 
 #' An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
-#' See the \code{\link{lm}} documentation for more.
 #' 
 #' Additionally, it has an \code{omega} entry, corresponding to \code{omega} argument,
-#' and a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
+#' a \code{ranked_response} logical entry, and 
+#' a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
 #' of \code{terms(formula)}, which correspond to ranked regressors.
 #' 
 #' A number of methods defined for \code{lm} does not yield theoretically correct 
 #' results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
 #' Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
-#' for the rank models is not theoretically established.
+#' for the rank models is not theoretically established (at time of 1.2 release).
 #' 
 #' @seealso 
 #' \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
 #' 
-#' \code{\link{summary.lmranks}}
+#' Generic funcions \code{\link[stats]{coef}}, \code{\link[stats]{effects}}, 
+#' \code{\link[stats]{residuals}},
+#' \code{\link[stats]{fitted}}, \code{\link[stats]{model.frame}},
+#' \code{\link[stats]{model.matrix}}, \code{\link[stats]{update}} .
+#' 
+#' 
 #' @examples 
 #' Y <- c(3,1,2,4,5)
 #' y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
@@ -76,14 +120,30 @@
 #' x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
 #' W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
 #'
-#' lmranks(r(Y) ~ r(X) + W)
+#' lmr <- lmranks(r(Y) ~ r(X) + W)
+#' lmr
 #' # naive version with same regression coefficients, but incorrect 
 #' # standard errors and statistics:
-#' lm(y_frank ~ x_frank + W)
+#' lmm <- lm(y_frank ~ x_frank + W)
 #' 
+#' # Compare:
+#' summary(lmr)
+#' summary(lmm)
+#' 
+#' # Support of `data` argument:
 #' data(mtcars)
 #' lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
+#' # Same as above, but use the `hp` variable only through its rank
+#' lmranks(r(mpg) ~ r(hp) + . - hp, data = mtcars)
 #' 
+#' # Grouped case:
+#' G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
+#' lmr <- lmranks(r(mpg) ~ r(hp):G, data = mtcars)
+#' lmr
+#' model.matrix(lmr)
+#' # Include all columns of mtcars as usual covariates:
+#' lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
+#'
 #' @export
 #' @importFrom stats coef lm resid predict var
 #' 
@@ -92,35 +152,42 @@ lmranks <- function(formula, data, subset,
                     na.action = stats::na.fail, 
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
-                    omega=1, na.rm=FALSE, ...){
-  l <- process_lmranks_formula(formula)
-  rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
-  original_call <- match.call() # for the final output
-  if(length(rank_terms_indices) == 0 && !ranked_response){
-    cli::cli_warn("{.var lmranks} called with no ranked terms. Using regular lm...")
-    lm_call <- prepare_lm_call(original_call, check_weights = FALSE)
-    out <- eval(lm_call, parent.frame())
-    return(out)
-  }
-  lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
+                    omega=1, ...){
   # From this environment lm will take the definition of r()
-  rank_env <- create_env_to_interpret_r_mark(omega, na.rm)
+  rank_env <- create_env_to_interpret_r_mark(omega)
   # It will mask "r" objects from higher frames inside lm, but not modify them
   # It is also inheriting from parent.frame, so evaluations of all other expressions
   # will be taken from there
   
+  l <- process_lmranks_formula(formula, rank_env)
+  rank_terms_indices <- l$rank_terms_indices; ranked_response <- l$ranked_response
+  corrected_formula <- l$formula
+  original_call <- match.call() # for the final output
+  if(length(rank_terms_indices) == 0 && !ranked_response){
+    cli::cli_warn("{.var lmranks} called with no ranked terms. Using regular lm...")
+    lm_call <- prepare_lm_call(original_call, check_lm_args = FALSE)
+    out <- eval(lm_call, parent.frame())
+    return(out)
+  }
+  lm_call <- prepare_lm_call(original_call)# to be sent to lm(); it will handle missing arguments etc
+  lm_call$formula <- substitute(corrected_formula)
+  
   # Call (evaluate) lm
   main_model <- eval(lm_call, rank_env)
+  if(method == "model.frame"){
+    return(main_model)
+  }
   
   # Correct the output
+  main_model$rank_terms_indices <- rank_terms_indices
+  check_grouping_variable(main_model)
+  
   main_model$call <- original_call
   main_model$df.residual <- NA
-  main_model$rank_terms_indices <- rank_terms_indices
   main_model$omega <- omega
   main_model$ranked_response <- ranked_response
   class(main_model) <- c("lmranks", class(main_model))
   
-  # Phew.
   return(main_model)
 }
 
@@ -130,11 +197,12 @@ lmranks <- function(formula, data, subset,
 #' The outcome can be either ranked or usual, continuous.
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
-#' @return Alist with two entries:
+#' @return Alist with three entries:
 #' - `rank_terms_indices`, integer vector with indices of entries of \code{terms.labels} attribute
 #' of \code{terms(formula)}, which correspond to ranked regressors.
 #' This vector might be empty, which indicates no ranked regressors.
 #' - `ranked_response`, logical.
+#' - `formula`, corrected formula.
 #' 
 #' @note 
 #' * It allows to pass r(W), where W is a matrix. This is caught later in frank.
@@ -144,53 +212,89 @@ lmranks <- function(formula, data, subset,
 #' * It will not detect func(r(expr)). 
 #' 
 #' @noRd
-process_lmranks_formula <- function(formula){
+process_lmranks_formula <- function(formula, rank_env=NULL){
   if(!inherits(formula, "formula")){
     cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
                    "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."))
   }
+  if(is.null(rank_env))
+    rank_env <- environment(formula)
   formula_terms <- stats::terms(formula, specials="r",
                          keep.order = TRUE,
                          allowDotAsName = TRUE)
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
   response_variable_index <- attr(formula_terms, "response")
-  regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
-  if(length(regressor_variable_index) > 1){
+  ranked_regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
+  if(length(ranked_regressor_variable_index) > 1){
     cli::cli_abort(c("In formula there may be at most one ranked regressor.",
                    "x" = "There are multiple ranked regressors."))
   }
-  ranked_response <- response_variable_index %in% rank_variables_indices
-  if(length(regressor_variable_index) == 0){
+  is_response_ranked <- response_variable_index %in% rank_variables_indices
+  if(length(ranked_regressor_variable_index) == 0){
+    environment(formula) <- rank_env
     return(list(rank_terms_indices = integer(0), 
-                ranked_response = ranked_response))
-  } else {
-    variable_table <- attr(formula_terms, "factors")
-    rank_regressor_occurances <- variable_table[regressor_variable_index,]
-    occured_exactly_once <- sum(rank_regressor_occurances == 1) == 1 && sum(rank_regressor_occurances == 0) == (length(rank_regressor_occurances) - 1)
-    if(!occured_exactly_once){
-      cli::cli_abort("In formula, the ranked regressor may occur only once. No interactions are supported.")
-    }
-    rank_terms_names <- colnames(variable_table)[rank_regressor_occurances == 1]
-    rearranged_formula_terms <- stats::terms(formula, allowDotAsName = TRUE, 
-                                      keep.order = FALSE) # default used later inside lm
-    rank_terms_indices <- which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
-    return(list(rank_terms_indices = rank_terms_indices, 
-                ranked_response = ranked_response))
+                ranked_response = is_response_ranked,
+                formula=formula))
+  } 
+  variables_terms_table <- attr(formula_terms, "factors")
+  rank_regressor_present_in_term <- variables_terms_table[ranked_regressor_variable_index,] != 0
+  rank_regressor_present_in_only_1_term <- sum(rank_regressor_present_in_term) == 1
+  if(!rank_regressor_present_in_only_1_term){
+    cli::cli_abort(c("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
+                     "x" = "There are multiple terms involving the ranked regressor."))
   }
+  is_variable_present_in_ranked_term <- variables_terms_table[,rank_regressor_present_in_term] != 0
+  is_ranked_regressor_alone_in_term <- sum(is_variable_present_in_ranked_term) == 1
+  if(!is_ranked_regressor_alone_in_term){
+    one_interacting_var_present <- sum(is_variable_present_in_ranked_term) == 2
+    if(!one_interacting_var_present){
+      cli::cli_abort(c("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
+                       "x" =  "The ranked regressor interacts with multiple variables in a single term."))
+    }
+    interacting_var <- is_variable_present_in_ranked_term 
+    interacting_var[ranked_regressor_variable_index] <- FALSE
+    interacring_var_present_in_every_term <- all(variables_terms_table[interacting_var,] != 0)
+    if(!interacring_var_present_in_every_term){
+      cli::cli_abort("In formula, the ranked regressor may occur only once, as a standalone term or interacting with a global, grouping variable.",
+                     "x" = "The grouping variable does not interact with every other term in the formula.")
+    }
+
+    # We need to replace intercept with the grouping factor
+    if(attr(formula_terms, "intercept")){
+      new_terms <- attr(formula_terms, "term.labels")
+      if(!rownames(variables_terms_table)[interacting_var] %in% attr(formula_terms, "term.labels"))
+        new_terms <- c(new_terms, rownames(variables_terms_table)[interacting_var])
+      formula <- stats::reformulate(new_terms, 
+                            response = formula_terms[[2]], intercept = FALSE,
+                            env = rank_env)
+    }
+  }
+  environment(formula) <- rank_env
+  rank_terms_names <- colnames(variables_terms_table)[rank_regressor_present_in_term]
+  rearranged_formula_terms <- stats::terms(formula, allowDotAsName = TRUE, 
+                                           keep.order = FALSE) # default used later inside lm
+  rank_terms_indices <- which(attr(rearranged_formula_terms, "term.labels") %in% rank_terms_names)
+  return(list(rank_terms_indices = rank_terms_indices, 
+              ranked_response = is_response_ranked,
+              formula=formula)) 
 }
 
-prepare_lm_call <- function(lm_call, check_weights = TRUE){
+prepare_lm_call <- function(lm_call, check_lm_args = TRUE){
   lm_call[[1]] <- quote(stats::lm)
   lm_call$omega <- NULL              # remove local parameters
   lm_call$na.rm <- NULL
-  if(check_weights && !is.null(lm_call$weights))
+  if(!check_lm_args){
+    return(lm_call)
+  }
+  
+  if(!is.null(lm_call$weights))
     cli::cli_abort("{.var weights} argument is not yet supported. ")
   if(!is.null(lm_call$na.action))
     cli::cli_abort("{.var na.action} argument is not yet supported. ")
   if(!is.null(lm_call$subset))
     cli::cli_abort("{.var subset} argument is not yet supported. ")
   lm_call$na.action <- str2lang("stats::na.fail")
-  lm_call
+  return(lm_call)
 }
 
 #' Create environment to interpret lmranks formula
@@ -231,7 +335,7 @@ prepare_lm_call <- function(lm_call, check_weights = TRUE){
 #' [environment()]
 #' [csranks::frank_against()], [csranks:::compare]
 #' @noRd
-create_env_to_interpret_r_mark <- function(omega, na.rm){
+create_env_to_interpret_r_mark <- function(omega){
   rank_env <- new.env(parent = parent.frame(2))
   r <- function(x) x
   body(r) <- bquote({
@@ -246,8 +350,7 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
     else if(is.null(cache[[var_name]]))
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     v <- cache[[var_name]]
-    out <- rep(NA, length(was_na))
-    out[!was_na] <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=.(na.rm))
+    out <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=FALSE)
     out
   })
   environment(r) <- rank_env
@@ -255,6 +358,22 @@ create_env_to_interpret_r_mark <- function(omega, na.rm){
   assign(".r_cache", list(), envir = rank_env)
   assign(".r_predict", FALSE, envir = rank_env)
   return(rank_env)
+}
+
+#' Return grouping variable index
+#' @return integer i s.t. model.frame(object)[,i] gives the grouping variable.
+#' @noRd
+
+get_grouping_var_index <- function(object){
+  rank_terms_indices <- object$rank_terms_indices
+  formula_terms <- stats::terms(stats::formula(object), specials = "r")
+  rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
+  response_variable_index <- attr(formula_terms, "response")
+  regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
+  variable_table <- attr(formula_terms, "factors")
+  grouping_variable_index <- setdiff(which(variable_table[,rank_terms_indices] != 0),
+                                     regressor_variable_index)
+  return(grouping_variable_index)
 }
 
 # Inherited `lm` methods:
