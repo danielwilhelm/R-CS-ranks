@@ -267,7 +267,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
   res <- lmranks(r(Y) ~ r(X) + W - 1)
   sigma2hat.lmranks <- vcov(res)[1,1]*n
-  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+  expect_equal(sigma2hat, sigma2hat.lmranks)
 })
 
 ######################################################
@@ -307,7 +307,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   load(test_path("testdata", "lmranks_cov_sigmahat_covariates_FALSE.rda"))
   res <- lmranks(r(Y) ~ r(X))
   sigma2hat.lmranks <- vcov(res)[2,2]*n
-  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+  expect_equal(sigma2hat, sigma2hat.lmranks)
 })
 
 test_that("h1 works for ranked regressor with covariates", {
@@ -343,7 +343,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   load(test_path("testdata", "lmranks_cov_sigmahat_covariates_TRUE.rda"))
   res <- lmranks(r(Y) ~ r(X)+W)
   sigma2hat.lmranks <- vcov(res)[2,2]*n
-  expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-5)
+  expect_equal(sigma2hat, sigma2hat.lmranks)
 })
 
 test_that("vcov produces asymptotic variance estimate of rank-rank slope equal to that of Hoeffding (1948)", {
