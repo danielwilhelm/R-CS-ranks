@@ -285,7 +285,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   res <- lmranks(r(Y) ~ r(X):G, omega=1)
   cov_mat <- vcov(res)
   sigma2hat.grouped_lmranks <- c(cov_mat[3,3]*n, cov_mat[4,4]*n)
-  expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
 })
 
 test_that("h1 works for ranked regressor with covariates and grouping", {
@@ -337,11 +337,28 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   res <- lmranks(r(Y) ~ (r(X)+W):G-1, omega=1)
   cov_mat <- vcov(res)
   sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
-  expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
   
   W_no_intercept <- W[,-1]
   res <- lmranks(r(Y) ~ (r(X)+W_no_intercept):G, omega=1)
   cov_mat <- vcov(res)
   sigma2hat.grouped_lmranks <- c(cov_mat[3,3]*n, cov_mat[4,4]*n)
-  expect_equal(sigma2hat, sigma2hat.grouped_lmranks, tolerance=1e-5)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
+})
+
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with different omega values", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_omega_0.rda"))
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ (r(X)+W):G-1, omega=0)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
+  
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_omega_0.4.rda"))
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ (r(X)+W):G-1, omega=0.4)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
 })
