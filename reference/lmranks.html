@@ -332,7 +332,7 @@ internally to interpret <code>r</code> mark correctly. Do not use them in <code>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)         r(X)            W  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    -0.01713      0.70687      0.03825  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      23.942        1.952       -4.941  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># naive version with same regression coefficients, but incorrect </span></span></span>
 <span class="r-in"><span><span class="co"># standard errors and statistics:</span></span></span>
@@ -348,14 +348,14 @@ internally to interpret <code>r</code> mark correctly. Do not use them in <code>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lmranks(formula = r(Y) ~ r(X) + W)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1       2       3       4       5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.2802 -0.2591 -0.2004  0.0574  0.1219 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1        2        3        4        5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.07040 -0.12607 -0.04154  0.17972 -0.08250 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.01713    8.94428  -0.002    0.998</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.70687    0.60035   1.177    0.239</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> W            0.03825    1.71722   0.022    0.982</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)   23.942     23.348   1.025    0.305</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)           1.952      1.288   1.516    0.129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> W             -4.941      4.876  -1.013    0.311</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: NA on 2 degrees of freedom</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -365,18 +365,20 @@ internally to interpret <code>r</code> mark correctly. Do not use them in <code>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lm(formula = y_frank ~ x_frank + W)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1       2       3       4       5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.2802  0.2591  0.2004 -0.0574 -0.1219 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1        2        3        4        5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.07040  0.12607  0.04154 -0.17972  0.08250 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.36888   17.79178   0.021    0.985</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> x_frank      0.70687    0.82074   0.861    0.480</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> W           -0.03825    3.60249  -0.011    0.992</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -25.0841    11.7621  -2.133   0.1666  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x_frank       1.9521     0.6456   3.024   0.0942 .</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> W             4.9410     2.3001   2.148   0.1648  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.3194 on 2 degrees of freedom</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:   0.49,	Adjusted R-squared:  -0.01994 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 0.9609 on 2 and 2 DF,  p-value: 0.51</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.1756 on 2 degrees of freedom</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.8458,	Adjusted R-squared:  0.6916 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 5.485 on 2 and 2 DF,  p-value: 0.1542</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Support of `data` argument:</span></span></span>
