@@ -352,3 +352,20 @@ test_that("vcov produces asymptotic variance estimate of rank-rank slope equal t
   sigma2hat.lmranks <- vcov(res)[2,2]*n
   expect_equal(sigma2hat, sigma2hat.lmranks, tolerance=1e-3)
 })
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with smaller datasets", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_n_10.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks)
+  
+  load(test_path("testdata", "lmranks_cov_sigmahat_n_50.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks)
+  
+  load(test_path("testdata", "lmranks_cov_sigmahat_n_100.rda"))
+  res <- lmranks(r(Y) ~ r(X)+W)
+  sigma2hat.lmranks <- vcov(res)[2,2]*n
+  expect_equal(sigma2hat, sigma2hat.lmranks)
+})
