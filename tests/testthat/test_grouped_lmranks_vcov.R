@@ -362,3 +362,26 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
   expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
 })
+
+test_that("vcov produces correct asymptotic variance estimate of rank-rank slope with smaller datasets", {
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_n_10.rda"))
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ (r(X)+W):G-1, omega=0.4)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
+  
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_n_50.rda"))
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ (r(X)+W):G-1, omega=0.4)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
+  
+  load(test_path("testdata", "grouped_lmranks_cov_sigmahat_n_100.rda"))
+  G <- factor(G)
+  res <- lmranks(r(Y) ~ (r(X)+W):G-1, omega=0.4)
+  cov_mat <- vcov(res)
+  sigma2hat.grouped_lmranks <- c(cov_mat[1,1]*n, cov_mat[2,2]*n)
+  expect_equal(sigma2hat, sigma2hat.grouped_lmranks)
+})
