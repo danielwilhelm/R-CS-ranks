@@ -1,9 +1,7 @@
 #' Rank-Rank Regression
 #' 
-#' Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
-#' Optionally, when the dataset is divided into groups, rank-rank regressions can be run
-#' separately within each group, but with ranks computed based on entire dataset 
-#' (for that, see the corresponding section below).
+#' Estimation and inference for regressions involving ranks, i.e. regressions in which the dependent and/or the independent
+#' variable has been transformed into ranks before running the regression.
 #' 
 #' @param formula An object of class "\code{\link{formula}}": a symbolic description
 #' of the model to be fitted. Exactly like the formula for linear model except that
@@ -17,7 +15,7 @@
 #' \item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
-#' @param omega real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.
+#' @param omega real number in the interval [0,1] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.
 #'
 #' @details 
 #' This function is useful in case when relationship not between variables themselves, but their ranks
