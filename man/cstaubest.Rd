@@ -28,10 +28,9 @@ cstauworst(
 )
 }
 \arguments{
-\item{x}{vector of estimates.}
+\item{x}{vector of estimates containing estimated features by which the \code{length} populations are to be ranked.}
 
-\item{Sigma}{covariance matrix of \code{x}. Note, that it must be covariance matrix
-of feature \bold{means}, not features themselves.}
+\item{Sigma}{estimated covariance matrix of \code{x}.}
 
 \item{tau}{the confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau}.}
 

@@ -26,7 +26,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 
 \item{multcorr}{multiplicity correction to be used: \code{Holm} (default) or \code{Bonferroni}. See Details section for more.}
 
-\item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation for all ranks.}
+\item{indices}{vector of indices of \code{x} for whose ranks the confidence sets are computed. \code{indices=NA} (default) means computation of confidence sets for all populations.}
 
 \item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x} and \code{Sigma} (if any).}
 }
@@ -34,7 +34,7 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 A \code{csranks} object, which is a list with three items:
 \describe{
  \item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
- \item{\code{rank}}{Raw rank estimates using \code{\link{irank}} with default parameters}
+ \item{\code{rank}}{Estimated ranks from \code{\link{irank}} with default parameters}
  \item{\code{U}}{Upper bounds of the confidence sets.}
 }
 }

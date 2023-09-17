@@ -76,7 +76,7 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
     included in the formula instead or as well, and if more than one are
     specified their sum is used.  See \code{\link[stats]{model.offset}}.}
 
-\item{omega}{real number in the interval [0,1] defining how ties are handled. The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that ranks are defined as the empirical cdf evaluated at the variable. See Details below.}
+\item{omega}{real number in the interval [0,1] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.}
 
 \item{...}{For \code{lm()}: additional arguments to be passed to the low level
     regression fitting functions (see below).}
@@ -99,47 +99,45 @@ some coefficients are undefined and \code{coef(.)} contains NAs correspondingly.
 When \code{complete = TRUE}, \code{vcov()} is compatible with \code{coef()} also in this singular case.}
 }
 \value{
-An object of class \code{lmranks}, inheriting (as well as possible) from class \code{lm}.
+An object of class \code{lmranks}, inheriting (as much as possible) from class \code{lm}.
 
-Additionally, it has an \code{omega} entry, corresponding to \code{omega} argument,
+Additionally, it has an \code{omega} entry, corresponding to the \code{omega} argument,
 a \code{ranked_response} logical entry, and 
 a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
 of \code{terms(formula)}, which correspond to ranked regressors.
-
-A number of methods defined for \code{lm} does not yield theoretically correct 
-results when applied to \code{lmranks} objects; errors or warnings are raised consciously.
-Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
-for the rank models is not theoretically established (at time of 1.2 release).
 }
 \description{
-Estimate a rank-rank regression in which the outcome and/or regressor are ranked.
-Optionally, when the dataset is divided into groups, rank-rank regressions can be run
-separately within each group, but with ranks computed based on entire dataset 
-(for that, see the corresponding section below).
+Estimation and inference for regressions involving ranks, i.e. regressions in which the dependent and/or the independent
+variable has been transformed into ranks before running the regression.
 }
 \details{
-This function is useful in case when relationship not between variables themselves, but their ranks
-(or, put differently, their ECDF value) is of interest. The variables to be ranked
-(both regressors and response) can be marked with \code{r()}. A typical formula looks like
-\code{r(Y)~r(X)+W1+W2+...} and corresponds to modelling rank of Y
-as a linear function of rank of X and other, non-ranked regressors. 
+This function performs estimation and inference for regressions involving ranks. Suppose there is a dependent variable \eqn{Y_i} and independent
+variables \eqn{X_i} and \eqn{W_i}. Instead of running a linear regression of \eqn{Y_i} on \eqn{X_i} and \eqn{W_i}, we want to first transform
+\eqn{Y_i} and/or \eqn{X_i} into ranks. Denote by \eqn{R_i^Y} the rank of \eqn{Y_i} and \eqn{R_i^X} the rank of \eqn{X_i}. Then, a 
+rank-rank regression, \deqn{R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i}, is run by \code{r(Y)~r(X)+W}. Similarly, a regression of
+the raw dependent variable on the ranked regressor, \deqn{Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i}, is run by \code{Y~r(X)+W} and a 
+regression of the ranked dependent variable on the raw regressors, \deqn{R^Y_i = W_i'\beta + \varepsilon_i}, is run by \code{r(Y)~W}.
 
-This function is as consistent with \code{lm} function as possible. For instance, 
-\code{.} in formula means 'all columns not otherwise in the formula' - same as in \code{lm}. 
-Intercept is included by default.
-In model specified as \code{r(Y)~r(X)+.}, both \code{r(X)} and \code{X} will be
+The function works, in many ways, just like \code{lm} for linear regressions. Apart from some smaller details, there are two important differences, however: 
+first, in \code{lmranks}, \code{r()} can be used in formulas to indicate variables to be ranked before running the regression and, second, 
+subsequent use of \code{summary} produces a summary table with the correct standard errors (while those of the \code{lm} are not correct for
+regressions involving ranks).
+
+
+Many other aspects of the function are similar to \code{lm}. For instance, 
+\code{.} in a formula means 'all columns not otherwise in the formula' just as in \code{lm}. An
+intercept is included by default.
+In a model specified as \code{r(Y)~r(X)+.}, both \code{r(X)} and \code{X} will be
 included in the model - as it would have been in \code{lm} and, say, 
 \code{log()} instead of \code{r()}. 
 One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}. See
 \code{\link{formula}} for more about model specification.
 
-The \code{r()} is a private alias for \code{\link{frank}} with \code{increasing} 
-argument fixed as TRUE. \code{omega} argument may be specified globally 
-(as a specification of definition of rank) in the call to \code{lmranks}. 
-By default \code{r}'s outcome is equivalent to \code{\link[stats]{ecdf}}'s.
+The \code{r()} is a private alias for \code{\link{frank}} with the \code{increasing} 
+argument fixed as TRUE. The \code{omega} argument of \code{\link{frank}} specifies how ties in variables are to be handled and
+can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. By default \code{omega} is set equal to \code{1},
+which means \code{r()} computes ranks by transforming a variable through its empirical cdf.
 
-In version 1.2, only models with at most one rank regressor are available. The single 
-response might be either ranked or continuous.
 
 Many functions defined for \code{lm} also work correctly with \code{lmranks}.
 These include \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
@@ -147,10 +145,7 @@ These include \code{\link[stats]{coef}}, \code{\link[stats]{model.frame}},
 \code{\link[stats]{update}} and others. 
 On the other hand, some would return incorrect results if they treated
 \code{lmranks} output in the same way as \code{lm}'s. The central contribution of this package
-are \code{vcov}, \code{summary} and \code{confint} implementations using asymptotically consistent theory.
-Another example is \code{AIC},
-which needs the number of parameters of the model. At the moment of 1.2 release this
-is not theoretically developed for rank-rank regressions and thus NA is returned.
+are \code{vcov}, \code{summary} and \code{confint} implementations using the correct asymptotic theory for regressions involving ranks.
 
 See the \code{\link{lm}} documentation for more.
 }
@@ -176,17 +171,19 @@ and asymptotically consistent, in contrast to naively running \code{vcov(lm(...)
 
 
 Sometimes, the data is divided into groups (or \emph{clusters}) and the researcher is
-interested in running rank-rank regressions separately within each group, but with
-ranks computed based on entire dataset. 
+interested in running rank-rank regressions separately within each group, where the ranks are not computed
+within each cluster, but using all observations pooled across all clusters. Specifically, let \eqn{G_i=1,\ldots,n_G} denote 
+a variable that indicates the cluster to which the i-th observation belongs. Then, the regression model of interest is
+\deqn{R_i^Y = \sum_{g=1}^{n_G} 1\{G_i=g\}(\rho_g R_i^X + W_i'\beta_g) + \varepsilon_i},
+where \eqn{\rho_g} and \eqn{\beta_g} are now cluster-specific coefficients, but the ranks \eqn{R_i^Y} and \eqn{R_i^X} are computed as 
+ranks among all observations \eqn{Y_i} and \eqn{X_i}. That means the rank of an observation is not computed among the other observations
+in the same cluster, but rather among all available observations across all clusters.
 
-This case is implemented and can be specified using formula interaction notation.
-Suppose, that G is the name of the grouping variable (it \strong{must} be a \code{\link{factor}}),
-\code{r(Y)} is the ranked response, \code{r(X)} is the ranked regressor and
-\code{W} are the usual regressors. A formula for this model is \code{r(Y)~(r(X)+W):G}.
+This type of regression is implemented in the \code{lmranks} command using interaction notation: \code{r(Y)~(r(X)+W):G}. Here, the variable
+G \strong{must} be a \code{\link{factor}}.
 
-Since theory for regression with grouped and ungrouped regressors is not yet developed,
-specifying such a model will raise an error. Also, by default the intercept is 
-treated group-wise; \code{r(Y)~(r(X)+W):G} will actually become \code{r(Y)~(r(X)+W):G+G-1}.
+Since the theory for clustered regression mixing grouped and ungrouped (in)dependent variables is not yet developed, such a model will raise an error. 
+Also, by default the command includes a cluster-specific intercept, i.e. \code{r(Y)~(r(X)+W):G} is internally interpreted as \code{r(Y)~(r(X)+W):G+G-1}.
 
 \code{\link[stats]{contrasts}} of \code{G} must be of \code{contr.treatment} kind, 
 which is the default.
@@ -198,7 +195,7 @@ As a consequence of the order, in which \code{\link[stats]{model.frame}} applies
 \code{subset} and \code{na.action} would be applied after evaluation of \code{r()}. 
 That would drop some rank values from the final model frame and returned coefficients 
 and standard errors could no longer be correct.
-The user must handle the NA values and may filter the data on his/her own.
+The user must handle NA values and filter the data on their own prior to usage in \code{lmranks}.
 
 Wrapping \code{r()} with other functions (like \code{log(r(x))}) will not 
 recognize correctly the mark (because it will not be caught in \code{terms(formula, specials = "r")}).
@@ -208,25 +205,27 @@ but the standard errors, statistics etc. will not.
 
 \code{r}, \code{.r_predict} and \code{.r_cache} are special expressions, used
 internally to interpret \code{r} mark correctly. Do not use them in \code{formula}.
+
+A number of methods defined for \code{lm} do not yield theoretically correct 
+results when applied to \code{lmranks} objects; errors or warnings are raised in those instances.
+Also, the \code{df.residual} component is set to NA, since the notion of effects of freedom
+for the rank models is not theoretically established (at time of 1.2 release).
 }
 
 \examples{
-Y <- c(3,1,2,4,5)
-y_frank <- c(0.6, 1.0, 0.8, 0.4, 0.2)
-X <- 1:5
-omega <- 0.5
-x_frank <- c(1.0, 0.8, 0.6, 0.4, 0.2)
-W <- matrix(y_frank * 0.1 + 5 + rnorm(5, sd = 0.1), ncol = 1)
+# rank-rank regression:
+X <- rnorm(500)
+Y <- X + rnorm(500)
+rrfit <- lmranks(r(Y) ~ r(X))
+summary(rrfit)
 
-lmr <- lmranks(r(Y) ~ r(X) + W)
-lmr
-# naive version with same regression coefficients, but incorrect 
-# standard errors and statistics:
-lmm <- lm(y_frank ~ x_frank + W)
-
-# Compare:
-summary(lmr)
-summary(lmm)
+# naive version of the rank-rank regression:
+RY <- frank(Y)
+RX <- frank(X)
+fit <- lm(RY ~ RX)
+summary(fit)
+# the coefficient estimates are the same as in the lmranks command, but
+# the standard errors, t-values, p-values are incorrect
 
 # Support of `data` argument:
 data(mtcars)
