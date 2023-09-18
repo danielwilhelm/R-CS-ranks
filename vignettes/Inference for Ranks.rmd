@@ -1,8 +1,8 @@
 ---
-title: "Introduction"
+title: "Inference for Ranks"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction}
+  %\VignetteIndexEntry{Inference for Ranks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-<!-- ## Introductory example
+# Introduction
 
-Suppose, that you would like to learn about quality of education across different countries. You could come up with a test, conduct it in different countries, and calculate mean results (say, percentages of correct answers). However, you are not interested in the mean results themselves, but in **ranking** countries according to the quality of offered education. You want to answer questions like:
+<!-- Suppose, that you would like to learn about quality of education across different countries. You could come up with a test, conduct it in different countries, and calculate mean results (say, percentages of correct answers). However, you are not interested in the mean results themselves, but in **ranking** countries according to the quality of offered education. You want to answer questions like:
 
 - *Which country has the best education?*
 - *How many countries have a better education system than mine?*
@@ -26,7 +26,119 @@ Observe, that none of those questions is about the absolute values of test resul
 
 Now, because the tests were not distributed to every single pupil in every country, but to randomly selected sample of pupils, the obtained mean result is not the mean result of the whole country. There is **uncertainty** connected with those results (usually in a form of standard deviation). Now, this uncertainty may influence the positions of countries in the ranking. For example, if the first place is tightly contested, the actual best country might not be the country with highest mean obtained result, but the one with the second, third, fourth...
 
-Naturally, this is a problem, that occurs not only when ranking countries' education systems according to test results, but when ranking any *populations* (could be counties in the USA, universities in Germany or political parties in Australia) according to any *feature* of interest (like social mobility, staff-to-student ratio, or public support).
+Naturally, this is a problem, that occurs not only when ranking countries' education systems according to test results, but when ranking any *populations* (could be counties in the USA, universities in Germany or political parties in Australia) according to any *feature* of interest (like social mobility, staff-to-student ratio, or public support). -->
+
+
+# Confidence Sets for Ranks
+
+
+# Example: PISA Ranking
+
+This example illustrates the computation of confidence sets for the ranking of countries according students' achievements in mathematics. The following dataset contains data from the 2018 Program for International Student Assessment (PISA) study by the Organization for Economic Cooperation and Development (OECD), which can be downloaded at https://www.oecd.org/pisa/data/. Students' achievement is measured by the average mathematics test scores for all 15-year-old students in the study.
+
+
+First, load the package `csranks` and the data:
+
+```{r}
+library(csranks)
+attach(pisa)
+```
+
+The dataframe `pisa` looks like this:
+
+```{r}
+head(pisa)
+```
+
+Consider ranking countries according to their students' achievement in mathematics. The scores in `math_score` are estimates of these achievements. The countries' ranks can be estimated using the function `irank()`:
+
+```{r}
+math_rank <- irank(math_score)
+math_rank
+```
+
+These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets. Explanations and details about the differences of these two confidence sets can be found in Mogstad, Romano, Shaikh, and Wilhelm (2020). The complete R script containing this example, as well as R scripts for PISA rankings by reading and science scores, can be found in the subdirectory `examples/`.
+
+## Marginal Confidence Sets
+
+The marginal confidence sets for the ranks are computed as follows:
+
+```{r}
+math_cov_mat <- diag(math_se^2)
+CS_marg <- csranks(math_score, math_cov_mat, coverage=0.95, simul=FALSE, R=1000, seed=101)
+math_rankL_marg <- CS_marg$L
+math_rankU_marg <- CS_marg$U
+```
+
+where `math_rankL_marg` and `math_rankL_marg` contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by
+
+```{r}
+grid::current.viewport()
+
+plotmarg <- plot(CS_marg, popnames=jurisdiction, title="Ranking of OECD Countries by 2018 PISA Math Score", 
+  subtitle="(with 95% marginal confidence sets)", colorbins=4)
+plotmarg
+```
+
+You can then save the graph by
+
+```{r, eval = FALSE}
+ggplot2::ggsave("mathmarg.pdf", plot=plotmarg)
+```
+
+## Simultaneous Confidence Sets
+
+The simultaneous confidence sets for the ranks are computed as follows:
+
+```{r}
+CS_simul <- csranks(math_score, math_cov_mat, coverage=0.95, simul=TRUE, R=1000, seed=101)
+math_rankL_simul <- CS_simul$L
+math_rankU_simul <- CS_simul$U
+```
+
+where `math_rankL_simul` and `math_rankL_simul` contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by
+
+```{r}
+grid::current.viewport()
+
+plotsimul <- plot(CS_simul, popnames=jurisdiction, title="Ranking of OECD Countries by 2018 PISA Math Score", 
+  subtitle="(with 95% simultaneous confidence sets)", colorbins=4)
+
+plotsimul
+```
+
+You can then save the graph by
+
+```{r, eval = FALSE}
+ggplot2::ggsave("mathsimul.pdf", plot=plotsimul)
+```
+
+## tau-Best populations
+
+The tau-best confidence set is a set that, with approximately a pre-specified probability (say 0.95), contains the countries that could be among the top tau. For instance, the confidence set for the countries in the top-5 in terms of the math score can be computed using the command `cstaubest`:
+
+```{r math_taubest}
+CS_5best <- cstaubest(math_score, math_cov_mat, tau = 5)
+
+pisa[CS_5best, "jurisdiction"]
+```
+
+The confidence set contains 12 countries, i.e. with probability approximately 0.95, these 12 countries could all be among the top-5. That's due to the statistical uncertainty in the ranking: countries with estimated rank worse than 5 might be among the *true* top-5 countries after all.
+
+Here is a smaller set answering the same question, but with lower confidence:
+
+```{r math_taubest_80}
+CS_5best_80 <- cstaubest(pisa$math_score, math_Sigma, tau = 5, coverage = 0.8)
+
+pisa[CS_5best_80, "jurisdiction"]
+```
+
+
+# Reference
+[Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies](https://doi.org/10.1093/restud/rdad006)
+
+<!-- 
+
 
 ## csranks package
 
