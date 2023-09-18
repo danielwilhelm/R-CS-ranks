@@ -1,8 +1,8 @@
 ---
-title: "Inference for Rank-Rank Regressions"
+title: "Inference for Other Regressions Involving Ranks"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Inference for Rank-Rank Regressions}
+  %\VignetteIndexEntry{Inference for Other Regressions Involving Ranks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
