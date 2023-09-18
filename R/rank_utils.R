@@ -1,39 +1,43 @@
-#' Compute ranks from feature values
+#' Compute ranks
 #' 
-#' Given estimates of a certain feature for a set of populations,
-#' calculate the integer ranks of populations, i.e. places in ranking done by feature
-#' values. The larger (or smaller) feature value, the higher the place and the lower the integer
-#' rank (lowest, 1, is the best place).
+#' Compute ranks with flexible handling of ties.
 #'
 #' @param x vector of values to be ranked
-#' @param omega numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.
-#' @param increasing logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. 
-#' In other words, larger values in \code{x} are lower in ranking. Otherwise, large elements receive small ranks. 
-#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}.
-#' In other case the output for NAs is NA and for other values it's for extreme
-#' possibilities that NA values are actually in first or last positions of ranking.
+#' @param omega numeric value in [0,1], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.
+#' @param increasing logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.
+#' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.
 #' 
 #' @details 
-#' \code{omega} (\eqn{\omega}) value determines, how equal entries in \code{x} should be ranked; 
-#' in other words how to handle ex aequo cases. If there are none, then the parameter 
-#' does not affect the output of this function. 
-#' For example, let's say, that \eqn{n} largest entries in \code{x} are equal.
-#' Those entries could receive (minimum) rank 1 or (maximum) rank \eqn{n} or some value in between.
-#'
-#' Suppose, that we want to assign rank to \eqn{n} equal values in an array.
-#' Denote their minimum rank as \eqn{r} and maximum as \eqn{R = r + n - 1}.
-#' Then the assigned rank is an average of 
-#' minimum and maximum rank, weighted by \eqn{\omega}: 
-#' \deqn{r(1-\omega) + R\omega} 
+#' This function implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
+#' \code{omega} and \code{increasing}. Suppose \code{x} is of length \eqn{p}. If \code{increasing=TRUE}, then the largest value in \code{x} receives the rank \eqn{p} and the smallest
+#' the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
+#' the rank \eqn{p}.
+#' 
+#' The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether 
+#' the ranks should be increasing or decreasing with the values in \code{x}. When there are ties in \code{x}, however, then there are infinitely
+#' many possible ranks that can be assigned to a tied value. 
+#' 
+#' When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between 
+#' 0 and 1 lead to values of the rank between the largest and smallest.
+#' 
 #' 
 #' @return Integer vector of the same length as \code{x} containing the ranks.
 #' @examples
-#' irank(c(4,3,1,10,7))
-#' irank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
-#' irank(c(4,3,1,10,7), omega=0.5) # equal to previous ranks because there are no ties
-#' irank(c(4,4,4,3,1,10,7,7))
-#' irank(c(4,4,4,3,1,10,7,7), omega=1)
-#' irank(c(4,4,4,3,1,10,7,7), omega=0.5) 
+#' # simple example without ties:
+#' x <- c(3,8,-4,10,2)
+#' irank(x, increasing=TRUE)
+#' irank(x, increasing=FALSE)
+#' 
+#' # since there are no ties, the value of omega has no impact:
+#' irank(x, increasing=TRUE, omega=0)
+#' irank(x, increasing=TRUE, omega=0.5)
+#' irank(x, increasing=TRUE, omega=1)
+#' 
+#' # simple example with ties:
+#' x <- c(3,4,7,7,10,11,15,15,15,15)
+#' irank(x, increasing=TRUE, omega=0) # smallest possible ranks
+#' irank(x, increasing=TRUE, omega=0.5) # mid-ranks
+#' irank(x, increasing=TRUE, omega=1) # largest possible ranks
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
   irank_against(x, x, omega=omega, increasing=increasing, na.rm=na.rm)
@@ -88,16 +92,16 @@ count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
 
 #' @describeIn irank Compute fractional ranks
 #' 
-#' This method returns ranks in form of fractions from [0-1] interval.
-#' Smaller values (closer to 0) indicate higher rank.
+#' This function takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with 
+#' ranks in the interval [0,1]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank 
+#' of the value \code{x[j]} is equal to the empirical cdf of \code{x} evaluated at \code{x[j]}.
 #' 
 #' @examples
-#' frank(c(4,3,1,10,7))
-#' frank(c(4,3,1,10,7), omega=1) # equal to previous ranks because there are no ties
-#' frank(c(4,3,1,10,7), omega=0.5) # mid-ranks, equal to previous ranks because there are no ties
-#' frank(c(4,4,4,3,1,10,7,7))
-#' frank(c(4,4,4,3,1,10,7,7), omega=1)
-#' frank(c(4,4,4,3,1,10,7,7), omega=0.5) # mid-ranks
+#' 
+#' # simple example of fractional ranks without ties:
+#' x <- c(3,8,-4,10,2)
+#' frank(x, increasing=TRUE)
+#' frank(x, increasing=FALSE)
 #' @export
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) 
   return(frank_against(x, x, omega, increasing, na.rm))

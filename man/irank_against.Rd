@@ -14,14 +14,11 @@ frank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
 
 \item{v}{numeric reference vector.}
 
-\item{omega}{numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is \code{0}. See Details.}
+\item{omega}{numeric value in [0,1], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.}
 
-\item{increasing}{logical; if \code{TRUE}, then large elements in \code{x} receive a large rank. 
-In other words, larger values in \code{x} are lower in ranking. Otherwise, large elements receive small ranks.}
+\item{increasing}{logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.}
 
-\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}.
-In other case the output for NAs is NA and for other values it's for extreme
-possibilities that NA values are actually in first or last positions of ranking.}
+\item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.}
 }
 \value{
 Integer vector of the same length as \code{x} containing the ranks.
@@ -32,17 +29,17 @@ This method returns ranks, that values from \code{x} would assume if (individual
 inserted into \code{v}.
 }
 \details{
-\code{omega} (\eqn{\omega}) value determines, how equal entries in \code{x} should be ranked; 
-in other words how to handle ex aequo cases. If there are none, then the parameter 
-does not affect the output of this function. 
-For example, let's say, that \eqn{n} largest entries in \code{x} are equal.
-Those entries could receive (minimum) rank 1 or (maximum) rank \eqn{n} or some value in between.
+This function implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
+\code{omega} and \code{increasing}. Suppose \code{x} is of length \eqn{p}. If \code{increasing=TRUE}, then the largest value in \code{x} receives the rank \eqn{p} and the smallest
+the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
+the rank \eqn{p}.
 
-Suppose, that we want to assign rank to \eqn{n} equal values in an array.
-Denote their minimum rank as \eqn{r} and maximum as \eqn{R = r + n - 1}.
-Then the assigned rank is an average of 
-minimum and maximum rank, weighted by \eqn{\omega}: 
-\deqn{r(1-\omega) + R\omega}
+The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether 
+the ranks should be increasing or decreasing with the values in \code{x}. When there are ties in \code{x}, however, then there are infinitely
+many possible ranks that can be assigned to a tied value. 
+
+When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between 
+0 and 1 lead to values of the rank between the largest and smallest.
 }
 \section{Functions}{
 \itemize{
