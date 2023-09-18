@@ -15,7 +15,7 @@ csranks_multinom(
 )
 }
 \arguments{
-\item{x}{vector of counts of successes for each category}
+\item{x}{vector of counts indicating how often each category was chosen.}
 
 \item{coverage}{nominal coverage of the confidence set. Default is 0.95.}
 
@@ -39,17 +39,23 @@ A \code{csranks} object, which is a list with three items:
 }
 }
 \description{
-Given data on counts of successes for each category, calculate confidence sets for the ranks of categories, where categories are ranked by their success probabilities.
+Marginal and simultaneous confidence sets for ranks of categories, where categories are ranked by the probabilities of being chosen.
 }
 \section{Details}{
 
-The command implements the procedure for construction of confidence sets for ranks described in the referenced paper below.
+This function computes confidence sets for ranks similarly as \code{\link{csranks}}, but it is tailored to the special case of 
+multinomial data. Suppose there are \eqn{p} populations (for the case of multinomial data, we will refer to them as "categories") such 
+as political parties, for example, that one wants to rank by the probabilities of them being chosen. For political parties, this would
+correspond to the share of votes each party obtains. Here, the underlying data are multinomial: each observation corresponds to a choice
+among the \eqn{p} categories. The vector \code{x} contains the counts of how often each category was chosen in the data.
 
-It involves testing multiple hypotheses. The `\code{multcorr}` states, how the 
-p-values should be corrected to control the Family Wise Error Rate (FWER).
+In this setting, \code{link{csranks}} could be applied to compute confidence sets for the ranks of each category, but instead this function
+implements a different method proposed by Bazylik, Mogstad, Romano, Shaikh, and Wilhelm (2023), which exploits the 
+multinomial structure of the problem and yields confidence sets for the ranks that are valid in finite samples (whereas \code{\link{csranks}} produces 
+confidence sets that are valid only asymptotically).
 
-From a practical point of view, \code{multcorr=Holm} takes more time, but usually results
-in tighter (better) confidence sets than \code{multcorr=Bonferroni}.
+The procedure involves testing multiple hypotheses. The `\code{multcorr}` indicates a method for multiplicity correction. See the paper for
+details.
 }
 
 \examples{
@@ -59,4 +65,5 @@ csranks_multinom(x)
 \references{
 Bazylik, Mogstad, Romano, Shaikh, and Wilhelm.
 "Finite-and large-sample inference for ranks using multinomial data with an application to ranking political parties".
+\href{http://dwilhelm.userweb.mwn.de/papers/cwp4021.pdf}{cemmap working paper}
 }
