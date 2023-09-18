@@ -89,18 +89,15 @@ inserted into <code>v</code>.</p>
 
 
 <dt>omega</dt>
-<dd><p>numeric; numeric value in [0,1], each corresponding to a different definition of the rank; default is <code>0</code>. See Details.</p></dd>
+<dd><p>numeric value in [0,1], defining how ties in <code>x</code> (if any) are handled; default is <code>0</code>. See Details.</p></dd>
 
 
 <dt>increasing</dt>
-<dd><p>logical; if <code>TRUE</code>, then large elements in <code>x</code> receive a large rank. 
-In other words, larger values in <code>x</code> are lower in ranking. Otherwise, large elements receive small ranks.</p></dd>
+<dd><p>logical; if <code>FALSE</code> (default), then large elements in <code>x</code> receive a small rank. Otherwise, large elements in <code>x</code> receive a large rank.</p></dd>
 
 
 <dt>na.rm</dt>
-<dd><p>logical; if <code>TRUE</code>, then <code>NA</code>'s are removed from <code>x</code>.
-In other case the output for NAs is NA and for other values it's for extreme
-possibilities that NA values are actually in first or last positions of ranking.</p></dd>
+<dd><p>logical; if <code>TRUE</code>, then <code>NA</code>'s are removed from <code>x</code>. Default: <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -111,16 +108,15 @@ possibilities that NA values are actually in first or last positions of ranking.
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p><code>omega</code> (\(\omega\)) value determines, how equal entries in <code>x</code> should be ranked; 
-in other words how to handle ex aequo cases. If there are none, then the parameter 
-does not affect the output of this function. 
-For example, let's say, that \(n\) largest entries in <code>x</code> are equal.
-Those entries could receive (minimum) rank 1 or (maximum) rank \(n\) or some value in between.</p>
-<p>Suppose, that we want to assign rank to \(n\) equal values in an array.
-Denote their minimum rank as \(r\) and maximum as \(R = r + n - 1\).
-Then the assigned rank is an average of 
-minimum and maximum rank, weighted by \(\omega\): 
-$$r(1-\omega) + R\omega$$</p>
+    <p>This function implements all possible definitions of ranks of the values in <code>x</code>. Different definitions of the ranks are chosen through combinations of the two arguments
+<code>omega</code> and <code>increasing</code>. Suppose <code>x</code> is of length \(p\). If <code>increasing=TRUE</code>, then the largest value in <code>x</code> receives the rank \(p\) and the smallest
+the rank \(1\). If <code>increasing=FALSE</code>, then the largest value in <code>x</code> receives the rank \(1\) and the smallest
+the rank \(p\).</p>
+<p>The value of <code>omega</code> indicates how ties are handled. If there are no ties in <code>x</code>, then the value of <code>omega</code> does not affect the ranks and the only choice to be made is whether 
+the ranks should be increasing or decreasing with the values in <code>x</code>. When there are ties in <code>x</code>, however, then there are infinitely
+many possible ranks that can be assigned to a tied value.</p>
+<p>When <code>increasing=TRUE</code>, then <code>omega=0</code> leads to the smallest possible and <code>omega=1</code> to the largest possible rank of a tied value. Values of <code>omega</code> between 
+0 and 1 lead to values of the rank between the largest and smallest.</p>
     </div>
     <div id="functions">
     <h2>Functions</h2>
