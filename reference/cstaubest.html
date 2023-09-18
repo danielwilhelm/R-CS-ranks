@@ -31,16 +31,6 @@
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/Introduction.html">Introduction</a>
-    </li>
-  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -162,11 +152,11 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># confidence set for the populations that may be among the top-3 (with probability approximately 0.95):</span></span></span>
 <span class="r-in"><span><span class="fu">cstaubest</span><span class="op">(</span><span class="va">thetahat</span>, <span class="va">Sigmahat</span>, tau<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># confidence set for the populations that may be among the bottom-3 (with probability approximately 0.95):</span></span></span>
 <span class="r-in"><span><span class="fu">cstauworst</span><span class="op">(</span><span class="va">thetahat</span>, <span class="va">Sigmahat</span>, tau<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE FALSE FALSE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
