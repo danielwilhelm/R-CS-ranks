@@ -149,50 +149,70 @@ Otherwise, for each population indicated in <code>indices</code> a marginal conf
 some measure \(\theta=(\theta_1,\ldots,\theta_p)\). We do not observe the true values \(\theta_1,\ldots,\theta_p\). Instead, for each population, 
 we have data from which we have estimated these measures, \(\hat{\theta}=(\hat{\theta}_1,\ldots,\hat{\theta}_p)\). The values \(\hat{\theta}_1,\ldots,\hat{\theta}_p\)
 are estimates of the true values \(\theta_1,\ldots,\theta_p\) and thus contain statistical uncertainty. In consequence, a ranking of the populations by
-the values \(\hat{\theta}_1,\ldots,\hat{\theta}_p\) contains statistical uncertainty and is not necessarily equal to the true rank by \(\theta_1,\ldots,\theta_p\).</p>
-<p>The command computes confidence sets for the rank of one, several or all of populations (<code>indices</code> indicates which of the \(1,\ldots,p\) are of interest). <code>x</code> is a vector containing the estimates 
-\(\hat{\theta}_1,\ldots,\hat{\theta}_p\) and <code>Sigma</code> is an estimate of the covariance matrix of <code>x</code>. The assumption is that the estimates are asymptotically normal and the sample sizes of the datasets 
-are large enough so that $$\hat{\theta}-\theta \approx N(0,\Sigma)$$. The argument <code>Sigma</code> should contain an estimate of the covariance matrix \(Sigma\). For instance, if for each population \(j\)
-$$\sqrt{n} (\hat{\theta}_j-\theta_j) \to_d N(0, \sigma_j^2)$$
-and the datasets for each population are independently drawn, then <code>Sigma</code> is a diagonal matrix $$diag(\hat{\sigma}_1^2/n,\ldots,\hat{\sigma}_p^2/n)$$
+the values \(\hat{\theta}_1,\ldots,\hat{\theta}_p\) contains statistical uncertainty and is not necessarily equal to the true ranking of \(\theta_1,\ldots,\theta_p\).</p>
+<p>The command computes confidence sets for the rank of one, several or all of the populations (<code>indices</code> indicates which of the \(1,\ldots,p\) populations are of interest). <code>x</code> is a vector containing the estimates 
+\(\hat{\theta}_1,\ldots,\hat{\theta}_p\) and <code>Sigma</code> is an estimate of the covariance matrix of <code>x</code>. The method assumes that the estimates are asymptotically normal and the sample sizes of the datasets 
+are large enough so that \(\hat{\theta}-\theta\) is approximately distributed as \(N(0,\Sigma)\). The argument <code>Sigma</code> should contain an estimate of the covariance matrix \(\Sigma\). For instance, if for each population \(j\)
+$$\sqrt{n_j} (\hat{\theta}_j-\theta_j) \to_d N(0, \sigma_j^2)$$
+and the datasets for each population are drawn independently of each other, then <code>Sigma</code> is a diagonal matrix $$diag(\hat{\sigma}_1^2/n_1,\ldots,\hat{\sigma}_p^2/n_p)$$
 containing estimates of the asymptotic variances divided by the sample size. More generally, the estimates in <code>x</code> may be dependent, but then <code>Sigma</code>
-must be an estimate its covariance matrix including off-diagonal terms.</p>
+must be an estimate of its covariance matrix including off-diagonal terms.</p>
 <p>Marginal confidence sets (<code>simul=FALSE</code>) are such that the confidence set for a population \(j\) contains the true rank of that population \(j\) with probability approximately
 equal to the nominal coverage level. Simultaneous confidence sets (<code>simul=TRUE</code>) on the other hand are such that the confidence sets for populations indicated in <code>indices</code> cover the true ranks
 of all of these populations simultaneously with probability approximately equal to the nominal coverage level. For instance, in the PISA example below, a marginal confidence set of a country \(j\) covers the true
-rank of country \(j\) with probability approximately equal to 0.95. A simultaneous confidence intervall for all countries covers the true ranks of all countries simultaneously with probability approximately equal to 0.95.</p>
+rank of country \(j\) with probability approximately equal to 0.95. A simultaneous confidence set for all countries covers the true ranks of all countries simultaneously with probability approximately equal to 0.95.</p>
 <p>The command implements the procedures developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023). The procedure is based on
 on testing a large family of hypotheses for pairwise comparisons. Stepwise methods can be used to improve the power of the procedure by, potentially,
-rejecting more hypotheses without violating the desired coverage property of the resulting confidence interval. These are employed when
-<code>stepdown=TRUE</code>. From a practical point of view, <code>stepdown=TRUE</code> takes more time, but often results
-in tighter (better) confidence sets.</p>
+rejecting more hypotheses without violating the desired coverage property of the resulting confidence set. These are employed when
+<code>stepdown=TRUE</code>. From a practical point of view, <code>stepdown=TRUE</code> is computationally more demanding, but often results
+in tighter confidence sets.</p>
 <p>The procedure uses a parametric bootstrap procedure based on the above approximate multivariate normal distribution.</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies</p>
-<p><a href="http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf" class="external-link">pdf link</a>
+    <p>Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
+<a href="http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf" class="external-link">cemmap working paper</a>
 <a href="https://doi.org/10.1093/restud/rdad006" class="external-link">doi:10.1093/restud/rdad006</a></p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># simple simulated example:</span></span></span>
+<span class="r-in"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span></span></span>
+<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">10</span></span></span>
+<span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">p</span>,<span class="va">n</span><span class="op">)</span><span class="op">/</span><span class="va">p</span>, ncol<span class="op">=</span><span class="va">p</span>, byrow<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="va">p</span><span class="op">)</span>, <span class="fl">100</span>, <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">thetahat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">Sigmahat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cov</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">/</span> <span class="va">n</span></span></span>
+<span class="r-in"><span><span class="fu">csranks</span><span class="op">(</span><span class="va">thetahat</span>, <span class="va">Sigmahat</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 7 5 5 4 1 1 1 1 1 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  8  9  7  5  6  4  3  2  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10 10  9  9  7  6  6  6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "csranks"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># PISA example:</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">math_cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">math_se</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># marginal confidence set for each country:</span></span></span>
 <span class="r-in"><span><span class="fu">csranks</span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 15 10  5  4 35 37 10  5  1  5 12 10 32 25 12 10 32 19  1  1 12 25 25 35  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 12 10  2 12 21  5 25  7  2 32  8 25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 12 10  2 12 20  5 25  7  2 32  7 25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 24 18 10  7 35 37 17  8  3 11 20 15 34 30 21 16 32 25  1  2 19 29 27 36  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [26] 22 14  5 23 26  9 28 12  6 33 13 31</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 26 24 18 13 36 37 24 13  6 18 26 24 34 31 26 24 34 31  4  6 25 31 31 36  7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 26 23 11 26 31 14 31 23 11 34 23 31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 26 24 18 13 36 37 24 14  6 18 26 24 34 31 26 24 34 31  4  6 25 31 31 36  7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 26 23 11 26 31 16 31 23 11 34 23 31</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "csranks"</span>
@@ -200,7 +220,7 @@ in tighter (better) confidence sets.</p>
 <span class="r-in"><span><span class="co"># simultaneous confidence set for all countries:</span></span></span>
 <span class="r-in"><span><span class="fu">csranks</span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 12  7  4  3 35 37  7  4  1  4 12  7 32 23 12  8 31 15  1  1 12 23 23 35  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 12  7  4  3 35 37  7  4  1  4 12  7 32 23 12  8 31 15  1  1 12 24 23 35  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [26] 12  7  1 12 18  4 24  5  1 32  6 23</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
@@ -208,7 +228,7 @@ in tighter (better) confidence sets.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [26] 22 14  5 23 26  9 28 12  6 33 13 31</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 30 26 18 17 36 37 25 18  6 18 26 25 34 31 26 25 34 31  6  7 26 31 31 36 11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 29 26 18 17 36 37 25 18  6 18 26 25 34 31 26 25 34 31  6  7 26 31 31 36 11</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [26] 26 24 12 31 31 18 31 24 13 34 24 32</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
