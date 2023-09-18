@@ -3,7 +3,7 @@
 \name{cstaubest}
 \alias{cstaubest}
 \alias{cstauworst}
-\title{Projection confidence sets for the tau-best}
+\title{Confidence sets for the tau-best}
 \usage{
 cstaubest(
   x,
@@ -48,48 +48,38 @@ cstauworst(
 logical vector indicating which of the elements of \code{x} are in the confidence set for the tau-best.
 }
 \description{
-Find a set of populations, which belong to tau-best populations according to
-some feature with given confidence.
+Computation of confidence sets for the identities of populations among the tau best.
 }
 \section{Functions}{
 \itemize{
-\item \code{cstauworst()}: Projection confidence sets for the tau-worst
+\item \code{cstauworst()}: Confidence sets for the tau-worst
 
-Similar method, but for populations, which are tau-worst.
 Equivalent to calling \code{cstaubest} with \code{-x}.
 
 }}
 \section{Details}{
 
-The confidence set contains indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the coverage indicated in \code{coverage}.
-Parametric bootstrap based on the multivariate normal distribution.
+The function computes a confidence set containing indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the nominal coverage (\code{coverage}).
 
-If \code{na.rm=TRUE} and NAs are present, then results are returned for tau-best (worst)
-populations among those without NA values, i.e. after NA removal.
+The command implements the projection confidence set for the tau-best developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023).
 }
 
 \examples{
-# Setup example data
-n <- 10
-x <- seq(1, 3, length = n)
-Sigma <- matrix(0.001, nrow = n, ncol = n)
-diag(Sigma) <- 0.04
+# simple simulated example:
+n <- 100
+p <- 10
+X <- matrix(rep(1:p,n)/p, ncol=p, byrow=TRUE) + matrix(rnorm(n*p), 100, 10)
+thetahat <- colMeans(X)
+Sigmahat <- cov(X) / n
 
-# Run csranks to get confidence sets for top 3 populations
-cstaubest(x, Sigma, tau = 3)
-cstauworst(x, Sigma, tau = 3)
+# confidence set for the populations that may be among the top-3 (with probability approximately 0.95):
+cstaubest(thetahat, Sigmahat, tau=3)
 
-# If you assume that the feature measurements are independent, 
-# (or just have access to variances / standard errors)
-# then pass a diagonal covariance matrix.
-Sigma <- diag(rep(0.04, 10))
-cstaubest(x, Sigma, tau = 3)
-cstauworst(x, Sigma, tau = 3)
+# confidence set for the populations that may be among the bottom-3 (with probability approximately 0.95):
+cstauworst(thetahat, Sigmahat, tau=3)
 
 }
 \references{
 Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
-
-\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{pdf link}
-\doi{10.1093/restud/rdad006}
+\href{http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf}{cemmap working paper}, \doi{10.1093/restud/rdad006}
 }
