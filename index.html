@@ -75,15 +75,13 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-
 <div class="section level1">
 <div class="page-header"><h1 id="csranks">csranks<a class="anchor" aria-label="anchor" href="#csranks"></a>
 </h1></div>
 <!-- badges: start -->
 
-<p>The <code>R</code> package <code>csranks</code> provides statistical tools when working with ranks. Two central functions are <code>csranks</code> for confidence sets and <code>lmranks</code> for linear regression.</p>
-<p><code>csranks</code> implements confidence sets for positions of populations in a ranking based on values of a certain feature and their estimation errors. Both simultaneous and marginal confidence sets are available, as well as confidence sets with populations occupying top-n positions in the ranking. Work based on <a href="http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf" class="external-link">Mogstad, Romano, Shaikh, and Wilhelm (2023)</a>.</p>
-<p><code>lmranks</code> implements linear regression with consistent estimation of standard errors and covariance matrix of regression parameters <span class="math inline"><em>β</em></span>.</p>
+<p>The <code>R</code> package <code>csranks</code> provides statistical tools for estimation and inference involving ranks (the position in a ranking). Two central functions are <code>csranks</code> for confidence sets for ranks and <code>lmranks</code> for regressions involving ranks, e.g. rank-rank regressions that are popular in applied work in economics.</p>
+<p>The commands are based on recent work developing these procedures and their theoretical properties. The confidence sets for ranks are based on <a href="https://doi.org/10.1093/restud/rdad006" class="external-link">Mogstad, Romano, Shaikh, and Wilhelm (2023)</a> and <a href="https://dwilhelm.userweb.mwn.de/papers/cwp4021.pdf" class="external-link">Bazylik, Mogstad, Romano, Shaikh, and Wilhelm (2022)</a>. The inference methods for regressions involving ranks are developend in Chetverikov and Wilhelm (2023).</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -95,90 +93,7 @@
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"danielwilhelm/R-CS-ranks"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="example-pisa-ranking">Example: PISA Ranking<a class="anchor" aria-label="anchor" href="#example-pisa-ranking"></a>
-</h2>
-<p>This example illustrates the computation of confidence sets for the ranking of countries according students’ achievements in mathematics. The following dataset contains data from the 2018 Program for International Student Assessment (PISA) study by the Organization for Economic Cooperation and Development (OECD), which can be downloaded at <a href="https://www.oecd.org/pisa/data/" class="external-link uri">https://www.oecd.org/pisa/data/</a>. Students’ achievement is measured by the average mathematics test scores for all 15-year-old students in the study.</p>
-<p>First, load the package <code>csranks</code> and the data:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/danielwilhelm/R-CS-ranks" class="external-link">csranks</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span></code></pre></div>
-<p>The dataframe <code>pisa</code> looks like this:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   jurisdiction science_score science_se reading_score reading_se math_score</span></span>
-<span><span class="co">#&gt; 1    Australia      502.9646   1.795398      502.6317   1.634343   491.3600</span></span>
-<span><span class="co">#&gt; 2      Austria      489.7804   2.777395      484.3926   2.697472   498.9423</span></span>
-<span><span class="co">#&gt; 3      Belgium      498.7731   2.229240      492.8644   2.321973   508.0703</span></span>
-<span><span class="co">#&gt; 4       Canada      517.9977   2.153651      520.0855   1.799716   512.0169</span></span>
-<span><span class="co">#&gt; 5        Chile      443.5826   2.415280      452.2726   2.643766   417.4066</span></span>
-<span><span class="co">#&gt; 6     Colombia      413.3230   3.052402      412.2951   3.251344   390.9323</span></span>
-<span><span class="co">#&gt;    math_se</span></span>
-<span><span class="co">#&gt; 1 1.939833</span></span>
-<span><span class="co">#&gt; 2 2.970999</span></span>
-<span><span class="co">#&gt; 3 2.262662</span></span>
-<span><span class="co">#&gt; 4 2.357476</span></span>
-<span><span class="co">#&gt; 5 2.415888</span></span>
-<span><span class="co">#&gt; 6 2.989559</span></span></code></pre></div>
-<p>Consider ranking countries according to their students’ achievement in mathematics. The scores in <code>math_score</code> are estimates of these achievements. The countries’ ranks can be estimated using the function <code><a href="reference/irank.html">irank()</a></code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">math_rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/irank.html">irank</a></span><span class="op">(</span><span class="va">math_score</span><span class="op">)</span></span>
-<span><span class="va">math_rank</span></span>
-<span><span class="co">#&gt;  [1] 24 18 10  7 35 37 17  8  3 11 20 15 34 30 21 16 32 25  1  2 19 29 27 36  4</span></span>
-<span><span class="co">#&gt; [26] 22 14  5 23 26  9 28 12  6 33 13 31</span></span></code></pre></div>
-<p>These are only estimated ranks as they are computed from estimates of achievements and therefore estimation uncertainty in the estimates translates to estimation uncertainty in the ranks. The following subsections discuss two different confidence sets for assessing such estimation uncertainty in ranks: marginal and simultaneous confidence sets. Explanations and details about the differences of these two confidence sets can be found in Mogstad, Romano, Shaikh, and Wilhelm (2020). The complete R script containing this example, as well as R scripts for PISA rankings by reading and science scores, can be found in the subdirectory <code>examples/</code>.</p>
-<div class="section level3">
-<h3 id="marginal-confidence-sets">Marginal Confidence Sets<a class="anchor" aria-label="anchor" href="#marginal-confidence-sets"></a>
-</h3>
-<p>The marginal confidence sets for the ranks are computed as follows:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">math_cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">math_se</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">CS_marg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, coverage<span class="op">=</span><span class="fl">0.95</span>, simul<span class="op">=</span><span class="cn">FALSE</span>, R<span class="op">=</span><span class="fl">1000</span>, seed<span class="op">=</span><span class="fl">101</span><span class="op">)</span></span>
-<span><span class="va">math_rankL_marg</span> <span class="op">&lt;-</span> <span class="va">CS_marg</span><span class="op">$</span><span class="va">L</span></span>
-<span><span class="va">math_rankU_marg</span> <span class="op">&lt;-</span> <span class="va">CS_marg</span><span class="op">$</span><span class="va">U</span></span></code></pre></div>
-<p>where <code>math_rankL_marg</code> and <code>math_rankL_marg</code> contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/current.viewport.html" class="external-link">current.viewport</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; viewport[ROOT]</span></span>
-<span></span>
-<span><span class="va">plotmarg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_marg</span>, popnames<span class="op">=</span><span class="va">jurisdiction</span>, title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
-<span>    subtitle<span class="op">=</span><span class="st">"(with 95% marginal confidence sets)"</span>, colorbins<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span>
-<span><span class="va">plotmarg</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
-<p>You can then save the graph by</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"mathmarg.pdf"</span>, plot<span class="op">=</span><span class="va">plotmarg</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="simultaneous-confidence-sets">Simultaneous Confidence Sets<a class="anchor" aria-label="anchor" href="#simultaneous-confidence-sets"></a>
-</h3>
-<p>The simultaneous confidence sets for the ranks are computed as follows:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_simul</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, coverage<span class="op">=</span><span class="fl">0.95</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, R<span class="op">=</span><span class="fl">1000</span>, seed<span class="op">=</span><span class="fl">101</span><span class="op">)</span></span>
-<span><span class="va">math_rankL_simul</span> <span class="op">&lt;-</span> <span class="va">CS_simul</span><span class="op">$</span><span class="va">L</span></span>
-<span><span class="va">math_rankU_simul</span> <span class="op">&lt;-</span> <span class="va">CS_simul</span><span class="op">$</span><span class="va">U</span></span></code></pre></div>
-<p>where <code>math_rankL_simul</code> and <code>math_rankL_simul</code> contain the lower and upper bounds of the confidence sets for the ranks. They can be plotted by</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/current.viewport.html" class="external-link">current.viewport</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; viewport[ROOT]</span></span>
-<span></span>
-<span><span class="va">plotsimul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul</span>, popnames<span class="op">=</span><span class="va">jurisdiction</span>, title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
-<span>    subtitle<span class="op">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span>, colorbins<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">plotsimul</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
-<p>You can then save the graph by</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"mathsimul.pdf"</span>, plot<span class="op">=</span><span class="va">plotsimul</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-</div>
-<div class="section level1">
-<h1 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
-</h1>
-<p><a href="http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf" class="external-link">Mogstad, Romano, Shaikh, and Wilhelm (2023), “Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries”, forthcoming at Review of Economic Studies</a></p>
-</div>
-
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
