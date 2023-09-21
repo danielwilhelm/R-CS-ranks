@@ -16,8 +16,21 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
+Suppose, that one would like to investigate relationship between two (or more) variables
+of interest. However, the focus is not on the interdependence of their absolute values, 
+but their ranks - how high/low is a certain value in the population. The classic
+example is investigating intergenerational mobility - the link between the economical status
+of parents and children. Put simply, are the kids with parents also rich once they are adult?
 
-## Theory
+One could simply compute the 
+
+## Rank-Rank regression
+
+Denote by $X$ the absolute income of parents, $Y$ the absolute income of children, 
+$F_X, F_Y$ as ECDFs of $X$ and $Y$. We postulate a linear model between
+$R_X=F_X(X)$ and $R_Y=F_Y(Y)$:
+
+\[R_Y = C+\rho R_X\]
 
 
 ## Example: Intergenerational Mobility
