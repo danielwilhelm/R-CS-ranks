@@ -18,3 +18,17 @@
 #' }
 #' @source \url{https://www.oecd.org/pisa/data/}
 "pisa"
+
+#' Income of parents and children
+#'
+#' An artificial dataset containing income of children and their parents together
+#' with some information about them. 
+#'
+#' @format A data frame with 3894 rows and 4 variables:
+#' \describe{
+#'   \item{c_faminc}{Family income of a child}
+#'   \item{p_faminc}{Family income of parent}
+#'   \item{male}{Sex}
+#'   \item{race}{Race: hisp, black or other}
+#' }
+"parent_child_income"
