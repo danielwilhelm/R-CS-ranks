@@ -13,7 +13,7 @@ mtcars2$G <- G
 
 test_that("summary does not raise errors", {
   mod <- lmranks(r(mpg) ~ (r(cyl) + disp):G, data=mtcars2)
-  expect_warning(summary(mod), "degrees of freedom")
+  expect_message(summary(mod), "degrees of freedom")
 })
 
 test_that("vcov passes shallow checks", {
