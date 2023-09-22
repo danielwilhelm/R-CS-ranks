@@ -125,8 +125,3 @@ ggplot2::ggsave("mathsimul.pdf", plot=plotsimul)
 [Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies](https://doi.org/10.1093/restud/rdad006)
 
 Check out the documentation of individual functions at package's [website](https://danielwilhelm.github.io/R-CS-ranks/), as well as further examples at package's [Github](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples)
-
-
-## A Finite-Sample Method for Multinomial Data
-
-### Example: Ranking Political Parties Based on Polls
