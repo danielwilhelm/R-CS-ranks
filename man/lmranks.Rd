@@ -174,7 +174,7 @@ and asymptotically consistent, in contrast to naively running \code{vcov(lm(...)
 \section{Rank-rank regressions with clusters}{
 
 
-Sometimes, the data is divided into clusters and one is
+Sometimes, the data is divided into clusters (groups) and one is
 interested in running rank-rank regressions separately within each cluster, where the ranks are not computed
 within each cluster, but using all observations pooled across all clusters. Specifically, let \eqn{G_i=1,\ldots,n_G} denote 
 a variable that indicates the cluster to which the i-th observation belongs. Then, the regression model of interest is
