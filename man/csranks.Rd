@@ -58,7 +58,7 @@ we have data from which we have estimated these measures, \eqn{\hat{\theta}=(\ha
 are estimates of the true values \eqn{\theta_1,\ldots,\theta_p} and thus contain statistical uncertainty. In consequence, a ranking of the populations by
 the values \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} contains statistical uncertainty and is not necessarily equal to the true ranking of \eqn{\theta_1,\ldots,\theta_p}.
 
-The command computes confidence sets for the rank of one, several or all of the populations (\code{indices} indicates which of the \eqn{1,\ldots,p} populations are of interest). \code{x} is a vector containing the estimates 
+The function computes confidence sets for the rank of one, several or all of the populations (\code{indices} indicates which of the \eqn{1,\ldots,p} populations are of interest). \code{x} is a vector containing the estimates 
 \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} and \code{Sigma} is an estimate of the covariance matrix of \code{x}. The method assumes that the estimates are asymptotically normal and the sample sizes of the datasets 
 are large enough so that \eqn{\hat{\theta}-\theta} is approximately distributed as \eqn{N(0,\Sigma)}. The argument \code{Sigma} should contain an estimate of the covariance matrix \eqn{\Sigma}. For instance, if for each population \eqn{j}
 \deqn{\sqrt{n_j} (\hat{\theta}_j-\theta_j) \to_d N(0, \sigma_j^2)}
@@ -71,7 +71,7 @@ equal to the nominal coverage level. Simultaneous confidence sets (\code{simul=T
 of all of these populations simultaneously with probability approximately equal to the nominal coverage level. For instance, in the PISA example below, a marginal confidence set of a country \eqn{j} covers the true
 rank of country \eqn{j} with probability approximately equal to 0.95. A simultaneous confidence set for all countries covers the true ranks of all countries simultaneously with probability approximately equal to 0.95.
 
-The command implements the procedures developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023). The procedure is based on
+The function implements the procedures developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023). The procedure is based on
 on testing a large family of hypotheses for pairwise comparisons. Stepwise methods can be used to improve the power of the procedure by, potentially,
 rejecting more hypotheses without violating the desired coverage property of the resulting confidence set. These are employed when
 \code{stepdown=TRUE}. From a practical point of view, \code{stepdown=TRUE} is computationally more demanding, but often results

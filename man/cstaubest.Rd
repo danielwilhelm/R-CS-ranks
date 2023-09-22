@@ -61,7 +61,7 @@ Equivalent to calling \code{cstaubest} with \code{-x}.
 
 The function computes a confidence set containing indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the nominal coverage (\code{coverage}).
 
-The command implements the projection confidence set for the tau-best developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023).
+The function implements the projection confidence set for the tau-best developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023).
 }
 
 \examples{

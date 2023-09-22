@@ -8,7 +8,7 @@
 #' variables to be ranked can be indicated by \code{r()}. See Details and Examples below.
 #' @param subset currently not supported.
 #' @param weights currently not supported.
-#' @param na.action currently not supported. User is expected to handle NA values prior to the use of this command.
+#' @param na.action currently not supported. User is expected to handle NA values prior to the use of this function.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
 #' @param x \itemize{
@@ -67,11 +67,11 @@
 #' ranks among all observations \eqn{Y_i} and \eqn{X_i}, respectively. That means the rank of an observation is not computed among the other observations
 #' in the same cluster, but rather among all available observations across all clusters.
 #' 
-#' This type of regression is implemented in the \code{lmranks} command using interaction notation: \code{r(Y)~(r(X)+W):G}. Here, the variable
+#' This type of regression is implemented in the \code{lmranks} function using interaction notation: \code{r(Y)~(r(X)+W):G}. Here, the variable
 #' G \strong{must} be a \code{\link{factor}}.
 #' 
 #' Since the theory for clustered regression mixing grouped and ungrouped (in)dependent variables is not yet developed, such a model will raise an error. 
-#' Also, by default the command includes a cluster-specific intercept, i.e. \code{r(Y)~(r(X)+W):G} is internally interpreted as \code{r(Y)~(r(X)+W):G+G-1}.
+#' Also, by default the function includes a cluster-specific intercept, i.e. \code{r(Y)~(r(X)+W):G} is internally interpreted as \code{r(Y)~(r(X)+W):G+G-1}.
 #' 
 #' \code{\link[stats]{contrasts}} of \code{G} must be of \code{contr.treatment} kind, 
 #' which is the default.
@@ -128,7 +128,7 @@
 #' RX <- frank(X, increasing=TRUE, omega=1)
 #' fit <- lm(RY ~ RX)
 #' summary(fit)
-#' # the coefficient estimates are the same as in the lmranks command, but
+#' # the coefficient estimates are the same as in the lmranks function, but
 #' # the standard errors, t-values, p-values are incorrect
 #' 
 #' # support of `data` argument:
