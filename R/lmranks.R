@@ -110,7 +110,7 @@
 #' @seealso 
 #' \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
 #' 
-#' Generic funcions \code{\link[stats]{coef}}, \code{\link[stats]{effects}}, 
+#' Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{effects}}, 
 #' \code{\link[stats]{residuals}},
 #' \code{\link[stats]{fitted}}, \code{\link[stats]{model.frame}},
 #' \code{\link[stats]{model.matrix}}, \code{\link[stats]{update}} .

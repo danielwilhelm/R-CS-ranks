@@ -48,8 +48,7 @@ is implemented. The key function in the workflow is `lmranks`.
 
 Let's return to the example of investigating the link between economic status 
 of parents and children. In `csranks` package there is an artificial dataset
-with data about childrens' and parents' income, their gender and race (`black`, `hisp` or `neither`).
-
+with data about children' and parents' families income, their gender and race (`black`, `hisp` or `neither`).
 
 First, load the package `csranks`. Second, load the data and take a quick look at it:
 

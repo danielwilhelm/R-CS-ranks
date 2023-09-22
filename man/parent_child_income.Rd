@@ -10,7 +10,7 @@ A data frame with 3894 rows and 4 variables:
   \item{c_faminc}{Family income of a child}
   \item{p_faminc}{Family income of parent}
   \item{male}{Sex}
-  \item{race}{Race: hisp, black or other}
+  \item{race}{Race: hisp (hispanic), black or other}
 }
 }
 \usage{
