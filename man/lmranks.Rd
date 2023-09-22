@@ -133,9 +133,13 @@ included in the model - as it would have been in \code{lm} and, say,
 One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}. See
 \code{\link{formula}} for more about model specification.
 
-The \code{r()} is a private alias for \code{\link{frank}} with the \code{increasing} 
-argument set to \code{TRUE}. The \code{omega} argument of \code{\link{frank}} specifies how ties in variables are to be handled and
-can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. By default \code{omega} is set equal to \code{1},
+The \code{r()} is a private alias for \code{\link{frank}}.
+The \code{increasing} argument, provided at individual regressor level,
+specifies whether the ranks should increase or decrease as regressor values increase.
+The \code{omega} argument of \code{\link{frank}}, provided at \code{lmranks} function level,
+specifies how ties in variables are to be handled and
+can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. 
+By default \code{increasing} is set to \code{TRUE} and \code{omega} is set equal to \code{1},
 which means \code{r()} computes ranks by transforming a variable through its empirical cdf.
 
 
