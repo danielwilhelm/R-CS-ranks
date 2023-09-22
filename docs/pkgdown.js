@@ -101,7 +101,7 @@
       });
 
       clipboardBtnCopies.on('error', function() {
-        changeTooltipMessage(e.trigger,'Press Ctrl+C or function+C to copy');
+        changeTooltipMessage(e.trigger,'Press Ctrl+C or Command+C to copy');
       });
     });
   }
