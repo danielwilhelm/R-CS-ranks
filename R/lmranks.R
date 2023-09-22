@@ -40,9 +40,13 @@
 #' One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}. See
 #' \code{\link{formula}} for more about model specification.
 #' 
-#' The \code{r()} is a private alias for \code{\link{frank}} with the \code{increasing} 
-#' argument set to \code{TRUE}. The \code{omega} argument of \code{\link{frank}} specifies how ties in variables are to be handled and
-#' can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. By default \code{omega} is set equal to \code{1},
+#' The \code{r()} is a private alias for \code{\link{frank}}.
+#' The \code{increasing} argument, provided at individual regressor level,
+#' specifies whether the ranks should increase or decrease as regressor values increase.
+#' The \code{omega} argument of \code{\link{frank}}, provided at \code{lmranks} function level,
+#' specifies how ties in variables are to be handled and
+#' can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. 
+#' By default \code{increasing} is set to \code{TRUE} and \code{omega} is set equal to \code{1},
 #' which means \code{r()} computes ranks by transforming a variable through its empirical cdf.
 #' 
 #' 
@@ -338,7 +342,7 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE){
 #' @noRd
 create_env_to_interpret_r_mark <- function(omega){
   rank_env <- new.env(parent = parent.frame(2))
-  r <- function(x) x
+  r <- function(x, increasing=TRUE) x
   body(r) <- bquote({
     predict <- get(".r_predict", envir = environment(r), inherits=FALSE)
     cache <- get(".r_cache", envir = environment(r), inherits=FALSE)
@@ -351,7 +355,7 @@ create_env_to_interpret_r_mark <- function(omega){
     else if(is.null(cache[[var_name]]))
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     v <- cache[[var_name]]
-    out <- csranks::frank_against(x, v, increasing=TRUE, omega=.(omega), na.rm=FALSE)
+    out <- csranks::frank_against(x, v, increasing=increasing, omega=.(omega), na.rm=FALSE)
     out
   })
   environment(r) <- rank_env

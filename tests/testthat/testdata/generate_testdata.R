@@ -112,6 +112,57 @@ for (n in c(10,50,100)) {
                         paste0("lmranks_cov_sigmahat_n_", n, ".rda")))
 }
 
+########################
+### increasing=FALSE ###
+########################
+
+# draw data
+  
+X <- rnorm(n)
+W <- matrix(rnorm(n*2), n, 2)
+Y <- X + rowSums(W) + rnorm(n,0,0.5)  
+W <- cbind(1,W)  
+
+
+# compute ranks
+RY <- frank(Y, increasing=FALSE, omega=1)
+RX <- frank(X, increasing=FALSE, omega=1)
+  
+  
+# ------- compute asymptotic variance "by hand"
+  
+Ifn <- function(u, v) return( u>=v )
+  
+# first stage
+res <- lm(RX ~ W-1)
+Wgammahat <- predict(res)
+nuhat <- resid(res)
+gammahat <- coef(res)
+  
+# outcome equation
+res <- lm(RY~RX+W-1)
+rhohat <- coef(res)[1]
+betahat <- coef(res)[-1]
+epsilonhat <- resid(res)
+
+# construct h1
+h1 <- epsilonhat * nuhat
+
+# construct h2
+h2fn <- function(xy) mean((Ifn(xy[2],Y)-rhohat*Ifn(xy[1],X)-c(W%*%betahat)) * nuhat)
+h2 <- apply(cbind(X,Y), 1, h2fn)
+
+# construct h3
+h3fn <- function(x) mean(epsilonhat * (Ifn(x,X)-Wgammahat))
+h3 <- sapply(X, h3fn)
+
+# compute asymptotic variance
+sigma2hat <- mean((h1+h2+h3)^2) / mean(nuhat^2)^2
+
+# save the result
+save(sigma2hat, Y, W, X, n, h1, h2, h3, 
+     file = file.path("tests", "testthat", "testdata", "lmranks_cov_sigmahat_increasing_FALSE.rda"))
+
 ############################
 ### Hoeffding's variance ###
 ############################
