@@ -16,8 +16,9 @@ reference:
     - cstaubest
     - cstauworst
     - plotranking
+  - title: "Function for inference for regressions involving ranks"
+  - contents:
     - lmranks
-    - summary.lmranks
   - title: "Datasets"
   - contents:
     - pisa
