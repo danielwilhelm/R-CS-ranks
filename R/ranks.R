@@ -165,10 +165,12 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
 #' thetahat <- colMeans(X)
 #' Sigmahat <- cov(X) / n
 #' 
-#' # confidence set for the populations that may be among the top-3 (with probability approximately 0.95):
+#' # confidence set for the populations that may be among the top-3 
+#' # (with probability approximately 0.95):
 #' cstaubest(thetahat, Sigmahat, tau=3)
 #' 
-#' # confidence set for the populations that may be among the bottom-3 (with probability approximately 0.95):
+#' # confidence set for the populations that may be among the bottom-3 
+#' # (with probability approximately 0.95):
 #' cstauworst(thetahat, Sigmahat, tau=3)
 #'
 #' @inherit csranks references

@@ -29,6 +29,6 @@
 #'   \item{c_faminc}{Family income of a child}
 #'   \item{p_faminc}{Family income of parent}
 #'   \item{gender}{Gender}
-#'   \item{race}{Race: hisp (hispanic), black or neither}
+#'   \item{race}{Race: hisp (Hispanic), black or neither}
 #' }
 "parent_child_income"

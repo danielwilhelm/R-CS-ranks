@@ -72,10 +72,12 @@ X <- matrix(rep(1:p,n)/p, ncol=p, byrow=TRUE) + matrix(rnorm(n*p), 100, 10)
 thetahat <- colMeans(X)
 Sigmahat <- cov(X) / n
 
-# confidence set for the populations that may be among the top-3 (with probability approximately 0.95):
+# confidence set for the populations that may be among the top-3 
+# (with probability approximately 0.95):
 cstaubest(thetahat, Sigmahat, tau=3)
 
-# confidence set for the populations that may be among the bottom-3 (with probability approximately 0.95):
+# confidence set for the populations that may be among the bottom-3 
+# (with probability approximately 0.95):
 cstauworst(thetahat, Sigmahat, tau=3)
 
 }

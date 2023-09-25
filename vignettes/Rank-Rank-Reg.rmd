@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-The following example illustrates how the `csranks` package can be used for estimation and inference in rank-rank regressions. These are commonly used for studying intergeneral mobility. 
+The following example illustrates how the `csranks` package can be used for estimation and inference in rank-rank regressions. These are commonly used for studying intergenerational mobility. 
 
 <!-- ## Rank-Rank regression
 
@@ -87,7 +87,7 @@ grouped_lmr_model_simple <- lmranks(r(c_faminc) ~ r(p_faminc_rank):gender,
 summary(grouped_lmr_model_simple)
 ```
 
-In this example, we have run a separate OLS regression of childen's ranks on parents' ranks among the female and male children. However, incomes of children are ranked among all children and incomes of parents are ranked among all parents. The standard errors, t-values and p-values are implemented according to the asymptotic theory developed in Chetverikov and Wilhelm (2023), where it is shown that the asymptotic distribution of the estimators now need to not only account for the fact that ranks are estimated, but also for the fact that estimators are correlated across gender subgroups because they use the same estimated ranking.
+In this example, we have run a separate OLS regression of children's ranks on parents' ranks among the female and male children. However, incomes of children are ranked among all children and incomes of parents are ranked among all parents. The standard errors, t-values and p-values are implemented according to the asymptotic theory developed in Chetverikov and Wilhelm (2023), where it is shown that the asymptotic distribution of the estimators now need to not only account for the fact that ranks are estimated, but also for the fact that estimators are correlated across gender subgroups because they use the same estimated ranking.
 
 A naive application of the `lm` function would produce the same point estimates, but **not** the correct standard errors:
 

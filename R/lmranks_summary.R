@@ -8,7 +8,7 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
     cli::cli_abort("{.var symbolic.cor} are not yet implemented for {.class lmranks}.")
   }
   # call summary.lm
-  object$df.residual <- nobs(object) - length(coef(object))
+  object$df.residual <- stats::nobs(object) - length(coef(object))
   outcome <- NextMethod()
   object$df.residual <- NA
   
