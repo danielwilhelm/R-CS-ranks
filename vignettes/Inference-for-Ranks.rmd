@@ -51,13 +51,13 @@ math_rank <- irank(pisa$math_score)
 head(pisa[order(math_rank),])
 ```
 
-Japan is ranked first (i.e., best), Korea is ranked second and so on. Since the math scores are *estimates* of countries' true achievements, the ranks assigned to these countries are also *estimates*, rather than the *true* ranks. Just like the test scores, the ranks therefore also contain statistical uncertainty. Various functions in the `csranks` package implement methods for the quantification of this uncertainty.
+Japan is ranked first (i.e., best), Korea is ranked second and so on. Since the math scores are **estimates** of countries' true achievements, the ranks assigned to these countries are also **estimates**, rather than the **true** ranks. Just like the test scores, the ranks therefore also contain statistical uncertainty. Various functions in the `csranks` package implement methods for the quantification of this uncertainty.
 
 
 
 ### Best populations
 
-First, we are interested in finding out which conutries could be among the top-5 in terms of their *true* math score. The function `cstaubest` answers this question. It requires as an argument an estimate of the covariance matrix of the test scores. In this example, it is reasonable to assume the estimates from the different countries are mutually independent, so the covariance matrix is diagonal:
+First, we are interested in finding out which conutries could be among the top-5 in terms of their **true** math score. The function `cstaubest` answers this question. It requires as an argument an estimate of the covariance matrix of the test scores. In this example, it is reasonable to assume the estimates from the different countries are mutually independent, so the covariance matrix is diagonal:
 
 ```{r math_Sigma}
 math_cov_mat <- diag(pisa$math_se^2)
@@ -71,7 +71,7 @@ CS_5best <- cstaubest(pisa$math_score, math_cov_mat, tau = 5, coverage = 0.95)
 pisa[CS_5best, "jurisdiction"]
 ```
 
-The confidence set contains 12 countries: with probability approximately 0.95, these 12 countries could all be among the top-5 according to their *true* math score. According to the *estimated* test scores, the countries Japan, Korea, Estonia, Netherlands, and Poland are the top-5 countries. However, due to the statistical uncertainty in the ranking, there is uncertainty about which countries are truly among the top-5. The confidence set above shows all countries that could all be among the top-4 (with probability approximately 95%).
+The confidence set contains 12 countries: with probability approximately 0.95, these 12 countries could all be among the top-5 according to their **true** math score. According to the **estimated** test scores, the countries Japan, Korea, Estonia, Netherlands, and Poland are the top-5 countries. However, due to the statistical uncertainty in the ranking, there is uncertainty about which countries are truly among the top-5. The confidence set above shows all countries that could all be among the top-4 (with probability approximately 95%).
 
 With lower required level of confidence, the confidence set for the top-5 shrinks:
 
@@ -95,7 +95,7 @@ CS_marg
 
 `CS_marg$L` and `CSmarg$U` contain the lower and upper bounds of the confidence sets for the ranks. 
 
-Based on the estimated math scores, we would rank the United Kingdom at 13-th place. However, due to statistical uncertainty in the ranking, its *true* rank could be anywhere between 7 and 23, with probability approximately 95%.
+Based on the estimated math scores, we would rank the United Kingdom at 13-th place. However, due to statistical uncertainty in the ranking, its **true** rank could be anywhere between 7 and 23, with probability approximately 95%.
 
 
 ### Simultaneous Confidence Sets
@@ -107,6 +107,7 @@ CS_simul <- csranks(pisa$math_score, math_cov_mat, simul=TRUE, coverage=0.95)
 plotsimul <- plot(CS_simul, popnames=pisa$jurisdiction, 
      title="Ranking of OECD Countries by 2018 PISA Math Score", 
      subtitle="(with 95% simultaneous confidence sets)")
+plotsimul
 ```
 
 The graph can be saved as
@@ -126,9 +127,10 @@ CS_simul75 <- csranks(pisa$math_score, math_cov_mat, simul=TRUE, coverage=0.75)
 plotsimul75 <- plot(CS_simul75, popnames=pisa$jurisdiction, 
      title="Ranking of OECD Countries by 2018 PISA Math Score", 
      subtitle="(with 75% simultaneous confidence sets)")
+plotsimul75
 ```
 
-## Reference & further reading
+## References & further documentation
 [Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies](https://doi.org/10.1093/restud/rdad006)
 
-Check out the documentation of individual functions at package's [website](https://danielwilhelm.github.io/R-CS-ranks/), as well as further examples at package's [Github](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples)
+Check out the documentation of individual functions at the package's [website](https://danielwilhelm.github.io/R-CS-ranks/) and further examples in the package's [Github repository](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples).

@@ -45,6 +45,9 @@ library(csranks)
 data(parent_child_income)
 head(parent_child_income)
 ```
+
+### Rank-rank regression
+
 In economics, it is common to estimate measures of mobility by running rank-rank regressions. For instance, the rank correlation between parents' and children's incomes can be estimated by running a regression of a child's income rank on the parent's income rank:
 
 ```{r lmranks}
@@ -54,7 +57,7 @@ summary(lmr_model)
 
 This regression specification takes each child's income (`c_faminc`), computes its rank among all children's incomes, then takes each parent's income (`p_faminc`) and computes its rank among all parents' incomes. Then the child's rank is regressed on the parent's rank using OLS. The `lmranks` function computes standard errors, t-values and p-values according to the asymptotic theory developed in Chetverikov and Wilhelm (2023).
 
-A naive approach, which *does not* lead to valid inference, would compute the children's and parents' ranks first and the run a standard OLS regression afterwards:
+A naive approach, which **does not** lead to valid inference, would compute the children's and parents' ranks first and the run a standard OLS regression afterwards:
 
 ```{r lm}
 c_faminc_rank <- frank(parent_child_income$c_faminc, omega=1, increasing=TRUE)
@@ -72,7 +75,7 @@ lmr_model_cov <- lmranks(r(c_faminc) ~ r(p_faminc) + gender + race, data=parent_
 summary(lmr_model_cov)
 ```
 
-## Grouped rank-rank regression
+### Grouped rank-rank regression
 
 In some economic applications, it is desired to run rank-rank regressions separately in subgroups of the population, but compute the ranks in the whole population. For instance, we might want to estimate rank-rank regression slopes as measures of intergenerational mobility separately for males and females, but the ranking of children's incomes is formed among all children (rather than form separate rankings for males and females). 
 
@@ -86,7 +89,7 @@ summary(grouped_lmr_model_simple)
 
 In this example, we have run a separate OLS regression of childen's ranks on parents' ranks among the female and male children. However, incomes of children are ranked among all children and incomes of parents are ranked among all parents. The standard errors, t-values and p-values are implemented according to the asymptotic theory developed in Chetverikov and Wilhelm (2023), where it is shown that the asymptotic distribution of the estimators now need to not only account for the fact that ranks are estimated, but also for the fact that estimators are correlated across gender subgroups because they use the same estimated ranking.
 
-A naive application of the `lm` function would produce the same point estimates, but not the correct standard errors:
+A naive application of the `lm` function would produce the same point estimates, but **not** the correct standard errors:
 
 ```{r grouped_lm_simple}
 grouped_lm_model_simple <- lm(c_faminc_rank ~ p_faminc_rank:gender + gender - 1, #group-wise intercept
@@ -171,4 +174,4 @@ expected. In this example, there are some differences in the correct (`csranks`)
 ## Reference & further reading
 Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions"
 
-Check out the documentation of individual functions at package's [website](https://danielwilhelm.github.io/R-CS-ranks/).
+Check out the documentation of individual functions at the package's [website](https://danielwilhelm.github.io/R-CS-ranks/) and further examples in the package's [Github repository](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples).
