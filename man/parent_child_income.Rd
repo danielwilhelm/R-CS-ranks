@@ -9,8 +9,8 @@ A data frame with 3894 rows and 4 variables:
 \describe{
   \item{c_faminc}{Family income of a child}
   \item{p_faminc}{Family income of parent}
-  \item{male}{Sex}
-  \item{race}{Race: hisp (hispanic), black or other}
+  \item{gender}{Gender}
+  \item{race}{Race: hisp (hispanic), black or neither}
 }
 }
 \usage{
