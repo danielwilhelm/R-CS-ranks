@@ -121,7 +121,7 @@ Such confidence sets allow us to draw inferences across countries and compare th
 
 However, at lower levels of confidence, Germany's and Korea's confidence sets do not overlap, so that with such lower levels of confidence one could conclude that Korea performs significantly better than Germany:
 
-```{r math_simul, fig.width=7, fig.height=7}
+```{r math_simul75, fig.width=7, fig.height=7}
 CS_simul75 <- csranks(pisa$math_score, math_cov_mat, simul=TRUE, coverage=0.75)
 plotsimul75 <- plot(CS_simul75, popnames=pisa$jurisdiction, 
      title="Ranking of OECD Countries by 2018 PISA Math Score", 

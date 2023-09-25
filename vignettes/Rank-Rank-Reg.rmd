@@ -78,7 +78,7 @@ In some economic applications, it is desired to run rank-rank regressions separa
 
 Such regressions can easily be run using the `lmranks` function and interaction notation:
 
-```{r grouped_lmranks}
+```{r grouped_lmranks_simple}
 grouped_lmr_model_simple <- lmranks(r(c_faminc) ~ r(p_faminc_rank):gender, 
                              data=parent_child_income)
 summary(grouped_lmr_model_simple)
@@ -88,7 +88,7 @@ In this example, we have run a separate OLS regression of childen's ranks on par
 
 A naive application of the `lm` function would produce the same point estimates, but not the correct standard errors:
 
-```{r grouped_lm}
+```{r grouped_lm_simple}
 grouped_lm_model_simple <- lm(c_faminc_rank ~ p_faminc_rank:gender + gender - 1, #group-wise intercept
                        data=parent_child_income)
 summary(grouped_lm_model_simple)
