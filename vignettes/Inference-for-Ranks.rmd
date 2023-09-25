@@ -51,13 +51,13 @@ math_rank <- irank(pisa$math_score)
 head(pisa[order(math_rank),])
 ```
 
-Japan is ranked first (i.e., best), Korea is ranked second and so on. Since the math scores are **estimates** of countries' true achievements, the ranks assigned to these countries are also **estimates**, rather than the **true** ranks. Just like the test scores, the ranks therefore also contain statistical uncertainty. Various functions in the `csranks` package implement methods for the quantification of this uncertainty.
+Japan is ranked first (i.e., best), Korea is ranked second and so on. Since the math scores are *estimates* of countries' true achievements, the ranks assigned to these countries are also *estimates*, rather than the *true* ranks. Just like the test scores, the ranks therefore also contain statistical uncertainty. Various functions in the `csranks` package implement methods for the quantification of this uncertainty.
 
 
 
 ### Best populations
 
-First, we are interested in finding out which conutries could be among the top-5 in terms of their **true** math score. The function `cstaubest` answers this question. It requires as an argument an estimate of the covariance matrix of the test scores. In this example, it is reasonable to assume the estimates from the different countries are mutually independent, so the covariance matrix is diagonal:
+First, we are interested in finding out which conutries could be among the top-5 in terms of their *true* math score. The function `cstaubest` answers this question. It requires as an argument an estimate of the covariance matrix of the test scores. In this example, it is reasonable to assume the estimates from the different countries are mutually independent, so the covariance matrix is diagonal:
 
 ```{r math_Sigma}
 math_cov_mat <- diag(pisa$math_se^2)
@@ -71,7 +71,7 @@ CS_5best <- cstaubest(pisa$math_score, math_cov_mat, tau = 5, coverage = 0.95)
 pisa[CS_5best, "jurisdiction"]
 ```
 
-The confidence set contains 12 countries: with probability approximately 0.95, these 12 countries could all be among the top-5 according to their **true** math score. According to the **estimated** test scores, the countries Japan, Korea, Estonia, Netherlands, and Poland are the top-5 countries. However, due to the statistical uncertainty in the ranking, there is uncertainty about which countries are truly among the top-5. The confidence set above shows all countries that could all be among the top-4 (with probability approximately 95%).
+The confidence set contains 12 countries: with probability approximately 0.95, these 12 countries could all be among the top-5 according to their *true* math score. According to the *estimated* test scores, the countries Japan, Korea, Estonia, Netherlands, and Poland are the top-5 countries. However, due to the statistical uncertainty in the ranking, there is uncertainty about which countries are truly among the top-5. The confidence set above shows all countries that could all be among the top-4 (with probability approximately 95%).
 
 With lower required level of confidence, the confidence set for the top-5 shrinks:
 
