@@ -1,0 +1,174 @@
+---
+title: "Inference for Rank-Rank Regressions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Inference for Rank-Rank Regressions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The following example illustrates how the `csranks` package can be used for estimation and inference in rank-rank regressions. These are commonly used for studying intergeneral mobility. 
+
+<!-- ## Rank-Rank regression
+
+Denote by $X$ the explanatory variable, $Y$ the outcome variable, and by 
+$F_X, F_Y$ CDFs of $X$ and $Y$. We postulate a linear model between
+$R_X=F_X(X)$ and $R_Y=F_Y(Y)$:
+
+\[R_Y = c+\rho R_X\]
+
+A naive course of action would be to estimate $R_X$ and $R_Y$ using the empirical 
+cumulative distribution function and plug the results into `lm`. However, this approach
+ignores the uncertainty originating from rank estimation. An individual 
+with income larger than 90% of sample could have income larger than 92 or 87% of the whole
+population after all. This ignorance results in inconsistent standard errors, confidence
+intervals and p-values of regression coefficients $c$ and $\rho$. 
+
+In the `csranks` package, an asymptotically correct method of calculation of those standard errors
+is implemented. The key function in the workflow is `lmranks`. -->
+
+## Example: Intergenerational Mobility
+
+In this example, we want to intergenerational income mobility by estimating and performing inference on the rank correlation between parents and their children's incomes. The `csranks` package contains an artificial dataset with data on children's and parents' household incomes, the child's gender and race (`black`, `hisp` or `neither`).
+
+First, load the package `csranks`. Second, load the data and take a quick look at it:
+
+```{r setup}
+library(csranks)
+data(parent_child_income)
+head(parent_child_income)
+```
+In economics, it is common to estimate measures of mobility by running rank-rank regressions. For instance, the rank correlation between parents' and children's incomes can be estimated by running a regression of a child's income rank on the parent's income rank:
+
+```{r lmranks}
+lmr_model <- lmranks(r(c_faminc) ~ r(p_faminc), data=parent_child_income)
+summary(lmr_model)
+```
+
+This regression specification takes each child's income (`c_faminc`), computes its rank among all children's incomes, then takes each parent's income (`p_faminc`) and computes its rank among all parents' incomes. Then the child's rank is regressed on the parent's rank using OLS. The `lmranks` function computes standard errors, t-values and p-values according to the asymptotic theory developed in Chetverikov and Wilhelm (2023).
+
+A naive approach, which *does not* lead to valid inference, would compute the children's and parents' ranks first and the run a standard OLS regression afterwards:
+
+```{r lm}
+c_faminc_rank <- frank(parent_child_income$c_faminc, omega=1, increasing=TRUE)
+p_faminc_rank <- frank(parent_child_income$p_faminc, omega=1, increasing=TRUE)
+lm_model <- lm(c_faminc_rank ~ p_faminc_rank)
+summary(lm_model)
+```
+
+Notice that the point estimates of the intercept and slope are the same as those of the `lmranks` function. However, the standard errors, t-values and p-values differ. This is because the usual OLS formulas for standard errors do not take into account the estimation uncertainty in the ranks.
+
+One can also run the rank-rank regression with additional covariates, e.g.:
+
+```{r lmrankscov}
+lmr_model_cov <- lmranks(r(c_faminc) ~ r(p_faminc) + gender + race, data=parent_child_income)
+summary(lmr_model_cov)
+```
+
+## Grouped rank-rank regression
+
+In some economic applications, it is desired to run rank-rank regressions separately in subgroups of the population, but compute the ranks in the whole population. For instance, we might want to estimate rank-rank regression slopes as measures of intergenerational mobility separately for males and females, but the ranking of children's incomes is formed among all children (rather than form separate rankings for males and females). 
+
+Such regressions can easily be run using the `lmranks` function and interaction notation:
+
+```{r grouped_lmranks_simple}
+grouped_lmr_model_simple <- lmranks(r(c_faminc) ~ r(p_faminc_rank):gender, 
+                             data=parent_child_income)
+summary(grouped_lmr_model_simple)
+```
+
+In this example, we have run a separate OLS regression of childen's ranks on parents' ranks among the female and male children. However, incomes of children are ranked among all children and incomes of parents are ranked among all parents. The standard errors, t-values and p-values are implemented according to the asymptotic theory developed in Chetverikov and Wilhelm (2023), where it is shown that the asymptotic distribution of the estimators now need to not only account for the fact that ranks are estimated, but also for the fact that estimators are correlated across gender subgroups because they use the same estimated ranking.
+
+A naive application of the `lm` function would produce the same point estimates, but not the correct standard errors:
+
+```{r grouped_lm_simple}
+grouped_lm_model_simple <- lm(c_faminc_rank ~ p_faminc_rank:gender + gender - 1, #group-wise intercept
+                       data=parent_child_income)
+summary(grouped_lm_model_simple)
+
+```
+
+One can also create more granular subgroups by interacting several characteristics such as gender and race:
+
+```{r grouped_lmranksgran}
+parent_child_income$subgroup <- interaction(parent_child_income$gender, parent_child_income$race)
+grouped_lmr_model <- lmranks(r(c_faminc) ~ r(p_faminc_rank):subgroup, 
+                             data=parent_child_income)
+summary(grouped_lmr_model)
+```
+
+
+
+Let's compare the confidence intervals for regression coefficients produced
+by `lmranks` and naive approaches.
+
+```{r grouped_lm}
+grouped_lm_model <- lm(c_faminc_rank ~ p_faminc_rank:subgroup + subgroup - 1, #group-wise intercept
+                       data=parent_child_income)
+summary(grouped_lm_model)
+```
+
+```{r plot_CIs, message = FALSE, out.width = "90%", fig.width=6, fig.height=4}
+library(ggplot2)
+theme_set(theme_minimal())
+ci_data <- data.frame(estimate=coef(lmr_model), 
+                    parameter=c("Intercept", "slope"),
+                    group="Whole sample",
+                    method="csranks", 
+                    lower=confint(lmr_model)[,1], 
+                    upper=confint(lmr_model)[,2])
+  
+  ci_data <- rbind(ci_data, data.frame(
+    estimate = coef(grouped_lmr_model),
+    parameter = rep(c("Intercept", "slope"), each=6),
+    group = rep(c("Hispanic female", "Hispanic male", "Black female", "Black male", 
+                  "Other female", "Other male"), times=2),
+    method="csranks",
+    lower=confint(grouped_lmr_model)[,1],
+    upper=confint(grouped_lmr_model)[,2]
+  ))
+  
+  ci_data <- rbind(ci_data, data.frame(
+    estimate = coef(lm_model),
+    parameter = c("Intercept", "slope"),
+    group = "Whole sample",
+    method="naive",
+    lower=confint(lm_model)[,1],
+    upper=confint(lm_model)[,2]
+  ))
+  
+  ci_data <- rbind(ci_data, data.frame(
+    estimate = coef(grouped_lm_model),
+    parameter = rep(c("Intercept", "slope"), each=6),
+    group = rep(c("Hispanic female", "Hispanic male", "Black female", "Black male", 
+                  "Other female", "Other male"), times=2),
+    method="naive",
+    lower=confint(grouped_lm_model)[,1],
+    upper=confint(grouped_lm_model)[,2]
+  ))
+  
+  ggplot(ci_data, aes(y=estimate, x=group, ymin=lower, ymax=upper,col=method, fill=method)) +
+    geom_point(position=position_dodge2(width = 0.9)) +
+    geom_errorbar(position=position_dodge2(width = 0.9)) +
+    geom_hline(aes(yintercept=estimate), data=subset(ci_data, group=="Whole sample"),
+               linetype="dashed",
+               col="gray") +
+    coord_flip() +
+    labs(title="95% confidence intervals of intercept and slope\nin rank-rank regression")+
+    facet_wrap(~parameter)
+```
+
+The coefficient calculated for the whole sample has a narrow confidence interval, which is
+expected. In this example, there are some differences in the correct (`csranks`) confidence intervals and the incorrect (`naive`) confidence intervals, but they are rather small. The paper by Chetverikov and Wilhelm (2023), however, provides empirical examples in which the differences can be quite large.
+
+## Reference & further reading
+Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions"
+
+Check out the documentation of individual functions at package's [website](https://danielwilhelm.github.io/R-CS-ranks/).

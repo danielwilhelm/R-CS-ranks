@@ -50,7 +50,7 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
 
 \item{weights}{currently not supported.}
 
-\item{na.action}{currently not supported. User is expected to handle NA values prior to the use of this command.}
+\item{na.action}{currently not supported. User is expected to handle NA values prior to the use of this function.}
 
 \item{method}{the method to be used; for fitting, currently only
     \code{method = "qr"} is supported; \code{method = "model.frame"} returns
@@ -133,9 +133,13 @@ included in the model - as it would have been in \code{lm} and, say,
 One can exclude \code{X} with a \code{-}, i.e. \code{r(Y)~r(X)+.-X}. See
 \code{\link{formula}} for more about model specification.
 
-The \code{r()} is a private alias for \code{\link{frank}} with the \code{increasing} 
-argument set to \code{TRUE}. The \code{omega} argument of \code{\link{frank}} specifies how ties in variables are to be handled and
-can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. By default \code{omega} is set equal to \code{1},
+The \code{r()} is a private alias for \code{\link{frank}}.
+The \code{increasing} argument, provided at individual regressor level,
+specifies whether the ranks should increase or decrease as regressor values increase.
+The \code{omega} argument of \code{\link{frank}}, provided at \code{lmranks} function level,
+specifies how ties in variables are to be handled and
+can be supplied as argument in \code{lmranks}. For more details, see \code{\link{frank}}. 
+By default \code{increasing} is set to \code{TRUE} and \code{omega} is set equal to \code{1},
 which means \code{r()} computes ranks by transforming a variable through its empirical cdf.
 
 
@@ -170,7 +174,7 @@ and asymptotically consistent, in contrast to naively running \code{vcov(lm(...)
 \section{Rank-rank regressions with clusters}{
 
 
-Sometimes, the data is divided into clusters and one is
+Sometimes, the data is divided into clusters (groups) and one is
 interested in running rank-rank regressions separately within each cluster, where the ranks are not computed
 within each cluster, but using all observations pooled across all clusters. Specifically, let \eqn{G_i=1,\ldots,n_G} denote 
 a variable that indicates the cluster to which the i-th observation belongs. Then, the regression model of interest is
@@ -179,11 +183,11 @@ where \eqn{\rho_g} and \eqn{\beta_g} are now cluster-specific coefficients, but 
 ranks among all observations \eqn{Y_i} and \eqn{X_i}, respectively. That means the rank of an observation is not computed among the other observations
 in the same cluster, but rather among all available observations across all clusters.
 
-This type of regression is implemented in the \code{lmranks} command using interaction notation: \code{r(Y)~(r(X)+W):G}. Here, the variable
+This type of regression is implemented in the \code{lmranks} function using interaction notation: \code{r(Y)~(r(X)+W):G}. Here, the variable
 G \strong{must} be a \code{\link{factor}}.
 
 Since the theory for clustered regression mixing grouped and ungrouped (in)dependent variables is not yet developed, such a model will raise an error. 
-Also, by default the command includes a cluster-specific intercept, i.e. \code{r(Y)~(r(X)+W):G} is internally interpreted as \code{r(Y)~(r(X)+W):G+G-1}.
+Also, by default the function includes a cluster-specific intercept, i.e. \code{r(Y)~(r(X)+W):G} is internally interpreted as \code{r(Y)~(r(X)+W):G+G-1}.
 
 \code{\link[stats]{contrasts}} of \code{G} must be of \code{contr.treatment} kind, 
 which is the default.
@@ -224,7 +228,7 @@ RY <- frank(Y, increasing=TRUE, omega=1)
 RX <- frank(X, increasing=TRUE, omega=1)
 fit <- lm(RY ~ RX)
 summary(fit)
-# the coefficient estimates are the same as in the lmranks command, but
+# the coefficient estimates are the same as in the lmranks function, but
 # the standard errors, t-values, p-values are incorrect
 
 # support of `data` argument:
@@ -248,7 +252,7 @@ Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions", Working P
 \seealso{
 \code{\link{lm}} for details about other arguments; \code{\link{frank}}.
 
-Generic funcions \code{\link[stats]{coef}}, \code{\link[stats]{effects}}, 
+Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{effects}}, 
 \code{\link[stats]{residuals}},
 \code{\link[stats]{fitted}}, \code{\link[stats]{model.frame}},
 \code{\link[stats]{model.matrix}}, \code{\link[stats]{update}} .
