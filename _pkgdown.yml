@@ -6,7 +6,7 @@ template:
   params:
     ganalytics: UA-2631182-3
 reference:
-  - title: "Functions for inference on ranks"
+  - title: "Inference on ranks"
   - contents: 
     - irank
     - irank_against
@@ -16,7 +16,7 @@ reference:
     - cstaubest
     - cstauworst
     - plotranking
-  - title: "Function for inference for regressions involving ranks"
+  - title: "Inference for regressions involving ranks"
   - contents:
     - lmranks
   - title: "Datasets"
