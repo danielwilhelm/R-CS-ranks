@@ -140,6 +140,9 @@ and take a quick look at it:</p>
 <span><span class="co">#&gt; 4  81951.64 58723.050   male neither</span></span>
 <span><span class="co">#&gt; 5  88350.33  6381.047   male neither</span></span>
 <span><span class="co">#&gt; 6 161331.33 40325.466 female neither</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="rank-rank-regression">Rank-rank regression<a class="anchor" aria-label="anchor" href="#rank-rank-regression"></a>
+</h3>
 <p>In economics, it is common to estimate measures of mobility by
 running rank-rank regressions. For instance, the rank correlation
 between parents’ and children’s incomes can be estimated by running a
@@ -173,9 +176,9 @@ rank among all parents’ incomes. Then the child’s rank is regressed on
 the parent’s rank using OLS. The <code>lmranks</code> function computes
 standard errors, t-values and p-values according to the asymptotic
 theory developed in Chetverikov and Wilhelm (2023).</p>
-<p>A naive approach, which <em>does not</em> lead to valid inference,
-would compute the children’s and parents’ ranks first and the run a
-standard OLS regression afterwards:</p>
+<p>A naive approach, which <strong>does not</strong> lead to valid
+inference, would compute the children’s and parents’ ranks first and the
+run a standard OLS regression afterwards:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">c_faminc_rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/irank.html">frank</a></span><span class="op">(</span><span class="va">parent_child_income</span><span class="op">$</span><span class="va">c_faminc</span>, omega<span class="op">=</span><span class="fl">1</span>, increasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">p_faminc_rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/irank.html">frank</a></span><span class="op">(</span><span class="va">parent_child_income</span><span class="op">$</span><span class="va">p_faminc</span>, omega<span class="op">=</span><span class="fl">1</span>, increasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -233,9 +236,9 @@ e.g.:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residual standard error: NA on 3889 degrees of freedom</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="grouped-rank-rank-regression">Grouped rank-rank regression<a class="anchor" aria-label="anchor" href="#grouped-rank-rank-regression"></a>
-</h2>
+<div class="section level3">
+<h3 id="grouped-rank-rank-regression">Grouped rank-rank regression<a class="anchor" aria-label="anchor" href="#grouped-rank-rank-regression"></a>
+</h3>
 <p>In some economic applications, it is desired to run rank-rank
 regressions separately in subgroups of the population, but compute the
 ranks in the whole population. For instance, we might want to estimate
@@ -281,7 +284,8 @@ that ranks are estimated, but also for the fact that estimators are
 correlated across gender subgroups because they use the same estimated
 ranking.</p>
 <p>A naive application of the <code>lm</code> function would produce the
-same point estimates, but not the correct standard errors:</p>
+same point estimates, but <strong>not</strong> the correct standard
+errors:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grouped_lm_model_simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">c_faminc_rank</span> <span class="op">~</span> <span class="va">p_faminc_rank</span><span class="op">:</span><span class="va">gender</span> <span class="op">+</span> <span class="va">gender</span> <span class="op">-</span> <span class="fl">1</span>, <span class="co">#group-wise intercept</span></span>
 <span>                       data<span class="op">=</span><span class="va">parent_child_income</span><span class="op">)</span></span>
@@ -448,12 +452,16 @@ are rather small. The paper by Chetverikov and Wilhelm (2023), however,
 provides empirical examples in which the differences can be quite
 large.</p>
 </div>
+</div>
 <div class="section level2">
 <h2 id="reference-further-reading">Reference &amp; further reading<a class="anchor" aria-label="anchor" href="#reference-further-reading"></a>
 </h2>
 <p>Chetverikov and Wilhelm (2023), “Inference for Rank-Rank
 Regressions”</p>
-<p>Check out the documentation of individual functions at package’s <a href="https://danielwilhelm.github.io/R-CS-ranks/" class="external-link">website</a>.</p>
+<p>Check out the documentation of individual functions at the package’s
+<a href="https://danielwilhelm.github.io/R-CS-ranks/" class="external-link">website</a> and
+further examples in the package’s <a href="https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples" class="external-link">Github
+repository</a>.</p>
 </div>
   </div>
 

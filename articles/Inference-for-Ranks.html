@@ -170,22 +170,22 @@ ranks based on these math scores:</p>
 <span><span class="co">#&gt; 28 2.602085</span></span>
 <span><span class="co">#&gt; 34 2.908004</span></span></code></pre></div>
 <p>Japan is ranked first (i.e., best), Korea is ranked second and so on.
-Since the math scores are <em>estimates</em> of countries’ true
+Since the math scores are <strong>estimates</strong> of countries’ true
 achievements, the ranks assigned to these countries are also
-<em>estimates</em>, rather than the <em>true</em> ranks. Just like the
-test scores, the ranks therefore also contain statistical uncertainty.
-Various functions in the <code>csranks</code> package implement methods
-for the quantification of this uncertainty.</p>
+<strong>estimates</strong>, rather than the <strong>true</strong> ranks.
+Just like the test scores, the ranks therefore also contain statistical
+uncertainty. Various functions in the <code>csranks</code> package
+implement methods for the quantification of this uncertainty.</p>
 <div class="section level3">
 <h3 id="best-populations">Best populations<a class="anchor" aria-label="anchor" href="#best-populations"></a>
 </h3>
 <p>First, we are interested in finding out which conutries could be
-among the top-5 in terms of their <em>true</em> math score. The function
-<code>cstaubest</code> answers this question. It requires as an argument
-an estimate of the covariance matrix of the test scores. In this
-example, it is reasonable to assume the estimates from the different
-countries are mutually independent, so the covariance matrix is
-diagonal:</p>
+among the top-5 in terms of their <strong>true</strong> math score. The
+function <code>cstaubest</code> answers this question. It requires as an
+argument an estimate of the covariance matrix of the test scores. In
+this example, it is reasonable to assume the estimates from the
+different countries are mutually independent, so the covariance matrix
+is diagonal:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">math_cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_se</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p>The function <code>cstaubest</code> can then be used to compute a 95%
@@ -199,13 +199,13 @@ confidence set for the top-5:</p>
 <span><span class="co">#&gt; 37 Levels: Australia Austria Belgium Canada Chile Colombia ... United States</span></span></code></pre></div>
 <p>The confidence set contains 12 countries: with probability
 approximately 0.95, these 12 countries could all be among the top-5
-according to their <em>true</em> math score. According to the
-<em>estimated</em> test scores, the countries Japan, Korea, Estonia,
-Netherlands, and Poland are the top-5 countries. However, due to the
-statistical uncertainty in the ranking, there is uncertainty about which
-countries are truly among the top-5. The confidence set above shows all
-countries that could all be among the top-4 (with probability
-approximately 95%).</p>
+according to their <strong>true</strong> math score. According to the
+<strong>estimated</strong> test scores, the countries Japan, Korea,
+Estonia, Netherlands, and Poland are the top-5 countries. However, due
+to the statistical uncertainty in the ranking, there is uncertainty
+about which countries are truly among the top-5. The confidence set
+above shows all countries that could all be among the top-4 (with
+probability approximately 95%).</p>
 <p>With lower required level of confidence, the confidence set for the
 top-5 shrinks:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -244,7 +244,7 @@ question:</p>
 and upper bounds of the confidence sets for the ranks.</p>
 <p>Based on the estimated math scores, we would rank the United Kingdom
 at 13-th place. However, due to statistical uncertainty in the ranking,
-its <em>true</em> rank could be anywhere between 7 and 23, with
+its <strong>true</strong> rank could be anywhere between 7 and 23, with
 probability approximately 95%.</p>
 </div>
 <div class="section level3">
@@ -259,7 +259,9 @@ that:</p>
 <code class="sourceCode R"><span><span class="va">CS_simul</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, coverage<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="va">plotsimul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul</span>, popnames<span class="op">=</span><span class="va">pisa</span><span class="op">$</span><span class="va">jurisdiction</span>, </span>
 <span>     title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
-<span>     subtitle<span class="op">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span><span class="op">)</span></span></code></pre></div>
+<span>     subtitle<span class="op">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span><span class="op">)</span></span>
+<span><span class="va">plotsimul</span></span></code></pre></div>
+<p><img src="Inference-for-Ranks_files/figure-html/math_simul-1.png" width="672"></p>
 <p>The graph can be saved as</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"mathsimul.pdf"</span>, plot<span class="op">=</span><span class="va">plotsimul</span><span class="op">)</span></span></code></pre></div>
@@ -287,18 +289,22 @@ than Germany:</p>
 <code class="sourceCode R"><span><span class="va">CS_simul75</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, coverage<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span></span>
 <span><span class="va">plotsimul75</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul75</span>, popnames<span class="op">=</span><span class="va">pisa</span><span class="op">$</span><span class="va">jurisdiction</span>, </span>
 <span>     title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
-<span>     subtitle<span class="op">=</span><span class="st">"(with 75% simultaneous confidence sets)"</span><span class="op">)</span></span></code></pre></div>
+<span>     subtitle<span class="op">=</span><span class="st">"(with 75% simultaneous confidence sets)"</span><span class="op">)</span></span>
+<span><span class="va">plotsimul75</span></span></code></pre></div>
+<p><img src="Inference-for-Ranks_files/figure-html/math_simul75-1.png" width="672"></p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="reference-further-reading">Reference &amp; further reading<a class="anchor" aria-label="anchor" href="#reference-further-reading"></a>
+<h2 id="references-further-documentation">References &amp; further documentation<a class="anchor" aria-label="anchor" href="#references-further-documentation"></a>
 </h2>
 <p><a href="https://doi.org/10.1093/restud/rdad006" class="external-link">Mogstad, Romano,
 Shaikh, and Wilhelm (2023), “Inference for Ranks with Applications to
 Mobility across Neighborhoods and Academic Achievements across
 Countries”, forthcoming at Review of Economic Studies</a></p>
-<p>Check out the documentation of individual functions at package’s <a href="https://danielwilhelm.github.io/R-CS-ranks/" class="external-link">website</a>, as well
-as further examples at package’s <a href="https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples" class="external-link">Github</a></p>
+<p>Check out the documentation of individual functions at the package’s
+<a href="https://danielwilhelm.github.io/R-CS-ranks/" class="external-link">website</a> and
+further examples in the package’s <a href="https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples" class="external-link">Github
+repository</a>.</p>
 </div>
   </div>
 
