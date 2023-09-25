@@ -1,3 +1,8 @@
+# csranks 1.2.0
+* Public release with contents of 1.1 (Rank-rank linear regression)
+* Added a new mode for regression with clustered (grouped) data
+* Bugfixes, doc, new vignette
+
 # csranks 1.1.1
 * Optimized `vcov.lmranks` method
 
