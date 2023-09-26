@@ -3,7 +3,7 @@ Type: Package
 Title: Statistical Tools for Ranks
 Version: 1.2.0
 Authors@R: c(
-    person("Daniel", "Wilhelm", ,"d.wilhelm@ucl.ac.uk", role = c("aut", "cre")),
+    person("Daniel", "Wilhelm", ,"d.wilhelm@lmu.de", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
   )
 Description: Account for uncertainty when working with ranks. 
