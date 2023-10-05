@@ -1,7 +1,7 @@
 bibentry(
   bibtype = "manual",
   key = "R-csranks",
-  title = "csranks: Confidence Sets for Ranks",
+  title = "csranks: Statistical Tools for Ranks",
   author = c("Daniel Wilhelm", "Pawel Morgen"),
   note = "https://github.com/danielwilhelm/R-CS-ranks",
   url = "https://danielwilhelm.github.io/R-CS-ranks/",
