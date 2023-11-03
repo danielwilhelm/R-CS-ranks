@@ -20,3 +20,12 @@ bibentry(
   doi = "10.1093/restud/rdad006",
   url = "http://dwilhelm.userweb.mwn.de/papers/cwp0323.pdf"
 )
+
+bibentry(
+  bibtype = "article",
+  key = "chetverikov2023inference",
+  title = "Inference for Rank-Rank Regressions",
+  author = c("Denis Chetverikov", "Daniel Wilhelm"),
+  journal = "arXiv preprint arXiv:2310.15512",
+  year = 2023
+)

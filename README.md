@@ -21,7 +21,7 @@ their theoretical properties. The confidence sets for ranks are based on
 Romano, Shaikh, and Wilhelm
 (2022)](https://dwilhelm.userweb.mwn.de/papers/cwp4021.pdf). The
 inference methods for regressions involving ranks are developed in
-Chetverikov and Wilhelm (2023).
+[Chetverikov and Wilhelm (2023)](https://arxiv.org/pdf/2310.15512).
 
 ## Installation
 

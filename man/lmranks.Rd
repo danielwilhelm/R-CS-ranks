@@ -247,7 +247,8 @@ lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
 
 }
 \references{
-Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions", Working Paper
+Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions". 
+arXiv preprint arXiv:2310.15512
 }
 \seealso{
 \code{\link{lm}} for details about other arguments; \code{\link{frank}}.

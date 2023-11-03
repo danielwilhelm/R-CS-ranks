@@ -10,7 +10,8 @@ Description: Account for uncertainty when working with ranks.
     Estimate standard errors consistently in linear regression with ranked variables.
     Construct confidence sets of various kinds for positions of populations in a ranking 
     based on values of a certain feature and their estimation errors. 
-    Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023)<doi:10.1093/restud/rdad006>.
+    Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023)<doi:10.1093/restud/rdad006> and
+    Chetverikov, Wilhelm (2023) <arXiv:2310.15512>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
