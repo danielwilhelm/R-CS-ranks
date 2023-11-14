@@ -109,7 +109,8 @@
 #' a \code{rank_terms_indices} - an integer vector with indices of entries of \code{terms.labels} attribute
 #' of \code{terms(formula)}, which correspond to ranked regressors.
 #' 
-#' @references Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions", Working Paper
+#' @references Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions". 
+#' \href{https://arxiv.org/pdf/2310.15512.pdf}{arXiv preprint arXiv:2310.15512}
 #' 
 #' @seealso 
 #' \code{\link{lm}} for details about other arguments; \code{\link{frank}}.

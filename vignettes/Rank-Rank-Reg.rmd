@@ -172,6 +172,6 @@ The coefficient calculated for the whole sample has a narrow confidence interval
 expected. In this example, there are some differences in the correct (`csranks`) confidence intervals and the incorrect (`naive`) confidence intervals, but they are rather small. The paper by Chetverikov and Wilhelm (2023), however, provides empirical examples in which the differences can be quite large.
 
 ## Reference & further reading
-Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions"
+[Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions". arXiv preprint arXiv:2310.15512](https://arxiv.org/pdf/2310.15512.pdf)
 
 Check out the documentation of individual functions at the package's [website](https://danielwilhelm.github.io/R-CS-ranks/) and further examples in the package's [Github repository](https://github.com/danielwilhelm/R-CS-ranks/tree/master/examples).
