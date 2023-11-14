@@ -213,7 +213,7 @@ top-5 shrinks:</p>
 <span></span>
 <span><span class="va">pisa</span><span class="op">[</span><span class="va">CS_5best_90</span>, <span class="st">"jurisdiction"</span><span class="op">]</span></span>
 <span><span class="co">#&gt;  [1] Belgium     Canada      Denmark     Estonia     Finland     Japan      </span></span>
-<span><span class="co">#&gt;  [7] Korea       Netherlands Poland      Slovenia    Sweden      Switzerland</span></span>
+<span><span class="co">#&gt;  [7] Korea       Netherlands Poland      Slovenia    Switzerland</span></span>
 <span><span class="co">#&gt; 37 Levels: Australia Austria Belgium Canada Chile Colombia ... United States</span></span></code></pre></div>
 <p>At the 90% level, we can now exclude Sweden to be among the
 top-5.</p>
@@ -230,7 +230,7 @@ question:</p>
 <span><span class="va">CS_marg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">FALSE</span>, indices <span class="op">=</span> <span class="va">uk_i</span>, coverage<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="va">CS_marg</span></span>
 <span><span class="co">#&gt; $L</span></span>
-<span><span class="co">#&gt; [1] 8</span></span>
+<span><span class="co">#&gt; [1] 7</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $rank</span></span>
 <span><span class="co">#&gt; [1] 13</span></span>
