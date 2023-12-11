@@ -37,7 +37,7 @@
 #' study by the Organization for Economic Cooperation and Development (OECD).
 #' The average scores are over all 15-year-old students in the study.
 #'
-#' @format A data frame with 37 rows and 6 variables:
+#' @format A data frame with 37 rows and 7 variables:
 #' \describe{
 #'   \item{jurisdiction}{country, from which data was collected}
 #'   \item{math_score}{average score in math}
