@@ -7,10 +7,10 @@
 \format{
 A data frame with 3894 rows and 4 variables:
 \describe{
-  \item{c_faminc}{Family income of a child}
-  \item{p_faminc}{Family income of parent}
-  \item{gender}{Gender}
-  \item{race}{Race: hisp (Hispanic), black or neither}
+\item{c_faminc}{Family income of a child}
+\item{p_faminc}{Family income of parent}
+\item{gender}{Gender}
+\item{race}{Race: hisp (Hispanic), black or neither}
 }
 }
 \usage{

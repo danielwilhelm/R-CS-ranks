@@ -33,9 +33,9 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 \value{
 A \code{csranks} object, which is a list with three items:
 \describe{
- \item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
- \item{\code{rank}}{Estimated ranks from \code{\link{irank}} with default parameters}
- \item{\code{U}}{Upper bounds of the confidence sets.}
+\item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
+\item{\code{rank}}{Estimated ranks from \code{\link{irank}} with default parameters}
+\item{\code{U}}{Upper bounds of the confidence sets.}
 }
 }
 \description{
@@ -43,18 +43,18 @@ Marginal and simultaneous confidence sets for ranks of categories, where categor
 }
 \section{Details}{
 
-This function computes confidence sets for ranks similarly as \code{\link{csranks}}, but it is tailored to the special case of 
-multinomial data. Suppose there are \eqn{p} populations (for the case of multinomial data, we will refer to them as "categories") such 
+This function computes confidence sets for ranks similarly as \code{\link{csranks}}, but it is tailored to the special case of
+multinomial data. Suppose there are \eqn{p} populations (for the case of multinomial data, we will refer to them as "categories") such
 as political parties, for example, that one wants to rank by the probabilities of them being chosen. For political parties, this would
 correspond to the share of votes each party obtains. Here, the underlying data are multinomial: each observation corresponds to a choice
 among the \eqn{p} categories. The vector \code{x} contains the counts of how often each category was chosen in the data.
 
 In this setting, \code{link{csranks}} could be applied to compute confidence sets for the ranks of each category, but instead this function
-implements a different method proposed by Bazylik, Mogstad, Romano, Shaikh, and Wilhelm (2023), which exploits the 
-multinomial structure of the problem and yields confidence sets for the ranks that are valid in finite samples (whereas \code{\link{csranks}} produces 
+implements a different method proposed by Bazylik, Mogstad, Romano, Shaikh, and Wilhelm (2023), which exploits the
+multinomial structure of the problem and yields confidence sets for the ranks that are valid in finite samples (whereas \code{\link{csranks}} produces
 confidence sets that are valid only asymptotically).
 
-The procedure involves testing multiple hypotheses. The `\code{multcorr}` indicates a method for multiplicity correction. See the paper for
+The procedure involves testing multiple hypotheses. The \verb{\code{multcorr}} indicates a method for multiplicity correction. See the paper for
 details.
 }
 

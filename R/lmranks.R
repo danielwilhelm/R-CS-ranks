@@ -339,7 +339,7 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE){
 #' @seealso 
 #' [H. Wickham, Advanced R, Environments chapter](https://adv-r.hadley.nz/environments.html)
 #' [environment()]
-#' [csranks::frank_against()], [csranks:::compare]
+#' [csranks::frank_against()]
 #' @noRd
 create_env_to_interpret_r_mark <- function(omega){
   rank_env <- new.env(parent = parent.frame(2))

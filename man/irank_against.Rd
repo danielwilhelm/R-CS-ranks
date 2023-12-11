@@ -14,7 +14,7 @@ frank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
 
 \item{v}{numeric reference vector.}
 
-\item{omega}{numeric value in [0,1], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.}
+\item{omega}{numeric value in \link{0,1}, defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.}
 
 \item{increasing}{logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.}
 
@@ -34,11 +34,11 @@ This function implements all possible definitions of ranks of the values in \cod
 the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
 the rank \eqn{p}.
 
-The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether 
+The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether
 the ranks should be increasing or decreasing with the values in \code{x}. When there are ties in \code{x}, however, then there are infinitely
-many possible ranks that can be assigned to a tied value. 
+many possible ranks that can be assigned to a tied value.
 
-When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between 
+When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between
 0 and 1 lead to values of the rank between the largest and smallest.
 }
 \section{Functions}{
