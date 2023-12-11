@@ -89,8 +89,8 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
                   width = errorbar_width,
                   linewidth = 1, position = position_dodge(0.1)) + 
       scale_x_continuous(limits = c(min_rank, max_rank), 
-                         breaks = unique(c(min_rank, seq(ceiling(min_rank / 5), max_rank, by = 5), max_rank)), 
-                         labels = unique(c(min_rank, seq(ceiling(min_rank / 5), max_rank, by = 5), max_rank)))
+                         breaks = unique(c(min_rank, seq(ceiling(min_rank / 5)*5, max_rank, by = 5), max_rank)), 
+                         labels = unique(c(min_rank, seq(ceiling(min_rank / 5)*5, max_rank, by = 5), max_rank)))
   }
     
   if (!horizontal) {
