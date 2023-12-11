@@ -4,6 +4,7 @@ x <- seq(1, 3, length = n)
 sd <- diag(rep(0.04, n))
 ranks <- irank(x)
 CS <- csranks(x, sd)
+CS_ind <- csranks(x, sd, indices=c(3,5,6,7))
 popnames <- rev(LETTERS[1:n])
 
 test_that("default plotranking returns a ggplot object", {
@@ -35,4 +36,8 @@ test_that("default plotranking works for larger dataset", {
 
 test_that("S3 method for csranks works", {
   expect_s3_class(plot(CS), "ggplot")
+})
+
+test_that("S3 method for csranks with nondefault indices works", {
+  expect_s3_class(plot(CS_ind), "ggplot")
 })

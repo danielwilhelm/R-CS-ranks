@@ -51,6 +51,8 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
                          caption, colorbins, horizontal)
   cc <- scales::seq_gradient_pal("#66a182", "#d1495b", "Lab")(seq(0, 1, length.out = 4))
   p <- length(ranks)
+  max_rank <- max(U)
+  min_rank <- min(L)
   if (is.null(popnames)) popnames <- 1:p
   dat <- data.frame(ranks = ranks, L = L, U = U, popnames = popnames)
   coltitle <- ifelse(colorbins == 4, "quartile", "quantile bins")
@@ -86,7 +88,9 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
     pl <- pl + geom_errorbar(aes(xmin = L, xmax = U),
                   width = errorbar_width,
                   linewidth = 1, position = position_dodge(0.1)) + 
-      scale_x_continuous(limits = c(1, p), breaks = unique(c(1, seq(5, p, by = 5), p)), labels = unique(c(1, seq(5, p, by = 5), p)))
+      scale_x_continuous(limits = c(min_rank, max_rank), 
+                         breaks = unique(c(min_rank, seq(ceiling(min_rank / 5), max_rank, by = 5), max_rank)), 
+                         labels = unique(c(min_rank, seq(ceiling(min_rank / 5), max_rank, by = 5), max_rank)))
   }
     
   if (!horizontal) {
