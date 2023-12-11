@@ -3,7 +3,7 @@
 #' Compute ranks with flexible handling of ties.
 #'
 #' @param x vector of values to be ranked
-#' @param omega numeric value in [0,1], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.
+#' @param omega numeric value in \[0,1\], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.
 #' @param increasing logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.
 #' 
@@ -93,7 +93,7 @@ count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
 #' @describeIn irank Compute fractional ranks
 #' 
 #' This function takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with 
-#' ranks in the interval [0,1]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank 
+#' ranks in the interval \[0,1\]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank 
 #' of the value \code{x[j]} is equal to the empirical cdf of \code{x} evaluated at \code{x[j]}.
 #' 
 #' @examples
