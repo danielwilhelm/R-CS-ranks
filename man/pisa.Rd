@@ -5,7 +5,7 @@
 \alias{pisa}
 \title{Cross-country comparison of students' achievement}
 \format{
-A data frame with 37 rows and 6 variables:
+A data frame with 37 rows and 7 variables:
 \describe{
 \item{jurisdiction}{country, from which data was collected}
 \item{math_score}{average score in math}
