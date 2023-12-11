@@ -14,7 +14,7 @@ frank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
 
 \item{v}{numeric reference vector.}
 
-\item{omega}{numeric value in \link{0,1}, defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.}
+\item{omega}{numeric value in [0,1], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.}
 
 \item{increasing}{logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.}
 

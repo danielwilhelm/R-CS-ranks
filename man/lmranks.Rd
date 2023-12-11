@@ -76,7 +76,7 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
     included in the formula instead or as well, and if more than one are
     specified their sum is used.  See \code{\link[stats]{model.offset}}.}
 
-\item{omega}{real number in the interval \link{0,1} defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.}
+\item{omega}{real number in the interval [0,1] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.}
 
 \item{...}{For \code{lm()}: additional arguments to be passed to the low level
     regression fitting functions (see below).}
