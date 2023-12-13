@@ -121,10 +121,10 @@ Otherwise, for each population indicated in <code>indices</code> a marginal conf
 <p>A <code>csranks</code> object, which is a list with three items:</p><dl><dt><code>L</code></dt>
 <dd><p>Lower bounds of the confidence sets for ranks indicated in <code>indices</code></p></dd>
 
- <dt><code>rank</code></dt>
+<dt><code>rank</code></dt>
 <dd><p>Estimated ranks from <code><a href="irank.html">irank</a></code> with default parameters</p></dd>
 
- <dt><code>U</code></dt>
+<dt><code>U</code></dt>
 <dd><p>Upper bounds of the confidence sets.</p></dd>
 
 
@@ -133,16 +133,16 @@ Otherwise, for each population indicated in <code>indices</code> a marginal conf
     <h2>Details</h2>
     
 
-<p>This function computes confidence sets for ranks similarly as <code><a href="csranks.html">csranks</a></code>, but it is tailored to the special case of 
-multinomial data. Suppose there are \(p\) populations (for the case of multinomial data, we will refer to them as "categories") such 
+<p>This function computes confidence sets for ranks similarly as <code><a href="csranks.html">csranks</a></code>, but it is tailored to the special case of
+multinomial data. Suppose there are \(p\) populations (for the case of multinomial data, we will refer to them as "categories") such
 as political parties, for example, that one wants to rank by the probabilities of them being chosen. For political parties, this would
 correspond to the share of votes each party obtains. Here, the underlying data are multinomial: each observation corresponds to a choice
 among the \(p\) categories. The vector <code>x</code> contains the counts of how often each category was chosen in the data.</p>
 <p>In this setting, <code>link{csranks}</code> could be applied to compute confidence sets for the ranks of each category, but instead this function
-implements a different method proposed by Bazylik, Mogstad, Romano, Shaikh, and Wilhelm (2023), which exploits the 
-multinomial structure of the problem and yields confidence sets for the ranks that are valid in finite samples (whereas <code><a href="csranks.html">csranks</a></code> produces 
+implements a different method proposed by Bazylik, Mogstad, Romano, Shaikh, and Wilhelm (2023), which exploits the
+multinomial structure of the problem and yields confidence sets for the ranks that are valid in finite samples (whereas <code><a href="csranks.html">csranks</a></code> produces
 confidence sets that are valid only asymptotically).</p>
-<p>The procedure involves testing multiple hypotheses. The `<code>multcorr</code>` indicates a method for multiplicity correction. See the paper for
+<p>The procedure involves testing multiple hypotheses. The <code>\code{multcorr}</code> indicates a method for multiplicity correction. See the paper for
 details.</p>
     </div>
     <div id="references">
@@ -157,13 +157,13 @@ details.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Multinom.html" class="external-link">rmultinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1000</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">csranks_multinom</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 9 7 7 5 3 3 3 1 1 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 9 7 6 5 4 3 3 1 1 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  8  7  6  5  4  3  2  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  8  7  6  5  4  3  1  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10  9  9  7  7  6  6  3  3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10  9  9  8  7  6  5  3  3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "csranks"</span>

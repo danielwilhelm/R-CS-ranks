@@ -121,8 +121,8 @@ and take a quick look at it:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/danielwilhelm/R-CS-ranks" class="external-link">csranks</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   jurisdiction science_score science_se reading_score reading_se math_score</span></span>
 <span><span class="co">#&gt; 1    Australia      502.9646   1.795398      502.6317   1.634343   491.3600</span></span>
 <span><span class="co">#&gt; 2      Austria      489.7804   2.777395      484.3926   2.697472   498.9423</span></span>
@@ -143,7 +143,7 @@ each country. The standard errors of the scores are stored in
 <code>math_se</code>. The following graph shows the raw math scores with
 95% marginal confidence intervals:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pisa</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html" class="external-link">reorder</a></span><span class="op">(</span><span class="va">jurisdiction</span>,<span class="va">math_score</span>,decreasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>, y<span class="op">=</span><span class="va">math_score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pisa2018</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html" class="external-link">reorder</a></span><span class="op">(</span><span class="va">jurisdiction</span>,<span class="va">math_score</span>,decreasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>, y<span class="op">=</span><span class="va">math_score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin<span class="op">=</span><span class="va">math_score</span><span class="op">-</span><span class="fl">2</span><span class="op">*</span><span class="va">math_se</span>, ymax<span class="op">=</span><span class="va">math_score</span><span class="op">+</span><span class="fl">2</span><span class="op">*</span><span class="va">math_se</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
@@ -153,22 +153,22 @@ each country. The standard errors of the scores are stored in
 <p>The function <code><a href="../reference/irank.html">irank()</a></code> can be used to produce integer
 ranks based on these math scores:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">math_rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/irank.html">irank</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">math_rank</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">math_rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/irank.html">irank</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">math_rank</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    jurisdiction science_score science_se reading_score reading_se math_score</span></span>
-<span><span class="co">#&gt; 19        Japan      529.1354   2.593168      503.8560   2.670974   526.9733</span></span>
-<span><span class="co">#&gt; 20        Korea      519.0073   2.802762      514.0523   2.940543   525.9330</span></span>
-<span><span class="co">#&gt; 9       Estonia      530.1080   1.884569      523.0170   1.842242   523.4146</span></span>
-<span><span class="co">#&gt; 25  Netherlands      503.3838   2.840622      484.7837   2.650864   519.2310</span></span>
-<span><span class="co">#&gt; 28       Poland      511.0356   2.607236      511.8557   2.702458   515.6479</span></span>
-<span><span class="co">#&gt; 34  Switzerland      495.2763   3.004997      483.9294   3.124322   515.3147</span></span>
+<span><span class="co">#&gt; 20        Japan      529.1354   2.593168      503.8560   2.670974   526.9733</span></span>
+<span><span class="co">#&gt; 21        Korea      519.0073   2.802762      514.0523   2.940543   525.9330</span></span>
+<span><span class="co">#&gt; 10      Estonia      530.1080   1.884569      523.0170   1.842242   523.4146</span></span>
+<span><span class="co">#&gt; 26  Netherlands      503.3838   2.840622      484.7837   2.650864   519.2310</span></span>
+<span><span class="co">#&gt; 29       Poland      511.0356   2.607236      511.8557   2.702458   515.6479</span></span>
+<span><span class="co">#&gt; 35  Switzerland      495.2763   3.004997      483.9294   3.124322   515.3147</span></span>
 <span><span class="co">#&gt;     math_se</span></span>
-<span><span class="co">#&gt; 19 2.471475</span></span>
-<span><span class="co">#&gt; 20 3.121394</span></span>
-<span><span class="co">#&gt; 9  1.743602</span></span>
-<span><span class="co">#&gt; 25 2.632278</span></span>
-<span><span class="co">#&gt; 28 2.602085</span></span>
-<span><span class="co">#&gt; 34 2.908004</span></span></code></pre></div>
+<span><span class="co">#&gt; 20 2.471475</span></span>
+<span><span class="co">#&gt; 21 3.121394</span></span>
+<span><span class="co">#&gt; 10 1.743602</span></span>
+<span><span class="co">#&gt; 26 2.632278</span></span>
+<span><span class="co">#&gt; 29 2.602085</span></span>
+<span><span class="co">#&gt; 35 2.908004</span></span></code></pre></div>
 <p>Japan is ranked first (i.e., best), Korea is ranked second and so on.
 Since the math scores are <strong>estimates</strong> of countries’ true
 achievements, the ranks assigned to these countries are also
@@ -187,16 +187,16 @@ this example, it is reasonable to assume the estimates from the
 different countries are mutually independent, so the covariance matrix
 is diagonal:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">math_cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_se</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">math_cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_se</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p>The function <code>cstaubest</code> can then be used to compute a 95%
 confidence set for the top-5:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_5best</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cstaubest.html">cstaubest</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, tau <span class="op">=</span> <span class="fl">5</span>, coverage <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">CS_5best</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cstaubest.html">cstaubest</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, tau <span class="op">=</span> <span class="fl">5</span>, coverage <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">pisa</span><span class="op">[</span><span class="va">CS_5best</span>, <span class="st">"jurisdiction"</span><span class="op">]</span></span>
-<span><span class="co">#&gt;  [1] Belgium     Canada      Denmark     Estonia     Finland     Japan      </span></span>
-<span><span class="co">#&gt;  [7] Korea       Netherlands Poland      Slovenia    Sweden      Switzerland</span></span>
-<span><span class="co">#&gt; 37 Levels: Australia Austria Belgium Canada Chile Colombia ... United States</span></span></code></pre></div>
+<span><span class="va">pisa2018</span><span class="op">[</span><span class="va">CS_5best</span>, <span class="st">"jurisdiction"</span><span class="op">]</span></span>
+<span><span class="co">#&gt;  [1] "Belgium"     "Canada"      "Denmark"     "Estonia"     "Finland"    </span></span>
+<span><span class="co">#&gt;  [6] "Japan"       "Korea"       "Netherlands" "Poland"      "Slovenia"   </span></span>
+<span><span class="co">#&gt; [11] "Sweden"      "Switzerland"</span></span></code></pre></div>
 <p>The confidence set contains 12 countries: with probability
 approximately 0.95, these 12 countries could all be among the top-5
 according to their <strong>true</strong> math score. According to the
@@ -209,12 +209,12 @@ probability approximately 95%).</p>
 <p>With lower required level of confidence, the confidence set for the
 top-5 shrinks:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_5best_90</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cstaubest.html">cstaubest</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, tau <span class="op">=</span> <span class="fl">5</span>, coverage <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">CS_5best_90</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cstaubest.html">cstaubest</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, tau <span class="op">=</span> <span class="fl">5</span>, coverage <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">pisa</span><span class="op">[</span><span class="va">CS_5best_90</span>, <span class="st">"jurisdiction"</span><span class="op">]</span></span>
-<span><span class="co">#&gt;  [1] Belgium     Canada      Denmark     Estonia     Finland     Japan      </span></span>
-<span><span class="co">#&gt;  [7] Korea       Netherlands Poland      Slovenia    Switzerland</span></span>
-<span><span class="co">#&gt; 37 Levels: Australia Austria Belgium Canada Chile Colombia ... United States</span></span></code></pre></div>
+<span><span class="va">pisa2018</span><span class="op">[</span><span class="va">CS_5best_90</span>, <span class="st">"jurisdiction"</span><span class="op">]</span></span>
+<span><span class="co">#&gt;  [1] "Belgium"     "Canada"      "Denmark"     "Estonia"     "Finland"    </span></span>
+<span><span class="co">#&gt;  [6] "Japan"       "Korea"       "Netherlands" "Poland"      "Slovenia"   </span></span>
+<span><span class="co">#&gt; [11] "Switzerland"</span></span></code></pre></div>
 <p>At the 90% level, we can now exclude Sweden to be among the
 top-5.</p>
 </div>
@@ -226,11 +226,11 @@ Kingdom. We would like to learn where its true ranking may lie. A
 marginal confidence set for the rank of the United Kingdom answers this
 question:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">uk_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">jurisdiction</span> <span class="op">==</span> <span class="st">"United Kingdom"</span><span class="op">)</span></span>
-<span><span class="va">CS_marg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">FALSE</span>, indices <span class="op">=</span> <span class="va">uk_i</span>, coverage<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">uk_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">jurisdiction</span> <span class="op">==</span> <span class="st">"United Kingdom"</span><span class="op">)</span></span>
+<span><span class="va">CS_marg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">FALSE</span>, indices <span class="op">=</span> <span class="va">uk_i</span>, coverage<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="va">CS_marg</span></span>
 <span><span class="co">#&gt; $L</span></span>
-<span><span class="co">#&gt; [1] 7</span></span>
+<span><span class="co">#&gt; [1] 8</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $rank</span></span>
 <span><span class="co">#&gt; [1] 13</span></span>
@@ -256,8 +256,8 @@ countries and compare their places in the ranking. Simultaneous
 confidence sets for the ranks of all countries allow one to do just
 that:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_simul</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, coverage<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
-<span><span class="va">plotsimul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul</span>, popnames<span class="op">=</span><span class="va">pisa</span><span class="op">$</span><span class="va">jurisdiction</span>, </span>
+<code class="sourceCode R"><span><span class="va">CS_simul</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, coverage<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
+<span><span class="va">plotsimul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul</span>, popnames<span class="op">=</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">jurisdiction</span>, </span>
 <span>     title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
 <span>     subtitle<span class="op">=</span><span class="st">"(with 95% simultaneous confidence sets)"</span><span class="op">)</span></span>
 <span><span class="va">plotsimul</span></span></code></pre></div>
@@ -286,8 +286,8 @@ confidence sets do not overlap, so that with such lower levels of
 confidence one could conclude that Korea performs significantly better
 than Germany:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CS_simul75</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, coverage<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span></span>
-<span><span class="va">plotsimul75</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul75</span>, popnames<span class="op">=</span><span class="va">pisa</span><span class="op">$</span><span class="va">jurisdiction</span>, </span>
+<code class="sourceCode R"><span><span class="va">CS_simul75</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/csranks.html">csranks</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">TRUE</span>, coverage<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span></span>
+<span><span class="va">plotsimul75</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">CS_simul75</span>, popnames<span class="op">=</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">jurisdiction</span>, </span>
 <span>     title<span class="op">=</span><span class="st">"Ranking of OECD Countries by 2018 PISA Math Score"</span>, </span>
 <span>     subtitle<span class="op">=</span><span class="st">"(with 75% simultaneous confidence sets)"</span><span class="op">)</span></span>
 <span><span class="va">plotsimul75</span></span></code></pre></div>

@@ -200,9 +200,9 @@ variables to be ranked can be indicated by <code>r()</code>. See Details and Exa
 
 
 <dt>complete</dt>
-<dd><p>logical indicating if the full variance-covariance matrix 
-should be returned also in case of an over-determined system where 
-some coefficients are undefined and <code>coef(.)</code> contains NAs correspondingly. 
+<dd><p>logical indicating if the full variance-covariance matrix
+should be returned also in case of an over-determined system where
+some coefficients are undefined and <code>coef(.)</code> contains NAs correspondingly.
 When <code>complete = TRUE</code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> is compatible with <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> also in this singular case.</p></dd>
 
 </dl></div>
@@ -214,7 +214,7 @@ When <code>complete = TRUE</code>, <code><a href="https://rdrr.io/r/stats/vcov.h
 
 
 <p>Additionally, it has an <code>omega</code> entry, corresponding to the <code>omega</code> argument,
-a <code>ranked_response</code> logical entry, and 
+a <code>ranked_response</code> logical entry, and
 a <code>rank_terms_indices</code> - an integer vector with indices of entries of <code>terms.labels</code> attribute
 of <code>terms(formula)</code>, which correspond to ranked regressors.</p>
     </div>
@@ -222,21 +222,20 @@ of <code>terms(formula)</code>, which correspond to ranked regressors.</p>
     <h2>Details</h2>
     <p>This function performs estimation and inference for regressions involving ranks. Suppose there is a dependent variable \(Y_i\) and independent
 variables \(X_i\) and \(W_i\), where \(X_i\) is a scalar and \(W_i\) a vector (possibly including a constant). Instead of running a linear regression of \(Y_i\) on \(X_i\) and \(W_i\), we want to first transform
-\(Y_i\) and/or \(X_i\) into ranks. Denote by \(R_i^Y\) the rank of \(Y_i\) and \(R_i^X\) the rank of \(X_i\). Then, a 
+\(Y_i\) and/or \(X_i\) into ranks. Denote by \(R_i^Y\) the rank of \(Y_i\) and \(R_i^X\) the rank of \(X_i\). Then, a
 <strong>rank-rank regression</strong>, $$R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ is run using the formula <code>r(Y)~r(X)+W</code>. Similarly, a <strong>regression of
-the raw dependent variable on the ranked regressor</strong>, $$Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ can be implemented by the formula <code>Y~r(X)+W</code>, and a 
+the raw dependent variable on the ranked regressor</strong>, $$Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ can be implemented by the formula <code>Y~r(X)+W</code>, and a
 <strong>regression of the ranked dependent variable on the raw regressors</strong>, $$R^Y_i = W_i'\beta + \varepsilon_i,$$ can be implemented by the formula <code>r(Y)~W</code>.</p>
-<p>The function works, in many ways, just like <code>lm</code> for linear regressions. Apart from some smaller details, there are two important differences: 
-first, in <code>lmranks</code>, the mark <code>r()</code> can be used in formulas to indicate variables to be ranked before running the regression and, second, 
+<p>The function works, in many ways, just like <code>lm</code> for linear regressions. Apart from some smaller details, there are two important differences:
+first, in <code>lmranks</code>, the mark <code>r()</code> can be used in formulas to indicate variables to be ranked before running the regression and, second,
 subsequent use of <code>summary</code> produces a summary table with the correct standard errors, t-values and p-values (while those of the <code>lm</code> are not correct for
 regressions involving ranks). See Chetverikov and Wilhelm (2023) for more details.</p>
-
-<p>Many other aspects of the function are similar to <code>lm</code>. For instance, 
+<p>Many other aspects of the function are similar to <code>lm</code>. For instance,
 <code>.</code> in a formula means 'all columns not otherwise in the formula' just as in <code>lm</code>. An
 intercept is included by default.
 In a model specified as <code>r(Y)~r(X)+.</code>, both <code>r(X)</code> and <code>X</code> will be
-included in the model - as it would have been in <code>lm</code> and, say, 
-<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code> instead of <code>r()</code>. 
+included in the model - as it would have been in <code>lm</code> and, say,
+<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code> instead of <code>r()</code>.
 One can exclude <code>X</code> with a <code>-</code>, i.e. <code>r(Y)~r(X)+.-X</code>. See
 <code><a href="https://rdrr.io/r/stats/formula.html" class="external-link">formula</a></code> for more about model specification.</p>
 <p>The <code>r()</code> is a private alias for <code><a href="irank.html">frank</a></code>.
@@ -244,14 +243,13 @@ The <code>increasing</code> argument, provided at individual regressor level,
 specifies whether the ranks should increase or decrease as regressor values increase.
 The <code>omega</code> argument of <code><a href="irank.html">frank</a></code>, provided at <code>lmranks</code> function level,
 specifies how ties in variables are to be handled and
-can be supplied as argument in <code>lmranks</code>. For more details, see <code><a href="irank.html">frank</a></code>. 
+can be supplied as argument in <code>lmranks</code>. For more details, see <code><a href="irank.html">frank</a></code>.
 By default <code>increasing</code> is set to <code>TRUE</code> and <code>omega</code> is set equal to <code>1</code>,
 which means <code>r()</code> computes ranks by transforming a variable through its empirical cdf.</p>
-
 <p>Many functions defined for <code>lm</code> also work correctly with <code>lmranks</code>.
 These include <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></code>, <code><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a></code>,
-<code><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></code>, <code><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></code>, 
-<code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></code> and others. 
+<code><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></code>, <code><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></code>,
+<code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></code> and others.
 On the other hand, some would return incorrect results if they treated
 <code>lmranks</code> output in the same way as <code>lm</code>'s. The central contribution of this package
 are <code>vcov</code>, <code>summary</code> and <code>confint</code> implementations using the correct asymptotic theory for regressions involving ranks.</p>
@@ -266,8 +264,8 @@ plot is available, which plots fitted values against residuals (for homoscedacit
 <li><p><code>predict(lmranks)</code>: Predict method for Linear Model for Ranks Fits</p></li>
 <li><p><code>summary(lmranks)</code>: Summarizing fits of rank-rank regressions</p></li>
 <li><p><code>vcov(lmranks)</code>: Calculate Variance-Covariance Matrix for a Fitted <code>lmranks</code> object</p>
-<p>Returns the variance-covariance matrix of the regression coefficients 
-(main parameters) of a fitted <code>lmranks</code> object. Its result is theoretically valid 
+<p>Returns the variance-covariance matrix of the regression coefficients
+(main parameters) of a fitted <code>lmranks</code> object. Its result is theoretically valid
 and asymptotically consistent, in contrast to naively running <code>vcov(lm(...))</code>.</p></li>
 </ul></div>
     <div id="rank-rank-regressions-with-clusters">
@@ -277,49 +275,49 @@ and asymptotically consistent, in contrast to naively running <code>vcov(lm(...)
 
 <p>Sometimes, the data is divided into clusters (groups) and one is
 interested in running rank-rank regressions separately within each cluster, where the ranks are not computed
-within each cluster, but using all observations pooled across all clusters. Specifically, let \(G_i=1,\ldots,n_G\) denote 
+within each cluster, but using all observations pooled across all clusters. Specifically, let \(G_i=1,\ldots,n_G\) denote
 a variable that indicates the cluster to which the i-th observation belongs. Then, the regression model of interest is
 $$R_i^Y = \sum_{g=1}^{n_G} 1\{G_i=g\}(\rho_g R_i^X + W_i'\beta_g) + \varepsilon_i,$$
-where \(\rho_g\) and \(\beta_g\) are now cluster-specific coefficients, but the ranks \(R_i^Y\) and \(R_i^X\) are computed as 
+where \(\rho_g\) and \(\beta_g\) are now cluster-specific coefficients, but the ranks \(R_i^Y\) and \(R_i^X\) are computed as
 ranks among all observations \(Y_i\) and \(X_i\), respectively. That means the rank of an observation is not computed among the other observations
 in the same cluster, but rather among all available observations across all clusters.</p>
 <p>This type of regression is implemented in the <code>lmranks</code> function using interaction notation: <code>r(Y)~(r(X)+W):G</code>. Here, the variable
 G <strong>must</strong> be a <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></code>.</p>
-<p>Since the theory for clustered regression mixing grouped and ungrouped (in)dependent variables is not yet developed, such a model will raise an error. 
+<p>Since the theory for clustered regression mixing grouped and ungrouped (in)dependent variables is not yet developed, such a model will raise an error.
 Also, by default the function includes a cluster-specific intercept, i.e. <code>r(Y)~(r(X)+W):G</code> is internally interpreted as <code>r(Y)~(r(X)+W):G+G-1</code>.</p>
-<p><code><a href="https://rdrr.io/r/stats/contrasts.html" class="external-link">contrasts</a></code> of <code>G</code> must be of <code>contr.treatment</code> kind, 
+<p><code><a href="https://rdrr.io/r/stats/contrasts.html" class="external-link">contrasts</a></code> of <code>G</code> must be of <code>contr.treatment</code> kind,
 which is the default.</p>
     </div>
     <div id="warning">
     <h2>Warning</h2>
     
 
-<p>As a consequence of the order, in which <code><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a></code> applies operations, 
-<code>subset</code> and <code>na.action</code> would be applied after evaluation of <code>r()</code>. 
-That would drop some rank values from the final model frame and returned coefficients 
+<p>As a consequence of the order, in which <code><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a></code> applies operations,
+<code>subset</code> and <code>na.action</code> would be applied after evaluation of <code>r()</code>.
+That would drop some rank values from the final model frame and returned coefficients
 and standard errors could no longer be correct.
 The user must handle NA values and filter the data on their own prior to usage in <code>lmranks</code>.</p>
-<p>Wrapping <code>r()</code> with other functions (like <code>log(r(x))</code>) will not 
+<p>Wrapping <code>r()</code> with other functions (like <code>log(r(x))</code>) will not
 recognize correctly the mark (because it will not be caught in <code>terms(formula, specials = "r")</code>).
 The ranks will be calculated correctly, but their transformation will be treated later in <code>lm</code> as a regular
 regressor. This means that the corresponding regression coefficient will be calculated correctly,
 but the standard errors, statistics etc. will not.</p>
 <p><code>r</code>, <code>.r_predict</code> and <code>.r_cache</code> are special expressions, used
 internally to interpret <code>r</code> mark correctly. Do not use them in <code>formula</code>.</p>
-<p>A number of methods defined for <code>lm</code> do not yield theoretically correct 
+<p>A number of methods defined for <code>lm</code> do not yield theoretically correct
 results when applied to <code>lmranks</code> objects; errors or warnings are raised in those instances.
 Also, the <code>df.residual</code> component is set to NA, since the notion of effects of freedom
 for the rank models is not theoretically established (at time of 1.2 release).</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions". 
+    <p>Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions".
 <a href="https://arxiv.org/pdf/2310.15512.pdf" class="external-link">arXiv preprint arXiv:2310.15512</a></p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></code> for details about other arguments; <code><a href="irank.html">frank</a></code>.</p>
-<p>Generic functions <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></code>, <code><a href="https://rdrr.io/r/stats/effects.html" class="external-link">effects</a></code>, 
+<p>Generic functions <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></code>, <code><a href="https://rdrr.io/r/stats/effects.html" class="external-link">effects</a></code>,
 <code><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">residuals</a></code>,
 <code><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></code>, <code><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a></code>,
 <code><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></code>, <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></code> .</p></div>
@@ -341,12 +339,12 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min       1Q   Median       3Q      Max </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.61508 -0.14271  0.00028  0.15852  0.59402 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.73919 -0.15230  0.00634  0.15216  0.56393 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.15694    0.01278   12.28   &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.68675    0.02551   26.92   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.16338    0.01348   12.12   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.67389    0.02691   25.05   &lt;2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -364,18 +362,18 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min       1Q   Median       3Q      Max </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.61508 -0.14271  0.00028  0.15852  0.59402 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.73919 -0.15230  0.00634  0.15216  0.56393 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.15694    0.01883   8.333 7.74e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RX           0.68675    0.03257  21.083  &lt; 2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.16338    0.01914   8.535   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RX           0.67389    0.03311  20.354   &lt;2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2103 on 498 degrees of freedom</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.4716,	Adjusted R-squared:  0.4706 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 444.5 on 1 and 498 DF,  p-value: &lt; 2.2e-16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2137 on 498 degrees of freedom</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.4541,	Adjusted R-squared:  0.453 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 414.3 on 1 and 498 DF,  p-value: &lt; 2.2e-16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># the coefficient estimates are the same as in the lmranks function, but</span></span></span>
 <span class="r-in"><span><span class="co"># the standard errors, t-values, p-values are incorrect</span></span></span>
