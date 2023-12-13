@@ -25,7 +25,8 @@ Imports:
     ggplot2,
     scales,
     MASS,
-    cli
+    cli,
+    lifecycle
 Suggests:
     spelling, 
     testthat (>= 2.1.0),
@@ -34,3 +35,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Language: en-US
+Roxygen: list(markdown = TRUE)

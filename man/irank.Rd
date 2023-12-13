@@ -30,19 +30,19 @@ This function implements all possible definitions of ranks of the values in \cod
 the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
 the rank \eqn{p}.
 
-The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether 
+The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether
 the ranks should be increasing or decreasing with the values in \code{x}. When there are ties in \code{x}, however, then there are infinitely
-many possible ranks that can be assigned to a tied value. 
+many possible ranks that can be assigned to a tied value.
 
-When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between 
+When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between
 0 and 1 lead to values of the rank between the largest and smallest.
 }
 \section{Functions}{
 \itemize{
 \item \code{frank()}: Compute fractional ranks
 
-This function takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with 
-ranks in the interval [0,1]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank 
+This function takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with
+ranks in the interval [0,1]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank
 of the value \code{x[j]} is equal to the empirical cdf of \code{x} evaluated at \code{x[j]}.
 
 }}

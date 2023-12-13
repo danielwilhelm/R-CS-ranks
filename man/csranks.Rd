@@ -42,9 +42,9 @@ Otherwise, for each population indicated in \code{indices} a marginal confidence
 \value{
 A \code{csranks} object, which is a list with three items:
 \describe{
- \item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
- \item{\code{rank}}{Estimated ranks from \code{\link{irank}} with default parameters}
- \item{\code{U}}{Upper bounds of the confidence sets.}
+\item{\code{L}}{Lower bounds of the confidence sets for ranks indicated in \code{indices}}
+\item{\code{rank}}{Estimated ranks from \code{\link{irank}} with default parameters}
+\item{\code{U}}{Upper bounds of the confidence sets.}
 }
 }
 \description{
@@ -52,19 +52,19 @@ Marginal and simultaneous confidence sets for ranks.
 }
 \section{Details}{
 
-Suppose \eqn{j=1,\ldots,p} populations (e.g., schools, hospitals, political parties, countries) are to be ranked according to 
-some measure \eqn{\theta=(\theta_1,\ldots,\theta_p)}. We do not observe the true values \eqn{\theta_1,\ldots,\theta_p}. Instead, for each population, 
+Suppose \eqn{j=1,\ldots,p} populations (e.g., schools, hospitals, political parties, countries) are to be ranked according to
+some measure \eqn{\theta=(\theta_1,\ldots,\theta_p)}. We do not observe the true values \eqn{\theta_1,\ldots,\theta_p}. Instead, for each population,
 we have data from which we have estimated these measures, \eqn{\hat{\theta}=(\hat{\theta}_1,\ldots,\hat{\theta}_p)}. The values \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p}
 are estimates of the true values \eqn{\theta_1,\ldots,\theta_p} and thus contain statistical uncertainty. In consequence, a ranking of the populations by
 the values \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} contains statistical uncertainty and is not necessarily equal to the true ranking of \eqn{\theta_1,\ldots,\theta_p}.
 
-The function computes confidence sets for the rank of one, several or all of the populations (\code{indices} indicates which of the \eqn{1,\ldots,p} populations are of interest). \code{x} is a vector containing the estimates 
-\eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} and \code{Sigma} is an estimate of the covariance matrix of \code{x}. The method assumes that the estimates are asymptotically normal and the sample sizes of the datasets 
+The function computes confidence sets for the rank of one, several or all of the populations (\code{indices} indicates which of the \eqn{1,\ldots,p} populations are of interest). \code{x} is a vector containing the estimates
+\eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} and \code{Sigma} is an estimate of the covariance matrix of \code{x}. The method assumes that the estimates are asymptotically normal and the sample sizes of the datasets
 are large enough so that \eqn{\hat{\theta}-\theta} is approximately distributed as \eqn{N(0,\Sigma)}. The argument \code{Sigma} should contain an estimate of the covariance matrix \eqn{\Sigma}. For instance, if for each population \eqn{j}
 \deqn{\sqrt{n_j} (\hat{\theta}_j-\theta_j) \to_d N(0, \sigma_j^2)}
 and the datasets for each population are drawn independently of each other, then \code{Sigma} is a diagonal matrix \deqn{diag(\hat{\sigma}_1^2/n_1,\ldots,\hat{\sigma}_p^2/n_p)}
 containing estimates of the asymptotic variances divided by the sample size. More generally, the estimates in \code{x} may be dependent, but then \code{Sigma}
-must be an estimate of its covariance matrix including off-diagonal terms. 
+must be an estimate of its covariance matrix including off-diagonal terms.
 
 Marginal confidence sets (\code{simul=FALSE}) are such that the confidence set for a population \eqn{j} contains the true rank of that population \eqn{j} with probability approximately
 equal to the nominal coverage level. Simultaneous confidence sets (\code{simul=TRUE}) on the other hand are such that the confidence sets for populations indicated in \code{indices} cover the true ranks

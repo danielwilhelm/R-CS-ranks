@@ -15,7 +15,7 @@
 #' \item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
 #' \item{For \code{plot} method: }{An \code{lmranks} object.}
 #' }
-#' @param omega real number in the interval [0,1] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.
+#' @param omega real number in the interval \[0,1\] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.
 #'
 #' @details 
 #' This function performs estimation and inference for regressions involving ranks. Suppose there is a dependent variable \eqn{Y_i} and independent
@@ -339,7 +339,7 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE){
 #' @seealso 
 #' [H. Wickham, Advanced R, Environments chapter](https://adv-r.hadley.nz/environments.html)
 #' [environment()]
-#' [csranks::frank_against()], [csranks:::compare]
+#' [csranks::frank_against()]
 #' @noRd
 create_env_to_interpret_r_mark <- function(omega){
   rank_env <- new.env(parent = parent.frame(2))
