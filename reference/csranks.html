@@ -188,13 +188,13 @@ in tighter confidence sets.</p>
 <span class="r-in"><span><span class="va">Sigmahat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cov</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">/</span> <span class="va">n</span></span></span>
 <span class="r-in"><span><span class="fu">csranks</span><span class="op">(</span><span class="va">thetahat</span>, <span class="va">Sigmahat</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 8 8 7 1 1 2 1 1 1 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 5 8 3 3 3 1 2 1 1 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10  9  8  5  4  7  6  3  2  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  9 10  7  8  6  4  5  3  1  2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10 10  7  7  8  7  7  7  6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 10 10  9 10  9  8  9  8  4  5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "csranks"</span>
@@ -206,16 +206,16 @@ in tighter confidence sets.</p>
 <span class="r-in"><span><span class="co"># marginal confidence set for each country:</span></span></span>
 <span class="r-in"><span><span class="fu">csranks</span><span class="op">(</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, simul<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $L</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 15 10  5  4 35 37 10  5  1  5 12 10 32 25 12 10 32 19  1  1 12 25 25 35  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 12 10  2 12 20  5 25  7  2 32  7 25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 15 10  5  4 35 37 10  5  1  5 12 10 32 25 12 10 32 20  1  1 12 25 25 35  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 12 10  2 12 20  5 25  7  2 32  8 25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $rank</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 24 18 10  7 35 37 17  8  3 11 20 15 34 30 21 16 32 25  1  2 19 29 27 36  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [26] 22 14  5 23 26  9 28 12  6 33 13 31</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $U</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 26 24 18 12 36 37 24 15  6 18 26 24 34 31 26 24 34 31  4  6 25 31 31 36  7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 26 23 11 26 31 16 31 23 11 34 23 31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 26 24 18 12 36 37 24 14  6 18 26 24 34 31 26 24 34 31  4  6 25 31 31 36  7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 26 23 11 26 31 14 31 23 11 34 23 31</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "csranks"</span>
