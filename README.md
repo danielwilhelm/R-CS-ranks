@@ -48,5 +48,5 @@ here](https://dwilhelm.shinyapps.io/R-CS-ranks-demo/).
 Here is a sneak peek:
 
 <center>
-<img src="https://github.com/danielwilhelm/R-CS-ranks/raw/master/inst/shiny-demo.v1.gif">
+<img src="https://github.com/danielwilhelm/R-CS-ranks/raw/master/inst/shiny-demo-v1.gif">
 </center>
