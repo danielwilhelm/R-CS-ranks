@@ -1,5 +1,3 @@
-# csranks (development version)
-
 # csranks 1.2.1
 
 * Added new datasets, `pisa2018` and `pisa2022`
