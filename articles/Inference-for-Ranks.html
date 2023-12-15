@@ -194,9 +194,10 @@ confidence set for the top-5:</p>
 <code class="sourceCode R"><span><span class="va">CS_5best</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cstaubest.html">cstaubest</a></span><span class="op">(</span><span class="va">pisa2018</span><span class="op">$</span><span class="va">math_score</span>, <span class="va">math_cov_mat</span>, tau <span class="op">=</span> <span class="fl">5</span>, coverage <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">pisa2018</span><span class="op">[</span><span class="va">CS_5best</span>, <span class="st">"jurisdiction"</span><span class="op">]</span></span>
-<span><span class="co">#&gt;  [1] "Belgium"     "Canada"      "Denmark"     "Estonia"     "Finland"    </span></span>
-<span><span class="co">#&gt;  [6] "Japan"       "Korea"       "Netherlands" "Poland"      "Slovenia"   </span></span>
-<span><span class="co">#&gt; [11] "Sweden"      "Switzerland"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "Belgium"        "Canada"         "Denmark"        "Estonia"       </span></span>
+<span><span class="co">#&gt;  [5] "Finland"        "Japan"          "Korea"          "Netherlands"   </span></span>
+<span><span class="co">#&gt;  [9] "Poland"         "Slovenia"       "Sweden"         "Switzerland"   </span></span>
+<span><span class="co">#&gt; [13] "United Kingdom"</span></span></code></pre></div>
 <p>The confidence set contains 12 countries: with probability
 approximately 0.95, these 12 countries could all be among the top-5
 according to their <strong>true</strong> math score. According to the
