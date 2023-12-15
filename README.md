@@ -38,3 +38,15 @@ You can install the development version of `csranks` from
 # install.packages("remotes")
 remotes::install_github("danielwilhelm/R-CS-ranks")
 ```
+
+## Demo
+
+If you want to play around with the confidence sets for ranks, feel free
+to try out [demo available
+here](https://dwilhelm.shinyapps.io/R-CS-ranks-demo/).
+
+Here is a sneak peek:
+
+<center>
+<img src="https://github.com/danielwilhelm/R-CS-ranks/raw/master/inst/shiny-demo.v1.gif">
+</center>
