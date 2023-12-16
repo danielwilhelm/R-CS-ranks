@@ -59,8 +59,8 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
 \item{model, y, qr}{logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.}
 
 \item{x}{\itemize{
-\item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
-\item{For \code{plot} method: }{An \code{lmranks} object.}
+\item For \code{lmranks}: Logical. Should model matrix be returned?
+\item For \code{plot} method: An \code{lmranks} object.
 }}
 
 \item{singular.ok}{logical. If \code{FALSE} (the default in S but
@@ -76,7 +76,10 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
     included in the formula instead or as well, and if more than one are
     specified their sum is used.  See \code{\link[stats]{model.offset}}.}
 
-\item{omega}{real number in the interval [0,1] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.}
+\item{omega}{real number in the interval [0,1] defining how ties are handled (if there are any).
+The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks.
+The default is 1 so that the rank of a realized value is defined as the
+empirical cdf evaluated at that realized value. See Details below.}
 
 \item{...}{For \code{lm()}: additional arguments to be passed to the low level
     regression fitting functions (see below).}
@@ -114,8 +117,9 @@ variable has been transformed into ranks before running the regression.
 This function performs estimation and inference for regressions involving ranks. Suppose there is a dependent variable \eqn{Y_i} and independent
 variables \eqn{X_i} and \eqn{W_i}, where \eqn{X_i} is a scalar and \eqn{W_i} a vector (possibly including a constant). Instead of running a linear regression of \eqn{Y_i} on \eqn{X_i} and \eqn{W_i}, we want to first transform
 \eqn{Y_i} and/or \eqn{X_i} into ranks. Denote by \eqn{R_i^Y} the rank of \eqn{Y_i} and \eqn{R_i^X} the rank of \eqn{X_i}. Then, a
-\strong{rank-rank regression}, \deqn{R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,} is run using the formula \code{r(Y)~r(X)+W}. Similarly, a \strong{regression of
-the raw dependent variable on the ranked regressor}, \deqn{Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,} can be implemented by the formula \code{Y~r(X)+W}, and a
+\strong{rank-rank regression}, \deqn{R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,} is run using the formula \code{r(Y)~r(X)+W}. Similarly, a
+\strong{regression of the raw dependent variable on the ranked regressor},
+\deqn{Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,} can be implemented by the formula \code{Y~r(X)+W}, and a
 \strong{regression of the ranked dependent variable on the raw regressors}, \deqn{R^Y_i = W_i'\beta + \varepsilon_i,} can be implemented by the formula \code{r(Y)~W}.
 
 The function works, in many ways, just like \code{lm} for linear regressions. Apart from some smaller details, there are two important differences:

@@ -11,25 +11,28 @@
 #' @param na.action currently not supported. User is expected to handle NA values prior to the use of this function.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
-#' @param x \itemize{
-#' \item{For \code{lmranks}: }{Logical. Should model matrix be returned?}
-#' \item{For \code{plot} method: }{An \code{lmranks} object.}
-#' }
-#' @param omega real number in the interval \[0,1\] defining how ties are handled (if there are any). The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.
+#' @param x 
+#' 
+#' * For `lmranks`: Logical. Should model matrix be returned?
+#' * For `plot` method: An `lmranks` object.
+#' @param omega real number in the interval \[0,1\] defining how ties are handled (if there are any). 
+#' The value of \code{omega} is passed to \code{\link{frank}} for computation of ranks. 
+#' The default is 1 so that the rank of a realized value is defined as the 
+#' empirical cdf evaluated at that realized value. See Details below.
 #'
 #' @details 
 #' This function performs estimation and inference for regressions involving ranks. Suppose there is a dependent variable \eqn{Y_i} and independent
 #' variables \eqn{X_i} and \eqn{W_i}, where \eqn{X_i} is a scalar and \eqn{W_i} a vector (possibly including a constant). Instead of running a linear regression of \eqn{Y_i} on \eqn{X_i} and \eqn{W_i}, we want to first transform
 #' \eqn{Y_i} and/or \eqn{X_i} into ranks. Denote by \eqn{R_i^Y} the rank of \eqn{Y_i} and \eqn{R_i^X} the rank of \eqn{X_i}. Then, a 
-#' \strong{rank-rank regression}, \deqn{R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,} is run using the formula \code{r(Y)~r(X)+W}. Similarly, a \strong{regression of
-#' the raw dependent variable on the ranked regressor}, \deqn{Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,} can be implemented by the formula \code{Y~r(X)+W}, and a 
+#' \strong{rank-rank regression}, \deqn{R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,} is run using the formula \code{r(Y)~r(X)+W}. Similarly, a 
+#' **regression of the raw dependent variable on the ranked regressor**, 
+#' \deqn{Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,} can be implemented by the formula \code{Y~r(X)+W}, and a 
 #' \strong{regression of the ranked dependent variable on the raw regressors}, \deqn{R^Y_i = W_i'\beta + \varepsilon_i,} can be implemented by the formula \code{r(Y)~W}.
 #' 
 #' The function works, in many ways, just like \code{lm} for linear regressions. Apart from some smaller details, there are two important differences: 
 #' first, in \code{lmranks}, the mark \code{r()} can be used in formulas to indicate variables to be ranked before running the regression and, second, 
 #' subsequent use of \code{summary} produces a summary table with the correct standard errors, t-values and p-values (while those of the \code{lm} are not correct for
 #' regressions involving ranks). See Chetverikov and Wilhelm (2023) for more details.
-#' 
 #' 
 #' Many other aspects of the function are similar to \code{lm}. For instance, 
 #' \code{.} in a formula means 'all columns not otherwise in the formula' just as in \code{lm}. An
