@@ -169,7 +169,10 @@ variables to be ranked can be indicated by <code>r()</code>. See Details and Exa
 
 
 <dt>omega</dt>
-<dd><p>real number in the interval [0,1] defining how ties are handled (if there are any). The value of <code>omega</code> is passed to <code><a href="irank.html">frank</a></code> for computation of ranks. The default is 1 so that the rank of a realized value is defined as the the empirical cdf evaluated at that realized value. See Details below.</p></dd>
+<dd><p>real number in the interval [0,1] defining how ties are handled (if there are any).
+The value of <code>omega</code> is passed to <code><a href="irank.html">frank</a></code> for computation of ranks.
+The default is 1 so that the rank of a realized value is defined as the
+empirical cdf evaluated at that realized value. See Details below.</p></dd>
 
 
 <dt>...</dt>
@@ -223,8 +226,9 @@ of <code>terms(formula)</code>, which correspond to ranked regressors.</p>
     <p>This function performs estimation and inference for regressions involving ranks. Suppose there is a dependent variable \(Y_i\) and independent
 variables \(X_i\) and \(W_i\), where \(X_i\) is a scalar and \(W_i\) a vector (possibly including a constant). Instead of running a linear regression of \(Y_i\) on \(X_i\) and \(W_i\), we want to first transform
 \(Y_i\) and/or \(X_i\) into ranks. Denote by \(R_i^Y\) the rank of \(Y_i\) and \(R_i^X\) the rank of \(X_i\). Then, a
-<strong>rank-rank regression</strong>, $$R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ is run using the formula <code>r(Y)~r(X)+W</code>. Similarly, a <strong>regression of
-the raw dependent variable on the ranked regressor</strong>, $$Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ can be implemented by the formula <code>Y~r(X)+W</code>, and a
+<strong>rank-rank regression</strong>, $$R_i^Y = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ is run using the formula <code>r(Y)~r(X)+W</code>. Similarly, a
+<strong>regression of the raw dependent variable on the ranked regressor</strong>,
+$$Y_i = \rho R_i^X + W_i'\beta + \varepsilon_i,$$ can be implemented by the formula <code>Y~r(X)+W</code>, and a
 <strong>regression of the ranked dependent variable on the raw regressors</strong>, $$R^Y_i = W_i'\beta + \varepsilon_i,$$ can be implemented by the formula <code>r(Y)~W</code>.</p>
 <p>The function works, in many ways, just like <code>lm</code> for linear regressions. Apart from some smaller details, there are two important differences:
 first, in <code>lmranks</code>, the mark <code>r()</code> can be used in formulas to indicate variables to be ranked before running the regression and, second,
@@ -339,12 +343,12 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min       1Q   Median       3Q      Max </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.57782 -0.14930 -0.00343  0.15522  0.56446 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.68599 -0.15687  0.00792  0.15597  0.64583 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.15322    0.01200   12.77   &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.69417    0.02395   28.98   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.16033    0.01376   11.65   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.67997    0.02746   24.76   &lt;2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -362,18 +366,18 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min       1Q   Median       3Q      Max </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.57782 -0.14930 -0.00343  0.15522  0.56446 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.68599 -0.15687  0.00792  0.15597  0.64583 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.15322    0.01865   8.215 1.84e-15 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RX           0.69417    0.03226  21.521  &lt; 2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.16033    0.01900   8.439  3.5e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RX           0.67997    0.03286  20.695  &lt; 2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2082 on 498 degrees of freedom</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.4819,	Adjusted R-squared:  0.4808 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 463.1 on 1 and 498 DF,  p-value: &lt; 2.2e-16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2121 on 498 degrees of freedom</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.4624,	Adjusted R-squared:  0.4613 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 428.3 on 1 and 498 DF,  p-value: &lt; 2.2e-16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># the coefficient estimates are the same as in the lmranks function, but</span></span></span>
 <span class="r-in"><span><span class="co"># the standard errors, t-values, p-values are incorrect</span></span></span>
