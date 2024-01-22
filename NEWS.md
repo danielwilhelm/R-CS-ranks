@@ -1,4 +1,5 @@
 # csranks (development version)
+* Changed license to GPLv3
 
 # csranks 1.2.1
 
