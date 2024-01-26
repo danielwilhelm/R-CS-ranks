@@ -1,6 +1,9 @@
 # csranks (development version)
 * Changed license to GPLv3
 
+# csranks 1.2.2
+* Changed license to GPLv3
+
 # csranks 1.2.1
 
 * Added new datasets, `pisa2018` and `pisa2022`
