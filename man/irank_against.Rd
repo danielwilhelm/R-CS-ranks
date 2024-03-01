@@ -21,31 +21,16 @@ frank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
 \item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.}
 }
 \value{
-Integer vector of the same length as \code{x} containing the ranks.
+Numeric vector of the same length as \code{x} containing the integer (for \code{irank_against}) or fractional (for \code{frank_against}) ranks.
 }
 \description{
 The method \code{\link{irank}} compares ranks using the same vector as reference.
-This method returns ranks, that values from \code{x} would assume if (individually)
-inserted into \code{v}.
+\code{irank_against} returns integer ranks, that values from \code{x} would assume if (individually)
+inserted into \code{v}. \code{frank_against} acts analogously, returning fractional ranks.
 }
-\details{
-This function implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
-\code{omega} and \code{increasing}. Suppose \code{x} is of length \eqn{p}. If \code{increasing=TRUE}, then the largest value in \code{x} receives the rank \eqn{p} and the smallest
-the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
-the rank \eqn{p}.
-
-The value of \code{omega} indicates how ties are handled. If there are no ties in \code{x}, then the value of \code{omega} does not affect the ranks and the only choice to be made is whether
-the ranks should be increasing or decreasing with the values in \code{x}. When there are ties in \code{x}, however, then there are infinitely
-many possible ranks that can be assigned to a tied value.
-
-When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between
-0 and 1 lead to values of the rank between the largest and smallest.
-}
-\section{Functions}{
-\itemize{
-\item \code{frank_against()}: Compute integer ranks in another reference vector
-
-}}
 \examples{
 irank_against(1:10, c(4,4,4,3,1,10,7,7))
+}
+\seealso{
+\code{\link[=irank]{irank()}}
 }
