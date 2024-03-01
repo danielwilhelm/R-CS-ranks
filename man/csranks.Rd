@@ -90,7 +90,7 @@ Sigmahat <- cov(X) / n
 csranks(thetahat, Sigmahat)
 
 # PISA example:
-attach(pisa)
+data(pisa2018)
 math_cov_mat <- diag(math_se^2)
 
 # marginal confidence set for each country:
