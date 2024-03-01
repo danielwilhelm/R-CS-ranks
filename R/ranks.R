@@ -2,7 +2,7 @@
 #'
 #' Marginal and simultaneous confidence sets for ranks.
 #'
-#' @param x vector of estimates containing estimated features by which the \code{length} populations are to be ranked.
+#' @param x vector of estimates containing estimated features by which the populations are to be ranked.
 #' @param Sigma estimated covariance matrix of \code{x}.
 #' @param coverage nominal coverage of the confidence set. Default is 0.95.
 #' @param cstype type of confidence set (\code{two-sided}, \code{upper}, \code{lower}). Default is \code{two-sided}.

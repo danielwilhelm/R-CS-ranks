@@ -18,7 +18,7 @@ csranks(
 )
 }
 \arguments{
-\item{x}{vector of estimates containing estimated features by which the \code{length} populations are to be ranked.}
+\item{x}{vector of estimates containing estimated features by which the populations are to be ranked.}
 
 \item{Sigma}{estimated covariance matrix of \code{x}.}
 
@@ -91,6 +91,8 @@ csranks(thetahat, Sigmahat)
 
 # PISA example:
 data(pisa2018)
+math_score <- pisa2018$math_score
+math_se <- pisa2018$math_se
 math_cov_mat <- diag(math_se^2)
 
 # marginal confidence set for each country:
