@@ -5,8 +5,16 @@ logLik.lmranks <- function(object, ...){
 
 #' @export
 anova.lmranks <- function(object, ...){
-  cli::cli_abort("This method might not return correct results.")
-  NextMethod()
+  cli::cli_abort("This method is not implemented.")
+}
+
+#' @export
+proj.lmranks <- function(object, ...){
+  object$df.residual <- stats::nobs(object) - length(coef(object))
+  out <- NextMethod()
+  object$df.residual <- NA
+  attr(out, "df") <- c(NA, NA, NA)
+  return(out)
 }
 
 #' @export
