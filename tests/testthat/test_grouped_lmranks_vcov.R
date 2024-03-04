@@ -13,7 +13,13 @@ mtcars2$G <- G
 
 test_that("summary does not raise errors", {
   mod <- lmranks(r(mpg) ~ (r(cyl) + disp):G, data=mtcars2)
-  expect_message(summary(mod), "degrees of freedom")
+  expect_silent(summary(mod))
+})
+
+test_that("print.summary.lmranks works", {
+  mod <- lmranks(r(mpg) ~ (r(cyl) + disp):G, data=mtcars2)
+  sumr <- summary(mod)
+  testthat::expect_output(print(sumr))
 })
 
 test_that("vcov passes shallow checks", {
