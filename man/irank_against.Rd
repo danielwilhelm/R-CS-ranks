@@ -28,9 +28,26 @@ The method \code{\link{irank}} compares ranks using the same vector as reference
 \code{irank_against} returns integer ranks, that values from \code{x} would assume if (individually)
 inserted into \code{v}. \code{frank_against} acts analogously, returning fractional ranks.
 }
+\details{
+It's useful to think about \code{frank_against(x,v)} as a generalization of Empirical Cumulative
+Distribution Function, created for \code{v} and evaluated for points in \code{x}.
+\code{frank_agaist(x,v,increasing=TRUE,omega=1)} is identical
+to \code{ecdf(v)(x)}.
+
+\code{increasing} switches the inequality sign in ECDF definition from
+\eqn{F_V(t) = \hat P(V <= t)} to \eqn{\hat P(V >= t)}.
+
+\code{omega=0} introduces the strict inequality (\eqn{\hat P(V < t)} instead of \eqn{\hat P(V <= t)}).
+Any \code{omega} in between is a weighted average of the cases \code{omega=1} and \code{omega=0}.
+
+Finally, \code{irank_against} is equal to \code{frank_against} multiplied by the \code{length(v)}.
+
+This particular choice of default parameters was made for compatibility with default parameters of
+\code{irank} and \code{frank}. \code{irank(x)} is always equal to \code{irank_against(x,x)} and \code{frank(x)} is always equal to \code{frank_against(x,x)}.
+}
 \examples{
 irank_against(1:10, c(4,4,4,3,1,10,7,7))
 }
 \seealso{
-\code{\link[=irank]{irank()}}
+\code{\link[=irank]{irank()}}, \code{\link[=ecdf]{ecdf()}}
 }

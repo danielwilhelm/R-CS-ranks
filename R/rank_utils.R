@@ -54,10 +54,27 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' @param v numeric reference vector.
 #' @inheritParams irank
 #' 
+#' @details 
+#' It's useful to think about `frank_against(x,v)` as a generalization of Empirical Cumulative 
+#' Distribution Function, created for `v` and evaluated for points in `x`. 
+#' `frank_agaist(x,v,increasing=TRUE,omega=1)` is identical
+#' to `ecdf(v)(x)`. 
+#' 
+#' `increasing` switches the inequality sign in ECDF definition from 
+#' \eqn{F_V(t) = \hat P(V <= t)} to \eqn{\hat P(V >= t)}. 
+#' 
+#' `omega=0` introduces the strict inequality (\eqn{\hat P(V < t)} instead of \eqn{\hat P(V <= t)}). 
+#' Any `omega` in between is a weighted average of the cases `omega=1` and `omega=0`.
+#' 
+#' Finally, `irank_against` is equal to `frank_against` multiplied by the `length(v)`.
+#' 
+#' This particular choice of default parameters was made for compatibility with default parameters of 
+#' `irank` and `frank`. `irank(x)` is always equal to `irank_against(x,x)` and `frank(x)` is always equal to `frank_against(x,x)`.
+#' 
 #' @return Numeric vector of the same length as \code{x} containing the integer (for `irank_against`) or fractional (for `frank_against`) ranks.
 #' @examples 
 #' irank_against(1:10, c(4,4,4,3,1,10,7,7))
-#' @seealso [irank()]
+#' @seealso [irank()], [ecdf()]
 #' @export
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   l <- process_irank_against_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
