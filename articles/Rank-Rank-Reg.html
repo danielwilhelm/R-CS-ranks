@@ -39,7 +39,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2.9001</span>
       </span>
     </div>
 
@@ -150,9 +150,6 @@ regression of a child’s income rank on the parent’s income rank:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lmr_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lmranks.html">lmranks</a></span><span class="op">(</span><span class="fu">r</span><span class="op">(</span><span class="va">c_faminc</span><span class="op">)</span> <span class="op">~</span> <span class="fu">r</span><span class="op">(</span><span class="va">p_faminc</span><span class="op">)</span>, data<span class="op">=</span><span class="va">parent_child_income</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lmr_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; The number of residual degrees of freedom is not correct.</span></span>
-<span><span class="co">#&gt; Also, z-value, not t-value, since the distribution used for p-value calculation</span></span>
-<span><span class="co">#&gt; is standard normal.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; lmranks(formula = r(c_faminc) ~ r(p_faminc), data = parent_child_income)</span></span>
@@ -162,13 +159,11 @@ regression of a child’s income rank on the parent’s income rank:</p>
 <span><span class="co">#&gt; -0.65601 -0.21986 -0.00376  0.22088  0.66495 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt;             Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)    </span></span>
 <span><span class="co">#&gt; (Intercept) 0.312311   0.007161   43.61   &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; r(p_faminc) 0.375538   0.014319   26.23   &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: NA on 3892 degrees of freedom</span></span></code></pre></div>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 <p>This regression specification takes each child’s income
 (<code>c_faminc</code>), computes its rank among all children’s incomes,
 then takes each parent’s income (<code>p_faminc</code>) and computes its
@@ -212,9 +207,6 @@ e.g.:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lmr_model_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lmranks.html">lmranks</a></span><span class="op">(</span><span class="fu">r</span><span class="op">(</span><span class="va">c_faminc</span><span class="op">)</span> <span class="op">~</span> <span class="fu">r</span><span class="op">(</span><span class="va">p_faminc</span><span class="op">)</span> <span class="op">+</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">race</span>, data<span class="op">=</span><span class="va">parent_child_income</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lmr_model_cov</span><span class="op">)</span></span>
-<span><span class="co">#&gt; The number of residual degrees of freedom is not correct.</span></span>
-<span><span class="co">#&gt; Also, z-value, not t-value, since the distribution used for p-value calculation</span></span>
-<span><span class="co">#&gt; is standard normal.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; lmranks(formula = r(c_faminc) ~ r(p_faminc) + gender + race, </span></span>
@@ -225,16 +217,14 @@ e.g.:</p>
 <span><span class="co">#&gt; -0.66140 -0.20654 -0.00343  0.21421  0.72917 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt;              Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span><span class="co">#&gt;              Estimate Std. Error z value Pr(&gt;|z|)    </span></span>
 <span><span class="co">#&gt; (Intercept)  0.299823   0.018155  16.514  &lt; 2e-16 ***</span></span>
 <span><span class="co">#&gt; r(p_faminc)  0.323785   0.015123  21.411  &lt; 2e-16 ***</span></span>
 <span><span class="co">#&gt; gendermale   0.010862   0.008484   1.280  0.20042    </span></span>
 <span><span class="co">#&gt; raceblack   -0.088215   0.020910  -4.219 2.46e-05 ***</span></span>
 <span><span class="co">#&gt; raceneither  0.055726   0.018781   2.967  0.00301 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: NA on 3889 degrees of freedom</span></span></code></pre></div>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="grouped-rank-rank-regression">Grouped rank-rank regression<a class="anchor" aria-label="anchor" href="#grouped-rank-rank-regression"></a>
@@ -252,9 +242,6 @@ function and interaction notation:</p>
 <code class="sourceCode R"><span><span class="va">grouped_lmr_model_simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lmranks.html">lmranks</a></span><span class="op">(</span><span class="fu">r</span><span class="op">(</span><span class="va">c_faminc</span><span class="op">)</span> <span class="op">~</span> <span class="fu">r</span><span class="op">(</span><span class="va">p_faminc_rank</span><span class="op">)</span><span class="op">:</span><span class="va">gender</span>, </span>
 <span>                             data<span class="op">=</span><span class="va">parent_child_income</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">grouped_lmr_model_simple</span><span class="op">)</span></span>
-<span><span class="co">#&gt; The number of residual degrees of freedom is not correct.</span></span>
-<span><span class="co">#&gt; Also, z-value, not t-value, since the distribution used for p-value calculation</span></span>
-<span><span class="co">#&gt; is standard normal.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; lmranks(formula = r(c_faminc) ~ r(p_faminc_rank):gender, data = parent_child_income)</span></span>
@@ -264,15 +251,13 @@ function and interaction notation:</p>
 <span><span class="co">#&gt; -0.65016 -0.21977 -0.00308  0.21750  0.68833 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt;                               Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span><span class="co">#&gt;                               Estimate Std. Error z value Pr(&gt;|z|)    </span></span>
 <span><span class="co">#&gt; genderfemale                   0.28796    0.01119   25.74   &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; gendermale                     0.33506    0.01107   30.27   &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; r(p_faminc_rank):genderfemale  0.40800    0.02046   19.94   &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; r(p_faminc_rank):gendermale    0.34516    0.02044   16.89   &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: NA on 3890 degrees of freedom</span></span></code></pre></div>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 <p>In this example, we have run a separate OLS regression of children’s
 ranks on parents’ ranks among the female and male children. However,
 incomes of children are ranked among all children and incomes of parents
@@ -318,9 +303,6 @@ characteristics such as gender and race:</p>
 <span><span class="va">grouped_lmr_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lmranks.html">lmranks</a></span><span class="op">(</span><span class="fu">r</span><span class="op">(</span><span class="va">c_faminc</span><span class="op">)</span> <span class="op">~</span> <span class="fu">r</span><span class="op">(</span><span class="va">p_faminc_rank</span><span class="op">)</span><span class="op">:</span><span class="va">subgroup</span>, </span>
 <span>                             data<span class="op">=</span><span class="va">parent_child_income</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">grouped_lmr_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; The number of residual degrees of freedom is not correct.</span></span>
-<span><span class="co">#&gt; Also, z-value, not t-value, since the distribution used for p-value calculation</span></span>
-<span><span class="co">#&gt; is standard normal.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; lmranks(formula = r(c_faminc) ~ r(p_faminc_rank):subgroup, data = parent_child_income)</span></span>
@@ -330,7 +312,7 @@ characteristics such as gender and race:</p>
 <span><span class="co">#&gt; -0.65574 -0.20769 -0.00387  0.21297  0.73248 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt;                                         Estimate Std. Error t value Pr(&gt;|t|)</span></span>
+<span><span class="co">#&gt;                                         Estimate Std. Error z value Pr(&gt;|z|)</span></span>
 <span><span class="co">#&gt; subgroupfemale.hisp                      0.26280    0.03268   8.041 8.94e-16</span></span>
 <span><span class="co">#&gt; subgroupmale.hisp                        0.35313    0.04516   7.820 5.26e-15</span></span>
 <span><span class="co">#&gt; subgroupfemale.black                     0.19741    0.01968  10.031  &lt; 2e-16</span></span>
@@ -357,9 +339,7 @@ characteristics such as gender and race:</p>
 <span><span class="co">#&gt; r(p_faminc_rank):subgroupfemale.neither ***</span></span>
 <span><span class="co">#&gt; r(p_faminc_rank):subgroupmale.neither   ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: NA on 3882 degrees of freedom</span></span></code></pre></div>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 <p>Let’s compare the confidence intervals for regression coefficients
 produced by <code>lmranks</code> and naive approaches.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">

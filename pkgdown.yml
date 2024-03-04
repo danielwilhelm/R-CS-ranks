@@ -1,8 +1,8 @@
-pandoc: 2.19.2
+pandoc: 3.1.11
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   Inference-for-Ranks: Inference-for-Ranks.html
   Rank-Rank-Reg: Rank-Rank-Reg.html
-last_built: 2024-01-26T12:50Z
+last_built: 2024-03-04T16:43Z
 

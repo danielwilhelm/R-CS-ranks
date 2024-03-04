@@ -24,7 +24,7 @@ variable has been transformed into ranks before running the regression."><!-- ma
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">csranks</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2.9001</span>
       </span>
     </div>
 
@@ -64,7 +64,7 @@ variable has been transformed into ranks before running the regression."><!-- ma
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Regressions Involving Ranks</h1>
-    <small class="dont-index">Source: <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/R/lmranks.R" class="external-link"><code>R/lmranks.R</code></a>, <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/R/lmranks_model_usage.R" class="external-link"><code>R/lmranks_model_usage.R</code></a>, <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/R/lmranks_summary.R" class="external-link"><code>R/lmranks_summary.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/R/lmranks.R" class="external-link"><code>R/lmranks.R</code></a>, <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/R/lmranks_model_selection.R" class="external-link"><code>R/lmranks_model_selection.R</code></a>, <a href="https://github.com/danielwilhelm/R-CS-ranks/blob/HEAD/R/lmranks_model_usage.R" class="external-link"><code>R/lmranks_model_usage.R</code></a>, and 1 more</small>
     <div class="hidden name"><code>lmranks.Rd</code></div>
     </div>
 
@@ -94,6 +94,9 @@ variable has been transformed into ranks before running the regression.</p>
 <span></span>
 <span><span class="co"># S3 method for lmranks</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, which <span class="op">=</span> <span class="fl">1</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for lmranks</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/proj.html" class="external-link">proj</a></span><span class="op">(</span><span class="va">object</span>, onedf <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for lmranks</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">...</span><span class="op">)</span></span>
@@ -188,6 +191,13 @@ empirical cdf evaluated at that realized value. See Details below.</p></dd>
 <dd><p>A <code>lmranks</code> object.</p></dd>
 
 
+<dt>onedf</dt>
+<dd><p>A logical flag. If <code>TRUE</code>, a projection is returned for all
+   the columns of the model matrix. If <code>FALSE</code>, the single-column
+   projections are collapsed by terms of the model (as represented in
+   the analysis of variance table).</p></dd>
+
+
 <dt>newdata</dt>
 <dd><p>An optional data frame in which to look for variables with which to predict. If omitted, the fitted values are used.</p></dd>
 
@@ -265,6 +275,7 @@ are <code>vcov</code>, <code>summary</code> and <code>confint</code> implementat
 <ul><li><p><code>plot(lmranks)</code>: Plot diagnostics for an <code>lmranks</code> object</p>
 <p>Displays plots useful for assessing quality of model fit. Currently, only one
 plot is available, which plots fitted values against residuals (for homoscedacity check).</p></li>
+<li><p><code>proj(lmranks)</code>: Projections of the data onto terms of rank-rank regression model</p></li>
 <li><p><code>predict(lmranks)</code>: Predict method for Linear Model for Ranks Fits</p></li>
 <li><p><code>summary(lmranks)</code>: Summarizing fits of rank-rank regressions</p></li>
 <li><p><code>vcov(lmranks)</code>: Calculate Variance-Covariance Matrix for a Fitted <code>lmranks</code> object</p>
@@ -334,25 +345,20 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-in"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">rrfit</span> <span class="op">&lt;-</span> <span class="fu">lmranks</span><span class="op">(</span><span class="fu">r</span><span class="op">(</span><span class="va">Y</span><span class="op">)</span> <span class="op">~</span> <span class="fu">r</span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">rrfit</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The number of residual degrees of freedom is not correct.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Also, z-value, not t-value, since the distribution used for p-value calculation</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> is standard normal.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lmranks(formula = r(Y) ~ r(X))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min       1Q   Median       3Q      Max </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.57720 -0.13971  0.00786  0.14350  0.45282 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.54496 -0.14256 -0.01291  0.13899  0.63492 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.13554    0.01039   13.04   &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.72946    0.02075   35.16   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.13788    0.01166   11.82   &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> r(X)         0.72478    0.02328   31.14   &lt;2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: NA on 498 degrees of freedom</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># naive version of the rank-rank regression:</span></span></span>
@@ -366,18 +372,18 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min       1Q   Median       3Q      Max </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.57720 -0.13971  0.00786  0.14350  0.45282 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.54496 -0.14256 -0.01291  0.13899  0.63492 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.13554    0.01772   7.648 1.07e-13 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RX           0.72946    0.03065  23.798  &lt; 2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.13788    0.01785   7.724 6.25e-14 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RX           0.72478    0.03087  23.476  &lt; 2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.1979 on 498 degrees of freedom</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.5321,	Adjusted R-squared:  0.5312 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 566.4 on 1 and 498 DF,  p-value: &lt; 2.2e-16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.1993 on 498 degrees of freedom</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Multiple R-squared:  0.5253,	Adjusted R-squared:  0.5244 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F-statistic: 551.1 on 1 and 498 DF,  p-value: &lt; 2.2e-16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># the coefficient estimates are the same as in the lmranks function, but</span></span></span>
 <span class="r-in"><span><span class="co"># the standard errors, t-values, p-values are incorrect</span></span></span>
@@ -412,9 +418,6 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-in"><span><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, each<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span> <span class="op">/</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">lmr</span> <span class="op">&lt;-</span> <span class="fu">lmranks</span><span class="op">(</span><span class="fu">r</span><span class="op">(</span><span class="va">mpg</span><span class="op">)</span> <span class="op">~</span> <span class="fu">r</span><span class="op">(</span><span class="va">hp</span><span class="op">)</span><span class="op">:</span><span class="va">G</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lmr</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The number of residual degrees of freedom is not correct.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Also, z-value, not t-value, since the distribution used for p-value calculation</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> is standard normal.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lmranks(formula = r(mpg) ~ r(hp):G, data = mtcars)</span>
@@ -424,7 +427,7 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> -0.224762 -0.085317  0.004598  0.069257  0.249756 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          Estimate Std. Error t value Pr(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          Estimate Std. Error z value Pr(&gt;|z|)    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GA        0.88517    0.07692  11.508  &lt; 2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GB        1.04137    0.10402  10.012  &lt; 2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GC        1.03120    0.05144  20.048  &lt; 2e-16 ***</span>
@@ -435,8 +438,6 @@ for the rank models is not theoretically established (at time of 1.2 release).</
 <span class="r-out co"><span class="r-pr">#&gt;</span> r(hp):GD -0.75260    0.08689  -8.662  &lt; 2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: NA on 24 degrees of freedom</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="va">lmr</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     GA GB GC GD r(hp):GA r(hp):GB r(hp):GC r(hp):GD</span>
