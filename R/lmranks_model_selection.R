@@ -8,8 +8,11 @@ anova.lmranks <- function(object, ...){
   cli::cli_abort("This method is not implemented.")
 }
 
+#' @describeIn lmranks Projections of the data onto terms of rank-rank regression model
+#' @importFrom stats proj
+#' @inheritParams stats::proj
 #' @export
-proj.lmranks <- function(object, ...){
+proj.lmranks <- function(object, onedf = FALSE, ...){
   object$df.residual <- stats::nobs(object) - length(coef(object))
   out <- NextMethod()
   object$df.residual <- NA
