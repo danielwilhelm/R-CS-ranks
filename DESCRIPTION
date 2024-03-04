@@ -1,7 +1,7 @@
 Package: csranks
 Type: Package
 Title: Statistical Tools for Ranks
-Version: 1.2.2.9000
+Version: 1.2.2.9001
 Authors@R: c(
     person("Daniel", "Wilhelm", ,"d.wilhelm@lmu.de", role = c("aut", "cre")),
     person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
