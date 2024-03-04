@@ -1,6 +1,6 @@
 #' Compute ranks
 #' 
-#' Compute ranks with flexible handling of ties.
+#' Compute integer of fractional ranks with flexible handling of ties.
 #'
 #' @param x vector of values to be ranked
 #' @param omega numeric value in \[0,1\], defining how ties in \code{x} (if any) are handled; default is \code{0}. See Details.
@@ -8,7 +8,7 @@
 #' @param na.rm logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.
 #' 
 #' @details 
-#' This function implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
+#' `irank` implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
 #' \code{omega} and \code{increasing}. Suppose \code{x} is of length \eqn{p}. If \code{increasing=TRUE}, then the largest value in \code{x} receives the rank \eqn{p} and the smallest
 #' the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
 #' the rank \eqn{p}.
@@ -21,7 +21,7 @@
 #' 0 and 1 lead to values of the rank between the largest and smallest.
 #' 
 #' 
-#' @return Integer vector of the same length as \code{x} containing the ranks.
+#' @return Numeric vector of the same length as \code{x} containing the integer (for `irank`) or fractional (for `frank`) ranks.
 #' @examples
 #' # simple example without ties:
 #' x <- c(3,8,-4,10,2)
@@ -38,6 +38,7 @@
 #' irank(x, increasing=TRUE, omega=0) # smallest possible ranks
 #' irank(x, increasing=TRUE, omega=0.5) # mid-ranks
 #' irank(x, increasing=TRUE, omega=1) # largest possible ranks
+#' 
 #' @export
 irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
   irank_against(x, x, omega=omega, increasing=increasing, na.rm=na.rm)
@@ -46,16 +47,34 @@ irank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) {
 #' Compute integer ranks in another reference vector
 #' 
 #' The method \code{\link{irank}} compares ranks using the same vector as reference.
-#' This method returns ranks, that values from \code{x} would assume if (individually)
-#' inserted into \code{v}. 
+#' `irank_against` returns integer ranks, that values from \code{x} would assume if (individually)
+#' inserted into \code{v}. `frank_against` acts analogously, returning fractional ranks.
 #' 
 #' @param x numeric query vector.
 #' @param v numeric reference vector.
 #' @inheritParams irank
 #' 
-#' @inherit irank details return
+#' @details 
+#' It's useful to think about `frank_against(x,v)` as a generalization of Empirical Cumulative 
+#' Distribution Function, created for `v` and evaluated for points in `x`. 
+#' `frank_agaist(x,v,increasing=TRUE,omega=1)` is identical
+#' to `ecdf(v)(x)`. 
+#' 
+#' `increasing` switches the inequality sign in ECDF definition from 
+#' \eqn{F_V(t) = \hat P(V <= t)} to \eqn{\hat P(V >= t)}. 
+#' 
+#' `omega=0` introduces the strict inequality (\eqn{\hat P(V < t)} instead of \eqn{\hat P(V <= t)}). 
+#' Any `omega` in between is a weighted average of the cases `omega=1` and `omega=0`.
+#' 
+#' Finally, `irank_against` is equal to `frank_against` multiplied by the `length(v)`.
+#' 
+#' This particular choice of default parameters was made for compatibility with default parameters of 
+#' `irank` and `frank`. `irank(x)` is always equal to `irank_against(x,x)` and `frank(x)` is always equal to `frank_against(x,x)`.
+#' 
+#' @return Numeric vector of the same length as \code{x} containing the integer (for `irank_against`) or fractional (for `frank_against`) ranks.
 #' @examples 
 #' irank_against(1:10, c(4,4,4,3,1,10,7,7))
+#' @seealso [irank()], [ecdf()]
 #' @export
 irank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   l <- process_irank_against_args(x=x, v=v, omega=omega, increasing=increasing, na.rm=na.rm)
@@ -90,14 +109,13 @@ count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
   return(out)
 }
 
-#' @describeIn irank Compute fractional ranks
-#' 
-#' This function takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with 
+#' @rdname irank
+#' @details
+#' `frank` takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with 
 #' ranks in the interval \[0,1\]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank 
 #' of the value \code{x[j]} is equal to the empirical cdf of \code{x} evaluated at \code{x[j]}.
 #' 
 #' @examples
-#' 
 #' # simple example of fractional ranks without ties:
 #' x <- c(3,8,-4,10,2)
 #' frank(x, increasing=TRUE)
@@ -106,7 +124,7 @@ count_lequal_lesser <- function(x, v=NULL, return_inverse_ranking=FALSE){
 frank <- function(x, omega=0, increasing=FALSE, na.rm=FALSE) 
   return(frank_against(x, x, omega, increasing, na.rm))
 
-#' @describeIn irank_against Compute integer ranks in another reference vector
+#' @rdname irank_against
 #' @export
 frank_against <- function(x, v, omega=0, increasing=FALSE, na.rm=FALSE){
   if(na.rm){

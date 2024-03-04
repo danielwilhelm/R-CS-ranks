@@ -28,7 +28,7 @@ cstauworst(
 )
 }
 \arguments{
-\item{x}{vector of estimates containing estimated features by which the \code{length} populations are to be ranked.}
+\item{x}{vector of estimates containing estimated features by which the populations are to be ranked.}
 
 \item{Sigma}{estimated covariance matrix of \code{x}.}
 

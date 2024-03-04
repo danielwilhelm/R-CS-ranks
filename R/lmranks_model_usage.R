@@ -19,7 +19,7 @@ predict.lmranks <- function(object, newdata, ...){
     !is.null(call$df) || !is.null(call$interval) || !is.null(call$type)
   # Disable not (yet) supported arguments 
   if(illegal_argument_encountered){
-    cli::cli_abort(c("Only {.var object}, {.var newdata} and {.var na.action} arguments are currently suppoerted.",
+    cli::cli_abort(c("Only {.var object}, {.var newdata} and {.var na.action} arguments are currently supported.",
                    "i" = "Currently, only basic prediction is supported, without calculation of standard error, confidence intervals, or per-term breakdown."))
   }
   

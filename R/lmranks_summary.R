@@ -17,7 +17,8 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   outcome$sigma <- NA
   # This one causes errors in print.summary.lm
   # If needed, we could Ctrl-C Ctrl-V and adapt the method
-  #outcome$df <- c(NA, nrow(object$model) - ncol(object$model), NA)
+  outcome$naive_df <- outcome$df
+  outcome$df <- c(NA, NA, NA)
   outcome$fstatistic <- NULL
   # Remember to handle this, once fstatistic is known
   outcome$adj.r.squared <- NA
@@ -29,12 +30,26 @@ summary.lmranks <- function(object, correlation = FALSE, symbolic.cor = FALSE, .
   outcome$coefficients[, 3] <- outcome$coefficients[, 1] / outcome$coefficients[, 2]
   outcome$coefficients[, 4] <- 2*stats::pnorm(-abs(outcome$coefficients[, 3]))
   
+  colnames(outcome$coefficients)[3:4] <- c("z value", "Pr(>|z|)")
+  
   if(correlation)
     outcome$correlation <- stats::cov2cor(cov_matrix)
-  cli::cli_inform(c("The number of residual degrees of freedom is not correct.", 
-                "Also, z-value, not t-value, since the distribution used for p-value calculation is standard normal."))
   class(outcome) <- c("summary.lmranks", class(outcome))
   outcome
+}
+
+#' @export 
+print.summary.lmranks <- function(x, ...){
+  x$df <- x$naive_df
+  text <- utils::capture.output(NextMethod())
+  x$df <- c(NA, NA, NA)
+  # remove the line about Residual standard error
+  text <- text[!grepl("^Residual standard error: NA on [0-9]+ degrees of freedom$", text)]
+  text <- as.list(text)
+  text$sep <- "\n"
+  concatenated_text <- do.call(paste, text)
+  cat(concatenated_text)
+  return(invisible(x))
 }
 
 #' @export

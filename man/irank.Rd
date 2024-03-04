@@ -19,13 +19,13 @@ frank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
 \item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.}
 }
 \value{
-Integer vector of the same length as \code{x} containing the ranks.
+Numeric vector of the same length as \code{x} containing the integer (for \code{irank}) or fractional (for \code{frank}) ranks.
 }
 \description{
-Compute ranks with flexible handling of ties.
+Compute integer of fractional ranks with flexible handling of ties.
 }
 \details{
-This function implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
+\code{irank} implements all possible definitions of ranks of the values in \code{x}. Different definitions of the ranks are chosen through combinations of the two arguments
 \code{omega} and \code{increasing}. Suppose \code{x} is of length \eqn{p}. If \code{increasing=TRUE}, then the largest value in \code{x} receives the rank \eqn{p} and the smallest
 the rank \eqn{1}. If \code{increasing=FALSE}, then the largest value in \code{x} receives the rank \eqn{1} and the smallest
 the rank \eqn{p}.
@@ -36,16 +36,11 @@ many possible ranks that can be assigned to a tied value.
 
 When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between
 0 and 1 lead to values of the rank between the largest and smallest.
-}
-\section{Functions}{
-\itemize{
-\item \code{frank()}: Compute fractional ranks
 
-This function takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with
+\code{frank} takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with
 ranks in the interval [0,1]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank
 of the value \code{x[j]} is equal to the empirical cdf of \code{x} evaluated at \code{x[j]}.
-
-}}
+}
 \examples{
 # simple example without ties:
 x <- c(3,8,-4,10,2)

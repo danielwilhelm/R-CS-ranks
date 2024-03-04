@@ -1,4 +1,12 @@
 # csranks (development version)
+* Fixed S3 inheritance for the `proj` method of `lmranks`. Added it to `lmranks` documentation page.
+* Changed column names of `coefficients` in `summary.lmranks` from `t value` to `z value` and from `Pr(<|t|)` to `Pr(<|z|)`.
+* Removed line about residual degrees of freedom from `print.summary.lmranks`.
+* Example in `csranks` now calls `data(pisa2018)`.
+* Clarified documentation of `csranks` function family.
+* Improved documentation of `irank`, `frank`, etc
+* Fixed typo in an error message
+* Updated tests
 
 # csranks 1.2.2
 * Changed license to GPLv3
