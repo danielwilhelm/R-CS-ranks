@@ -9,7 +9,7 @@
 * Updated tests
 
 # csranks 1.2.2
-* Changed license to GPLv3
+* Changed license to GPL v3
 
 # csranks 1.2.1
 
