@@ -1,60 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>/articles/Inference-for-Ranks.html</loc>
-  </url>
-  <url>
-    <loc>/articles/Rank-Rank-Reg.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/news/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/csranks.html</loc>
-  </url>
-  <url>
-    <loc>/reference/csranks_multinom.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cstaubest.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/irank.html</loc>
-  </url>
-  <url>
-    <loc>/reference/irank_against.html</loc>
-  </url>
-  <url>
-    <loc>/reference/lmranks.html</loc>
-  </url>
-  <url>
-    <loc>/reference/parent_child_income.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pisa.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pisa2018.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotranking.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/Inference-for-Ranks.html</loc></url>
+<url><loc>/articles/Rank-Rank-Reg.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/csranks.html</loc></url>
+<url><loc>/reference/csranks_multinom.html</loc></url>
+<url><loc>/reference/cstaubest.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/irank.html</loc></url>
+<url><loc>/reference/irank_against.html</loc></url>
+<url><loc>/reference/lmranks.html</loc></url>
+<url><loc>/reference/parent_child_income.html</loc></url>
+<url><loc>/reference/pisa.html</loc></url>
+<url><loc>/reference/pisa2018.html</loc></url>
+<url><loc>/reference/plotranking.html</loc></url>
 </urlset>
+
