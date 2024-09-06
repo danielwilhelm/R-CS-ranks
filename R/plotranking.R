@@ -109,7 +109,8 @@ plotranking <- function(ranks, L, U, popnames = NULL, title = NULL, subtitle = N
   if (colorbins > 1) {
     pl <- pl +
       theme(
-        legend.position = c(.95, .05),
+        legend.position = "inside",
+        legend.position.inside = c(.95, .05),
         legend.justification = c("right", "bottom"),
         legend.box.just = "right"
       ) +
