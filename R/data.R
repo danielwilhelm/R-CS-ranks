@@ -18,7 +18,7 @@
 #'   \item{science_se}{standard error for the average score in science}
 #' }
 #' @name pisa2018
-#' @source \url{https://www.oecd.org/pisa/data/}
+#' @source \url{https://www.oecd.org/en/about/programmes/pisa/pisa-data.html}
 "pisa2018"
 
 #' @rdname pisa2018
@@ -47,7 +47,7 @@
 #'   \item{science_score}{average score in science}
 #'   \item{science_se}{standard error for the average score in science}
 #' }
-#' @source \url{https://www.oecd.org/pisa/data/}
+#' @source \url{https://www.oecd.org/en/about/programmes/pisa/pisa-data.html}
 "pisa"
 
 #' Income of parents and children
