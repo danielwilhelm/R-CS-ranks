@@ -19,7 +19,7 @@
 An object of class \code{data.frame} with 38 rows and 7 columns.
 }
 \source{
-\url{https://www.oecd.org/pisa/data/}
+\url{https://www.oecd.org/en/about/programmes/pisa/pisa-data.html}
 }
 \usage{
 pisa2018

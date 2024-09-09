@@ -21,7 +21,7 @@ The following example illustrates how the `csranks` package can be used to quant
 Over the past two decades, the Organization for Economic Co-operation and Development (OECD) have conducted the PISA test. The goal of this test is to evaluate and compare educational systems across countries by measuring 15-year-old school students' scholastic performance on math, science, and reading. Each country that participates in a given year has to draw a sample of at least 5,000 students to be tested. Every three years, the OECD publishes international league tables ranking countries by their performance according to the PISA test scores.
 
 
-In this example, we use [publicly available data](https://www.oecd.org/pisa/data/) from the 2018 PISA test to examine which countries do best and worst at math. We restrict attention to the OECD countries.
+In this example, we use [publicly available data](https://www.oecd.org/en/about/programmes/pisa/pisa-data.html) from the 2018 PISA test to examine which countries do best and worst at math. We restrict attention to the OECD countries.
 
 
 First, load the package `csranks`. Second, load the data and take a quick look at it:

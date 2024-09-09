@@ -17,7 +17,7 @@ A data frame with 37 rows and 7 variables:
 }
 }
 \source{
-\url{https://www.oecd.org/pisa/data/}
+\url{https://www.oecd.org/en/about/programmes/pisa/pisa-data.html}
 }
 \usage{
 pisa
