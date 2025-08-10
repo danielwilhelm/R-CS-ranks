@@ -4,10 +4,10 @@
 \alias{process_ivregranks_formula}
 \title{Title}
 \usage{
-process_ivregranks_formula(formula, rankenv = NULL)
+process_ivregranks_formula(formula, rank_env = NULL)
 }
 \arguments{
-\item{rankenv}{}
+\item{rank_env}{}
 }
 \description{
 Title

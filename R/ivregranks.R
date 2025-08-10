@@ -26,7 +26,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
   corrected_formula <- l$formula
-  original_call <- match.call
+  original_call <- match.call()
   if (length(rank_terms_indices) == 0 && !ranked_response) {
     cli::cli_warn("{.var ivregranks} called with no ranked terms.
       Using regular ivreg...")
@@ -56,10 +56,10 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 #' Title
 #'
 #' @param formula
-#' @param rankenv
+#' @param rank_env
 #'
 #' @return
-process_ivregranks_formula <- function(formula, rankenv = NULL) {
+process_ivregranks_formula <- function(formula, rank_env = NULL) {
   if (!inherits(formula, "formula")) {
     cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
       "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."
@@ -77,11 +77,11 @@ process_ivregranks_formula <- function(formula, rankenv = NULL) {
       "i" = "Use lmranks."
     )
   }
-  if (length(formula)[1] != 1 || length(formula)[2] != 2) {
+  if (length(formula)[1] != 1 || length(formula)[2] > 3) {
     cli::cli_abort(c("{.var formula} must contain a single outcome and at least
       an instrument part.",
       "x" = "The passed {.var formula} has either a multi-part response
-      or more than two-part regressors."
+      or more than three-part regressors."
     ))
   }
   formula_terms <- stats::terms(formula,
@@ -94,7 +94,7 @@ process_ivregranks_formula <- function(formula, rankenv = NULL) {
     allowDotAsName = TRUE
   )
 
-  l <- csrank::process_lmranks_formula(
+  l <- process_lmranks_formula(
     Formula::as.Formula(outcome_eq_terms),
     rank_env
   )
