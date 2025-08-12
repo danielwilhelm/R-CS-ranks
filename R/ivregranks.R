@@ -123,7 +123,7 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
 
   environment(formula) <- rank_env
   return(list(
-    rank_terms_indices = rank_variables_indices,
+    rank_variables_indices = rank_variables_indices,
     ranked_instrument_indices = ranked_instrument_indices,
     ranked_response = l$ranked_response, formula = formula
   ))

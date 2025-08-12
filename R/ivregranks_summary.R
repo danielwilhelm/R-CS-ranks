@@ -43,14 +43,8 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   H1_mean <- colMeans(H1)
 
   object_se <- object$object_se
-  H2 <- calculate_H2(
-    object, object_se, projection_residuals_fs,
-    H1_mean
-  )
-  H3 <- calculate_H3(
-    object, object_se, object_fs,
-    projection_residual_matrix_fs, H1_mean
-  )
+  H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
+  H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
 
   projection_residual_matrix_se <- get_projection_residual_matrix(object_se)
   X <- stats::model.matrix(object_se)
@@ -68,4 +62,24 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   }
 
   return(sigmahat)
+}
+
+calculate_H1.ivregranks <- function(object, projection_residuals) {
+  NextMethod()
+}
+
+calculate_H2.ivregranks <- function(object, projection_residuals, H1_mean = NULL) {
+  rank_column_index <- get_ranked_indices(object$object_se)
+  model_matrix_se <- stats::model.matrix(object$object_se)
+  l <- get_and_separate_regressors(model_matrix_se, rank_column_index)
+  RY <- stats::model.response(stats::model.frame(object$object_se))
+
+  NextMethod(l = l, RY = RY)
+}
+calculate_H3.ivregranks <- function(object, projection_residual_matrix, H1_mean) {
+  ranked_instrument_indices <- object$ranked_instrument_indices
+  model_matrix <- stats::model.matrix(object)
+  l <- get_and_separate_regressors(model_matrix, ranked_instrument_indices)
+
+  NextMethod(l = l)
 }
