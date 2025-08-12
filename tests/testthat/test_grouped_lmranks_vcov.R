@@ -155,7 +155,9 @@ test_that("get_and_separate_regressors works with grouping",{
   expected_out_1 <- list(RX = expected_RX,
                          rank_column_index = 1:n_groups+1, # Intercept
                          global_RX = rowSums(expected_RX))
-  expect_equal(get_and_separate_regressors(model_1),
+  rank_column_index <- get_ranked_indices(model_1, "rank_terms_indices")
+  model_matrix <- stats::model.matrix(model_1)
+  expect_equal(get_and_separate_regressors(model_matrix, rank_column_index),
                expected_out_1)
 })
 

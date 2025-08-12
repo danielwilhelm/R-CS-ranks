@@ -126,7 +126,9 @@ test_that("get_and_separate_regressors works",{
   expected_out_1 <- list(RX = expected_RX,
                          rank_column_index = 2, # Intercept
                          global_RX = expected_RX)
-  expect_equal(get_and_separate_regressors(model_1),
+  rank_column_index <- get_ranked_indices(model_1, "rank_terms_indices")
+  model_matrix <- stats::model.matrix(model_1)
+  expect_equal(get_and_separate_regressors(model_matrix, rank_column_index),
                expected_out_1)
   
   RX <- mtcars$disp
@@ -138,7 +140,9 @@ test_that("get_and_separate_regressors works",{
   names(expected_out_2$RX) <- 1:length(RX)
   names(expected_out_2$global_RX) <- 1:length(RX)
   expected_out_2$rank_column_index <- 4
-  expect_equal(get_and_separate_regressors(model_2),
+  rank_column_index <- get_ranked_indices(model_2, "rank_terms_indices")
+  model_matrix <- stats::model.matrix(model_2)
+  expect_equal(get_and_separate_regressors(model_matrix, rank_column_index),
                expected_out_2)
 })
 test_that("get_and_separate_regressors works for no ranked regressors",{
@@ -150,7 +154,9 @@ test_that("get_and_separate_regressors works for no ranked regressors",{
                        rank_column_index = integer(0),
                        global_RX = integer(0))
   
-  expect_equal(get_and_separate_regressors(model),
+  rank_column_index <- get_ranked_indices(model, "rank_terms_indices")
+  model_matrix <- stats::model.matrix(model)
+  expect_equal(get_and_separate_regressors(model_matrix, rank_column_index),
                expected_out)
 })
 
