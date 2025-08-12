@@ -23,6 +23,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        ...) {
   rank_env <- create_env_to_interpret_r_mark(omega)
   l <- process_ivregranks_formula(formula, rank_env)
+  ranked_instrument_indices <- l$ranked_instrument_indices
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
   corrected_formula <- l$formula
@@ -38,16 +39,26 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   ivreg_call$formula <- substitute(corrected_formula)
 
   main_model <- eval(ivreg_call, rank_env)
-  if (method == "model.frame") {
-    return(main_model)
-  }
+
+  struct_formula <- Formula::as.Formula(model.frame(corrected_formula,
+    data = data,
+    rhs = 1
+  ))
+
+  object_se <- lmranks(struct_formula, data,
+    # subset = subset,
+    # weights = weights, na.action = na.action, contrasts = contrasts,
+    # offset = offset,
+    omega = omega
+  )
 
   main_model$rank_terms_indices <- rank_terms_indices
-
+  main_model$ranked_instrument_indices <- ranked_instrument_indices
   main_model$call <- original_call
   main_model$df.residual <- NA
   main_model$omega <- omega
   main_model$ranked_response <- ranked_response
+  main_model$object_se <- object_se
   class(main_model) <- c("ivreg", class(main_model))
 
   return(main_model)
@@ -100,11 +111,11 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   )
 
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
-  ranked_instrument_index <- setdiff(
+  ranked_instrument_indices <- setdiff(
     rank_variables_indices,
-    l$rank_terms_indices
+    attr(outcome_eq_terms, "specials")[["r"]]
   )
-  if (length(ranked_instrument_index) > 1) {
+  if (length(ranked_instrument_indices) > 1) {
     cli::cli_abort(c("In formula there may be at most one ranked instrument."),
       "x" = "There are mulple ranked instruments."
     )
@@ -113,6 +124,7 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   environment(formula) <- rank_env
   return(list(
     rank_terms_indices = rank_variables_indices,
+    ranked_instrument_indices = ranked_instrument_indices,
     ranked_response = l$ranked_response, formula = formula
   ))
 }
