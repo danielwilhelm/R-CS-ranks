@@ -57,6 +57,32 @@ print.summary.ivregranks <- function(x, ...) {
   return(invisible(x))
 }
 
+#' Title
+#'
+#' @param object
+#' @param parm
+#' @param level
+#' @param component
+#' @param complete
+#' @param vcov.
+#' @param df
+#' @param ...
+#'
+#' @return
+#' @export
+confint.ivregranks <- function(
+    object, parm, level = 0.95,
+    component = c("stage2", "stage1"), complete = TRUE, vcov. = NULL,
+    df = NULL, ...) {
+  if (missing(parm)) {
+    NextMethod(
+      object = object, level = level, component = component,
+      complete = complete, vcov. = vcov.
+    )
+  } else {
+    NextMethod()
+  }
+}
 
 #' Title
 #'

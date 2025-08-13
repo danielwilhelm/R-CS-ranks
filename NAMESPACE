@@ -2,6 +2,7 @@
 
 S3method(add1,lmranks)
 S3method(anova,lmranks)
+S3method(confint,ivregranks)
 S3method(confint,lmranks)
 S3method(cooks.distance,lmranks)
 S3method(dfbeta,lmranks)
