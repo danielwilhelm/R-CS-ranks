@@ -59,7 +59,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   main_model$omega <- omega
   main_model$ranked_response <- ranked_response
   main_model$object_se <- object_se
-  class(main_model) <- c("ivreg", class(main_model))
+  class(main_model) <- c("ivregranks", class(main_model))
 
   return(main_model)
 }
@@ -104,6 +104,10 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
     specials = "r",
     allowDotAsName = TRUE
   )
+  stage_1_terms <- stats::terms(formula,
+    lhs = 0, rhs = 2, specials = "r",
+    allowDotAsName = TRUE
+  )
 
   l <- process_lmranks_formula(
     Formula::as.Formula(outcome_eq_terms),
@@ -111,9 +115,9 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   )
 
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
-  ranked_instrument_indices <- setdiff(
-    rank_variables_indices,
-    attr(outcome_eq_terms, "specials")[["r"]]
+  ranked_instrument_indices <- ifelse(attr(stage_1_terms, "intercept") == 1,
+    attr(stage_1_terms, "specials")[["r"]] + 1,
+    attr(stage_1_terms, "specials")[["r"]]
   )
   if (length(ranked_instrument_indices) > 1) {
     cli::cli_abort(c("In formula there may be at most one ranked instrument."),
