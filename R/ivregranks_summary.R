@@ -1,15 +1,74 @@
-#' Title
+#' Summary and Inference Methods for \code{"ivreg"} Objects
+#' @aliases summary.ivregranks print.summary.ivregranks anova.ivregranks
+#'   confint.ivregranks Anova.ivregranks linearHypothesis.ivregranks
+#' @description Summary method, including Wald tests and (by default) certain
+#'   diagnostic tests, for \code{"ivregranks"} model objects, as well as other
+#'   related inference functions.
+#' @seealso \code{\link{ivregranks}}, \code{\link{ivregranksDiagnostics}}
+#' @param object,object2,model,mod An object of class \code{"ivreg"}.
+#' @param x An object of class \code{"summary.ivregranks"}.
+#' @param component Character indicating \code{"stage2"} or \code{"stage1"}.
+#' @param digits Minimal number of significant digits for printing.
+#' @param signif.stars Show "significance stars" in summary output?
+#' @param vcov. currently not supported.
+#' @param df currently not supported.
+#' @param diagnostics currently not supported.
+#' @param test,test.statistic Test statistics for ANOVA table computed by \code{anova}, \code{\link[car]{Anova}},
+#' or \code{\link[car]{linearHypothesis}}. Only \code{test = "F"} is supported by \code{anova}; this is also
+#' the default for \code{Anova} and \code{linearHypothesis}, which also allow \code{test = "Chisq"} for
+#' asymptotic tests.
+#' @param hypothesis.matrix,rhs For formulating a linear hypothesis; see the documentation
+#' for \code{\link[car]{linearHypothesis}} for details.
+#' @param complete If \code{TRUE}, the default, the returned coefficient vector (for \code{coef}) or coefficient-covariance matrix (for \code{vcov}) includes elements for aliased regressors.
+#' @param parm  parameters for which confidence intervals are to be computed; a vector or numbers or names; the default is all parameters.
+#' @param level confidence level; the default is \code{0.95}.
+#' @param ... arguments to pass down.
+#' @examples
+#' \dontshow{
+#' if (!requireNamespace("sandwich")) {
+#'   if (interactive() || is.na(Sys.getenv("_R_CHECK_PACKAGE_NAME_", NA))) {
+#'     stop("not all packages required for the example are installed")
+#'   } else {
+#'     q()
+#'   }
+#' }
+#' }
+#' ## data and model
+#' data("CigaretteDemand", package = "ivreg")
+#' m <- ivreg(log(packs) ~ log(rincome) | log(rprice) | salestax, data = CigaretteDemand)
 #'
-#' @param object
-#' @param vcov.
-#' @param df
-#' @param diagnostics
-#' @param ...
+#' ## summary including diagnostics
+#' summary(m)
 #'
-#' @return
+#' ## replicate global F test from summary (against null model) "by hand"
+#' m0 <- ivreg(log(packs) ~ 1, data = CigaretteDemand)
+#' anova(m0, m)
+#'
+#' ## or via linear hypothesis test
+#' car::linearHypothesis(m, c("log(rincome)", "log(rprice)"))
+#'
+#' ## confidence intervals
+#' confint(m)
+#'
+#' ## just the Wald tests for the coefficients
+#' library("lmtest")
+#' coeftest(m)
+#'
+#' ## in confint() and anova() any of the three specifications can be used
+#' anova(m0, m, vcov = vcovHC, type = "HC1") ## function + ...
+#' anova(m0, m, vcov = hc1) ## function
+#' anova(m0, m, vcov = vc1) ## matrix
+#'
 #' @export
 summary.ivregranks <- function(object, vcov. = NULL, df = NULL,
                                diagnostics = NULL, ...) {
+  if (!is.null(vcov.)) {
+    cli::cli_abort("{.var vcov.} argument is not yet supported. ")
+  }
+  if (!is.null(df)) {
+    cli::cli_abort("{.var df} argument is not yet supported. ")
+  }
+
   object$df.residual <- stats::nobs(object) - length(coef(object))
   outcome <- NextMethod()
   object$df.residual <- NA
@@ -34,12 +93,7 @@ summary.ivregranks <- function(object, vcov. = NULL, df = NULL,
   return(outcome)
 }
 
-#' Title
-#'
-#' @param x
-#' @param ...
-#'
-#' @return
+#' @rdname summary.ivregranks
 #' @export
 print.summary.ivregranks <- function(x, ...) {
   x$r.squared <- x$adj.r.squared <- 0
@@ -57,81 +111,89 @@ print.summary.ivregranks <- function(x, ...) {
   return(invisible(x))
 }
 
-#' Title
-#'
-#' @param object
-#' @param parm
-#' @param level
-#' @param component
-#' @param complete
-#' @param vcov.
-#' @param df
-#' @param ...
-#'
-#' @return
+#' @rdname summary.ivregranks
 #' @export
 confint.ivregranks <- function(
     object, parm, level = 0.95,
     component = c("stage2", "stage1"), complete = TRUE, vcov. = NULL,
     df = NULL, ...) {
+  if (!is.null(vcov.)) {
+    cli::cli_abort("{.var vcov.} argument is not yet supported. ")
+  }
+  if (!is.null(df)) {
+    cli::cli_abort("{.var df} argument is not yet supported. ")
+  }
+
   if (missing(parm)) {
     NextMethod(
       object = object, level = level, component = component,
-      complete = complete, vcov. = vcov.
+      complete = complete, vcov. = vcov., ...
     )
   } else {
     NextMethod()
   }
 }
 
-#' Title
+#' @describeIn ivregranks Calculate Variance-Covariance Matrix for a Fitted
+#' \code{ivregranks} object
 #'
-#' @param object
-#' @param component
-#' @param complete
-#' @param ...
+#' Returns the variance-covariance matrix of the regression coefficients
+#' (main parameters) of a fitted \code{ivregranks} object. Its result is
+#' theoretically valid and asymptotically consistent, in contrast to naively
+#' running \code{vcov(ivreg(...))}.
 #'
-#' @return
+#' @param complete logical indicating if the full variance-covariance matrix
+#' should be returned also in case of an over-determined system where
+#' some coefficients are undefined and \code{coef(.)} contains NAs
+#' correspondingly. When \code{complete = TRUE}, \code{vcov()} is compatible
+#' with \code{coef()} also in this singular case.
+#' @importFrom stats vcov
 #' @export
 vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
                             complete = TRUE, ...) {
-  regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
-  Z <- stats::model.matrix(object, component = "instruments")
-  if (any(regressor_dropped_fs)) {
-    R <- qr.R(qr(Z[, !regressor_dropped_fs]))
+  component <- match.arg(component, c("stage2", "stage1"))
+  ## default: stage 2
+  if (component == "stage2") {
+    regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
+    Z <- stats::model.matrix(object, component = "instruments")
+    if (any(regressor_dropped_fs)) {
+      R <- qr.R(qr(Z[, !regressor_dropped_fs]))
+    } else {
+      R <- qr.R(qr(Z))
+    }
+    projection_residual_matrix_fs <- calculate_projection_residual_matrix(
+      R,
+      regressor_dropped_fs,
+      length(coef(object, component = "stage1"))
+    )
+    projection_residuals_fs <- Z %*% projection_residual_matrix_fs
+
+    H1 <- calculate_H1(object, projection_residuals_fs)
+    H1_mean <- colMeans(H1)
+
+    object_seqn <- object$object_seqn
+    H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
+    H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
+
+    projection_residual_matrix_se <- get_projection_residual_matrix(object_seqn)
+    X <- stats::model.matrix(object_seqn)
+    projection_residuals_se <- X %*% projection_residual_matrix_se
+    projection_variances <- colMeans(projection_residuals_se *
+      projection_residuals_fs)
+    psi <- t(t(H1 + H2 + H3) / projection_variances)
+
+    sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
+    colnames(sigmahat) <- names(coef(object_seqn))
+    rownames(sigmahat) <- colnames(sigmahat)
+
+    if (!complete) {
+      sigmahat <- sigmahat[!is.na(coef(object_seqn)), !is.na(coef(object_seqn))]
+    }
+
+    return(sigmahat)
   } else {
-    R <- qr.R(qr(Z))
+    return(vcov(object$object_fs, complete = complete, ...))
   }
-  projection_residual_matrix_fs <- calculate_projection_residual_matrix(
-    R,
-    regressor_dropped_fs,
-    length(coef(object, component = "stage1"))
-  )
-  projection_residuals_fs <- Z %*% projection_residual_matrix_fs
-
-  H1 <- calculate_H1(object, projection_residuals_fs)
-  H1_mean <- colMeans(H1)
-
-  object_se <- object$object_se
-  H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
-  H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
-
-  projection_residual_matrix_se <- get_projection_residual_matrix(object_se)
-  X <- stats::model.matrix(object_se)
-  projection_residuals_se <- X %*% projection_residual_matrix_se
-  projection_variances <- colMeans(projection_residuals_se *
-    projection_residuals_fs)
-  psi <- t(t(H1 + H2 + H3) / projection_variances)
-
-  sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
-  colnames(sigmahat) <- names(coef(object_se))
-  rownames(sigmahat) <- colnames(sigmahat)
-
-  if (!complete) {
-    sigmahat <- sigmahat[!is.na(coef(object_se)), !is.na(coef(object_se))]
-  }
-
-  return(sigmahat)
 }
 
 calculate_H1.ivregranks <- function(object, projection_residuals) {
@@ -139,10 +201,16 @@ calculate_H1.ivregranks <- function(object, projection_residuals) {
 }
 
 calculate_H2.ivregranks <- function(object, projection_residuals, H1_mean = NULL) {
-  rank_column_index <- get_ranked_indices(object$object_se, "rank_column_index")
-  model_matrix_se <- stats::model.matrix(object$object_se)
-  l <- get_and_separate_regressors(model_matrix_se, rank_column_index)
-  RY <- stats::model.response(stats::model.frame(object$object_se))
+  rank_column_index <- get_ranked_indices(
+    object$object_seqn,
+    "rank_column_index"
+  )
+  model_matrix_seqn <- stats::model.matrix(object$object_seqn)
+  l <- get_and_separate_regressors(
+    model_matrix_seqn,
+    rank_column_index
+  )
+  RY <- stats::model.response(stats::model.frame(object$object_seqn))
 
   NextMethod(l = l, RY = RY)
 }

@@ -104,7 +104,8 @@ calculate_H2 <- function(object, ...) {
 #' rho \* I_X %*% (R_X(X)-Wgamma) / n -
 #' (Wbeta)' %*% (R_X(X)-Wgamma) / n
 #' @noRd
-calculate_H2.default <- function(object, projection_residuals, H1_mean = NULL, ...) {
+calculate_H2.default <- function(object, projection_residuals,
+                                 H1_mean = NULL, ...) {
   l <- ..1
   RY <- ..2
   return(calculate_H2_core(

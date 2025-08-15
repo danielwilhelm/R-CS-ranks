@@ -1,21 +1,90 @@
-#' Title
+#' Instrumental-Variable Regression by 2SLS, 2SM, or 2SMM Estimation Involving
+#' Ranks
 #'
-#' @param formula
-#' @param instruments
-#' @param data
-#' @param subset
-#' @param na.action
-#' @param weights
-#' @param offset
-#' @param contrasts
-#' @param model
-#' @param y
-#' @param x
-#' @param method
-#' @param omega
-#' @param ...
+#' Fit instrumental-variable regression involving ranks by two-stage least
+#' squares (2SLS). This is equivalent to direct instrumental-variables
+#' estimation when the number of instruments is equal to the number of
+#' regressors. Alternative robust-regression estimators are also provided,
+#' based on M-estimation (2SM) and MM-estimation (2SMM).
 #'
-#' @return
+#' \code{ivregranks} is the high-level interface to the work-horse function
+#' A set of standard methods (including \code{print}, \code{summary},
+#' \code{vcov}, \code{anova}, \code{predict}, \code{residuals}, \code{terms},
+#' \code{model.matrix}, \code{bread}, \code{estfun}) is available and described
+#' in \code{\link{ivregranks_summary}}.
+#'
+#' Regressors and instruments for \code{ivregranks} are most easily specified
+#' in a formula with two parts on the right-hand side, e.g.,
+#' \code{r(y) ~ x1 + r(x2) | r(z1) + z2 + z3}, where \code{x1} and \code{r(x2)}
+#' are the explanatory variables and \code{r(z1)}, \code{z2}, and \code{z3} are
+#' the instrumental variables. Note that exogenous regressors have to be
+#' included as instruments for themselves.
+#'
+#' For example, if there is
+#' one exogenous regressor \code{ex} and one endogenous regressor \code{r(en)}
+#' with instrument \code{r(in)}, the appropriate formula would be \code{r(y) ~
+#' r(en) + ex | r(in) + ex}. Alternatively, a formula with three parts on the
+#' right-hand side can also be used: \code{r(y) ~ ex | r(en) | r(in)}.
+#' The latter is typically more convenient, if there is a large number of
+#' exogenous regressors.
+#'
+#' Moreover, two further equivalent specification strategies are possible that
+#' are typically less convenient compared to the strategies above. One option
+#' is to use an update formula with a \code{.} in the second part of the formula
+#' is used: \code{r(y) ~ r(en) + ex | . - r(en) + r(in)}. Another option is to
+#' use a separate formula for the instruments (only for backward compatibility
+#' with earlier versions):
+#' \code{formula = r(y) ~ r(en) + ex, instruments = ~ r(in) + ex}.
+#'
+#' Internally, all specifications are converted to the version with two parts
+#' on the right-hand side.
+#'
+#' @aliases ivregranks
+#' @param formula,instruments formula specification(s) of the regression
+#' relationship and the instruments. Either \code{instruments} is missing and
+#' \code{formula} has three parts as in \code{r(y) ~ x1 + r(x2) | r(z1) + z2 +
+#' z3} (recommended) or \code{formula} is \code{r(y) ~ x1 + r(x2)} and
+#' \code{instruments} is a one-sided formula \code{~ z1 + z2 + z3} (only for
+#' backward compatibility).
+#' @param data an optional data frame containing the variables in the model.
+#' By default the variables are taken from the environment of the
+#' \code{formula}.
+#' @param subset currently not supported.
+#' @param na.action currently not supported.
+#' @param weights currenty not supported.
+#' @param offset an optional offset that can be used to specify an a priori
+#' known component to be included during fitting.
+#' @param contrasts an optional list. See the \code{contrasts.arg} of
+#' \code{\link[stats:model.matrix]{model.matrix.default}}.
+#' @param model,x,y logicals.  If \code{TRUE} the corresponding components of
+#' the fit (the model frame, the model matrices, the response) are returned.
+#' These components are necessary for computing regression diagnostics.
+#' @param method the method used to fit the stage 1 and 2 regression:
+#' \code{"OLS"} for traditional 2SLS regression (the default),
+#' \code{"M"} for M-estimation, or \code{"MM"} for MM-estimation, with the
+#' latter two robust-regression methods implemented via the
+#' \code{\link[MASS]{rlm}} function in the \pkg{MASS} package.
+#' @param \dots further arguments passed to \code{\link{ivreg.fit}}.
+#'
+#' @return \code{ivregranks} returns an object of class \code{"ivregranks"} that
+#' inherits as much as possible from class \code{"ivreg"}, with the following
+#' additional components:
+#' \item{rank_term_indices}{an integer vector with indices of entries of
+#' \code{terms.labels} attribute of \code{terms(formula) for the outcome
+#' equation which correspond to ranked regressors.}
+#' \item{ranked_instrument_indices}{an integer vector with indices of entries
+#' of the ranked instrumental variables.}
+#' \item{ranked_response}{a logical entry.}
+#' \item{omega}{an entry corresponding to the \code{omega} argument.}
+#' @seealso \code{\link{ivreg.fit}}, \code{\link[stats]{lm}}
+#' @keywords regression
+#'
+#' Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{effects}},
+#' \code{\link[stats]{residuals}},
+#' \code{\link[stats]{fitted}}, \code{\link[stats]{model.frame}},
+#' \code{\link[stats]{model.matrix}}, \code{\link[stats]{update}} .
+#'
+#' @examples
 #' @export
 ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        offset, contrasts = NULL, model = TRUE, y = TRUE,
@@ -26,31 +95,37 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   ranked_instrument_indices <- l$ranked_instrument_indices
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
-  corrected_formula <- l$formula
   original_call <- match.call()
   if (length(rank_terms_indices) == 0 && !ranked_response) {
     cli::cli_warn("{.var ivregranks} called with no ranked terms.
       Using regular ivreg...")
-    ivreg_call <- prepare_call(original_call, check_ivreg_args = FALSE)
+    ivreg_call <- prepare_ivreg_call(original_call, check_ivreg_args = FALSE)
     out <- eval(ivreg_call, parent.frame())
     return(out)
   }
-  ivreg_call <- prepare_call(original_call)
-  ivreg_call$formula <- substitute(corrected_formula)
+  ivreg_call <- prepare_ivreg_call(original_call)
+  ivreg_call$formula <- substitute(l$formula)
 
   main_model <- eval(ivreg_call, rank_env)
 
-  struct_formula <- Formula::as.Formula(model.frame(corrected_formula,
+  corrected_formula <- main_model$formula
+  formula_seqn <- Formula::as.Formula(Formula::model.frame(corrected_formula,
     data = data,
     rhs = 1
   ))
+  formula_fs <- Formula::as.Formula(Formula::model.frame(corrected_formula,
+    data = data,
+    rhs = 2
+  ))
 
-  object_se <- lmranks(struct_formula, data,
+  object_seqn <- lmranks(formula_seqn, data,
     # subset = subset,
     # weights = weights, na.action = na.action, contrasts = contrasts,
     # offset = offset,
     omega = omega
   )
+  # needed to correctly compute the vcov for the first-stage
+  object_fs <- lmranks(formula_fs, data = data, omega = omega)
 
   main_model$rank_terms_indices <- rank_terms_indices
   main_model$ranked_instrument_indices <- ranked_instrument_indices
@@ -58,18 +133,38 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   main_model$df.residual <- NA
   main_model$omega <- omega
   main_model$ranked_response <- ranked_response
-  main_model$object_se <- object_se
+  main_model$object_seqn <- object_seqn
+  main_model$object_fs <- object_fs
   class(main_model) <- c("ivregranks", class(main_model))
 
   return(main_model)
 }
 
-#' Title
+#' Check validity of passed formula and identify ranked terms
 #'
-#' @param formula
-#' @param rank_env
+#' For now only formulas with (at most) one rank regressor and one
+#' ranked instrument are allowed.
+#' The outcome can be either ranked or usual, continuous.
+#' Additionally, the rank regressor/instrument cannot be part of interactions.
 #'
-#' @return
+#' @return A list with four entries:
+#' - `rank_terms_indices`, integer vector with indices of entries of
+#' \code{terms.labels} attribute of \code{terms(formula)}, which correspond to
+#' ranked regressors for the outcome equation.
+#' This vector might be empty, which indicates no ranked regressors.
+#' - `ranked_instrument_indices`, integer vector with indices of entries of the
+#' ranked instrumental variables
+#' - `ranked_response`, logical.
+#' - `formula`, corrected formula.
+#'
+#' @note
+#' * It allows to pass r(W), where W is a matrix. This is caught later in frank.
+#' In order to catch this here, we would have to know what W is.
+#' * It allows to pass r(.). This is again caught later with error ". not defined".
+#' Same error occurs in lm(y ~ x + log(.), data=data). Acceptable.
+#' * It will not detect func(r(expr)).
+#'
+#' @noRd
 process_ivregranks_formula <- function(formula, rank_env = NULL) {
   if (!inherits(formula, "formula")) {
     cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
@@ -99,25 +194,26 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
     specials = "r", keep.order = TRUE,
     allowDotAsName = TRUE
   )
-  outcome_eq_terms <- stats::terms(formula,
+  terms_seqn <- stats::terms(formula,
     rhs = 1,
     specials = "r",
     allowDotAsName = TRUE
   )
-  stage_1_terms <- stats::terms(formula,
+  terms_fs <- stats::terms(formula,
     lhs = 0, rhs = 2, specials = "r",
     allowDotAsName = TRUE
   )
 
+  print(terms_seqn)
   l <- process_lmranks_formula(
-    Formula::as.Formula(outcome_eq_terms),
+    Formula::as.Formula(terms_seqn),
     rank_env
   )
 
   rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
-  ranked_instrument_indices <- ifelse(attr(stage_1_terms, "intercept") == 1,
-    attr(stage_1_terms, "specials")[["r"]] + 1,
-    attr(stage_1_terms, "specials")[["r"]]
+  ranked_instrument_indices <- ifelse(attr(terms_fs, "intercept") == 1,
+    attr(terms_fs, "specials")[["r"]] + 1,
+    attr(terms_fs, "specials")[["r"]]
   )
   if (length(ranked_instrument_indices) > 1) {
     cli::cli_abort(c("In formula there may be at most one ranked instrument."),
@@ -133,13 +229,8 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   ))
 }
 
-#' Title
-#'
-#' @param ivreg_call
-#' @param check_ivreg_args
-#'
-#' @return
-prepare_call <- function(ivreg_call, check_ivreg_args = TRUE) {
+#' @noRd
+prepare_ivreg_call <- function(ivreg_call, check_ivreg_args = TRUE) {
   ivreg_call[[1]] <- quote(ivreg::ivreg)
   ivreg_call$omega <- NULL
   ivreg_call$na.rm <- NULL
@@ -163,18 +254,20 @@ prepare_call <- function(ivreg_call, check_ivreg_args = TRUE) {
   return(ivreg_call)
 }
 
+# Inherited `ivreg` methods:
 slotsFromS3.ivregranks <- function(object) {
   cli::cli_warn("This method might not return correct results.")
   NextMethod()
 }
 
-#' Title
+#' @describeIn lmranks Plot diagnostics for an \code{ivregranks} object
 #'
-#' @param x
-#' @param which
-#' @param ...
+#' Displays plots useful for assessing quality of model fit. Currently, only one
+#' plot is available, which plots fitted values against residuals
+#' (for homoscedacity check).
 #'
-#' @return
+#' @param which As in \code{\link{plot.ivreg}}. Currently only no. 1 is
+#' available.
 #' @export
 plot.ivregranks <- function(x, which = 1, ...) {
   if (length(which) != 1 || which != 1) {
