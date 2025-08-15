@@ -64,7 +64,7 @@
 #' \code{"M"} for M-estimation, or \code{"MM"} for MM-estimation, with the
 #' latter two robust-regression methods implemented via the
 #' \code{\link[MASS]{rlm}} function in the \pkg{MASS} package.
-#' @param \dots further arguments passed to \code{\link{ivreg.fit}}.
+#' @param \dots further arguments passed to \code{\link[ivreg]{ivreg.fit}}.
 #'
 #' @return \code{ivregranks} returns an object of class \code{"ivregranks"} that
 #' inherits as much as possible from class \code{"ivreg"}, with the following
@@ -76,7 +76,7 @@
 #' of the ranked instrumental variables.}
 #' \item{ranked_response}{a logical entry.}
 #' \item{omega}{an entry corresponding to the \code{omega} argument.}
-#' @seealso \code{\link{ivreg.fit}}, \code{\link[stats]{lm}}
+#' @seealso \code{\link[ivreg]{ivreg.fit}}, \code{\link[csranks]{lmranks}}
 #' @keywords regression
 #'
 #' Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{effects}},

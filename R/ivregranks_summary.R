@@ -1,64 +1,9 @@
-#' Summary and Inference Methods for \code{"ivreg"} Objects
-#' @aliases summary.ivregranks print.summary.ivregranks anova.ivregranks
-#'   confint.ivregranks Anova.ivregranks linearHypothesis.ivregranks
-#' @description Summary method, including Wald tests and (by default) certain
-#'   diagnostic tests, for \code{"ivregranks"} model objects, as well as other
-#'   related inference functions.
-#' @seealso \code{\link{ivregranks}}, \code{\link{ivregranksDiagnostics}}
-#' @param object,object2,model,mod An object of class \code{"ivreg"}.
-#' @param x An object of class \code{"summary.ivregranks"}.
-#' @param component Character indicating \code{"stage2"} or \code{"stage1"}.
-#' @param digits Minimal number of significant digits for printing.
-#' @param signif.stars Show "significance stars" in summary output?
-#' @param vcov. currently not supported.
-#' @param df currently not supported.
-#' @param diagnostics currently not supported.
-#' @param test,test.statistic Test statistics for ANOVA table computed by \code{anova}, \code{\link[car]{Anova}},
-#' or \code{\link[car]{linearHypothesis}}. Only \code{test = "F"} is supported by \code{anova}; this is also
-#' the default for \code{Anova} and \code{linearHypothesis}, which also allow \code{test = "Chisq"} for
-#' asymptotic tests.
-#' @param hypothesis.matrix,rhs For formulating a linear hypothesis; see the documentation
-#' for \code{\link[car]{linearHypothesis}} for details.
-#' @param complete If \code{TRUE}, the default, the returned coefficient vector (for \code{coef}) or coefficient-covariance matrix (for \code{vcov}) includes elements for aliased regressors.
-#' @param parm  parameters for which confidence intervals are to be computed; a vector or numbers or names; the default is all parameters.
-#' @param level confidence level; the default is \code{0.95}.
-#' @param ... arguments to pass down.
-#' @examples
-#' \dontshow{
-#' if (!requireNamespace("sandwich")) {
-#'   if (interactive() || is.na(Sys.getenv("_R_CHECK_PACKAGE_NAME_", NA))) {
-#'     stop("not all packages required for the example are installed")
-#'   } else {
-#'     q()
-#'   }
-#' }
-#' }
-#' ## data and model
-#' data("CigaretteDemand", package = "ivreg")
-#' m <- ivreg(log(packs) ~ log(rincome) | log(rprice) | salestax, data = CigaretteDemand)
+#' @describeIn ivregranks Summary and Inference Methods for \code{"ivregranks"}
+#' Objects
 #'
-#' ## summary including diagnostics
-#' summary(m)
+#' @param object An object of class \code{"ivregranks"}.
 #'
-#' ## replicate global F test from summary (against null model) "by hand"
-#' m0 <- ivreg(log(packs) ~ 1, data = CigaretteDemand)
-#' anova(m0, m)
-#'
-#' ## or via linear hypothesis test
-#' car::linearHypothesis(m, c("log(rincome)", "log(rprice)"))
-#'
-#' ## confidence intervals
-#' confint(m)
-#'
-#' ## just the Wald tests for the coefficients
-#' library("lmtest")
-#' coeftest(m)
-#'
-#' ## in confint() and anova() any of the three specifications can be used
-#' anova(m0, m, vcov = vcovHC, type = "HC1") ## function + ...
-#' anova(m0, m, vcov = hc1) ## function
-#' anova(m0, m, vcov = vc1) ## matrix
-#'
+#' @inheritParams ivreg::summary.ivreg
 #' @export
 summary.ivregranks <- function(object, vcov. = NULL, df = NULL,
                                diagnostics = NULL, ...) {
@@ -93,7 +38,7 @@ summary.ivregranks <- function(object, vcov. = NULL, df = NULL,
   return(outcome)
 }
 
-#' @rdname summary.ivregranks
+#' @rdname ivregranks
 #' @export
 print.summary.ivregranks <- function(x, ...) {
   x$r.squared <- x$adj.r.squared <- 0
@@ -111,7 +56,9 @@ print.summary.ivregranks <- function(x, ...) {
   return(invisible(x))
 }
 
-#' @rdname summary.ivregranks
+#' @rdname ivregranks
+#'
+#' @inheritParams ivreg::confint.ivreg
 #' @export
 confint.ivregranks <- function(
     object, parm, level = 0.95,

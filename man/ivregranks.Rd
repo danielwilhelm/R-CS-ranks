@@ -2,6 +2,9 @@
 % Please edit documentation in R/ivregranks.R, R/ivregranks_summary.R
 \name{ivregranks}
 \alias{ivregranks}
+\alias{summary.ivregranks}
+\alias{print.summary.ivregranks}
+\alias{confint.ivregranks}
 \alias{vcov.ivregranks}
 \title{Instrumental-Variable Regression by 2SLS, 2SM, or 2SMM Estimation Involving
 Ranks}
@@ -20,6 +23,21 @@ ivregranks(
   x = FALSE,
   method = c("OLS", "M", "MM"),
   omega = 1,
+  ...
+)
+
+\method{summary}{ivregranks}(object, vcov. = NULL, df = NULL, diagnostics = NULL, ...)
+
+\method{print}{summary.ivregranks}(x, ...)
+
+\method{confint}{ivregranks}(
+  object,
+  parm,
+  level = 0.95,
+  component = c("stage2", "stage1"),
+  complete = TRUE,
+  vcov. = NULL,
+  df = NULL,
   ...
 )
 
@@ -59,7 +77,30 @@ These components are necessary for computing regression diagnostics.}
 latter two robust-regression methods implemented via the
 \code{\link[MASS]{rlm}} function in the \pkg{MASS} package.}
 
-\item{\dots}{further arguments passed to \code{\link{ivreg.fit}}.}
+\item{\dots}{further arguments passed to \code{\link[ivreg]{ivreg.fit}}.}
+
+\item{object}{An object of class \code{"ivregranks"}.}
+
+\item{vcov.}{Optionally either a coefficient covariance matrix or a function to compute such a covariance
+matrix from fitted \code{ivreg} model objects. If \code{NULL} (the default) the standard covariance matrix
+(based on the information matrix) is used. Alternatively, covariance matrices (e.g., clustered and/or
+heteroscedasticity-consistent) can be plugged in to adjust Wald tests or confidence intervals etc.
+In \code{summary}, if \code{diagnostics = TRUE}, \code{vcov.} must be a function (not a matrix) because
+the alternative covariances are also needed for certain auxiliary models in the diagnostic tests.
+If \code{vcov.} is a function, the \code{...} argument can be used to pass on further arguments to
+this function.}
+
+\item{df}{For \code{summary}, optional residual degrees of freedom to use in computing model summary.}
+
+\item{diagnostics}{Report 2SLS "diagnostic" tests in model summary (default is \code{TRUE}). 
+These tests are not to be confused with the \emph{regression diagnostics} provided elsewhere in the \pkg{ivreg}
+package: see \code{\link[ivreg]{ivregDiagnostics}}.}
+
+\item{parm}{parameters for which confidence intervals are to be computed; a vector or numbers or names; the default is all parameters.}
+
+\item{level}{confidence level; the default is \code{0.95}.}
+
+\item{component}{Character indicating \code{"stage2"} or \code{"stage1"}.}
 
 \item{complete}{logical indicating if the full variance-covariance matrix
 should be returned also in case of an over-determined system where
@@ -121,6 +162,9 @@ on the right-hand side.
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{summary(ivregranks)}: Summary and Inference Methods for \code{"ivregranks"}
+Objects
+
 \item \code{vcov(ivregranks)}: Calculate Variance-Covariance Matrix for a Fitted
 \code{ivregranks} object
 
@@ -131,7 +175,7 @@ running \code{vcov(ivreg(...))}.
 
 }}
 \seealso{
-\code{\link{ivreg.fit}}, \code{\link[stats]{lm}}
+\code{\link[ivreg]{ivreg.fit}}, \code{\link[csranks]{lmranks}}
 }
 \keyword{.}
 \keyword{Generic}
