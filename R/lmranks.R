@@ -206,7 +206,7 @@ lmranks <- function(formula, data, subset,
 #' The outcome can be either ranked or usual, continuous.
 #' Additionally, the rank regressor cannot be part of interactions.
 #'
-#' @return Alist with three entries:
+#' @return A list with three entries:
 #' - `rank_terms_indices`, integer vector with indices of entries of \code{terms.labels} attribute
 #' of \code{terms(formula)}, which correspond to ranked regressors.
 #' This vector might be empty, which indicates no ranked regressors.

@@ -69,10 +69,10 @@
 #' @return \code{ivregranks} returns an object of class \code{"ivregranks"} that
 #' inherits as much as possible from class \code{"ivreg"}, with the following
 #' additional components:
-#' \item{rank_term_indices}{an integer vector with indices of entries of
+#' \item{rank_terms_indices}{an integer vector with indices of entries of
 #' \code{terms.labels} attribute of \code{terms(formula) for the outcome
 #' equation which correspond to ranked regressors.}
-#' \item{ranked_instrument_indices}{an integer vector with indices of entries
+#' \item{ranked_instruments_indices}{an integer vector with indices of entries
 #' of the ranked instrumental variables.}
 #' \item{ranked_response}{a logical entry.}
 #' \item{omega}{an entry corresponding to the \code{omega} argument.}
@@ -92,11 +92,15 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        ...) {
   rank_env <- create_env_to_interpret_r_mark(omega)
   l <- process_ivregranks_formula(formula, rank_env)
-  ranked_instrument_indices <- l$ranked_instrument_indices
+  ranked_instruments_indices <- l$ranked_instruments_indices
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
+  formula <- l$formula
   original_call <- match.call()
-  if (length(rank_terms_indices) == 0 && !ranked_response) {
+
+  if (length(rank_terms_indices) == 0 &&
+    length(ranked_instruments_indices) == 0 &&
+    !ranked_response) {
     cli::cli_warn("{.var ivregranks} called with no ranked terms.
       Using regular ivreg...")
     ivreg_call <- prepare_ivreg_call(original_call, check_ivreg_args = FALSE)
@@ -104,31 +108,37 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
     return(out)
   }
   ivreg_call <- prepare_ivreg_call(original_call)
-  ivreg_call$formula <- substitute(l$formula)
+  ivreg_call$formula <- substitute(formula)
 
   main_model <- eval(ivreg_call, rank_env)
 
-  corrected_formula <- main_model$formula
-  formula_seqn <- Formula::as.Formula(Formula::model.frame(corrected_formula,
+  corrected_formula <- Formula::as.Formula(main_model$formula)
+
+  if (missing(data)) data <- environment(formula)
+  formula_seqn <- Formula::as.Formula(stats::model.frame(corrected_formula,
     data = data,
     rhs = 1
   ))
-  formula_fs <- Formula::as.Formula(Formula::model.frame(corrected_formula,
+  formula_fs <- Formula::as.Formula(stats::model.frame(corrected_formula,
     data = data,
     rhs = 2
   ))
 
-  object_seqn <- lmranks(formula_seqn, data,
+  object_seqn <- suppress_no_rank_lmranks(lmranks(formula_seqn,
+    data = data,
     # subset = subset,
     # weights = weights, na.action = na.action, contrasts = contrasts,
     # offset = offset,
     omega = omega
-  )
+  ))
   # needed to correctly compute the vcov for the first-stage
-  object_fs <- lmranks(formula_fs, data = data, omega = omega)
+  object_fs <- suppress_no_rank_lmranks(lmranks(formula_fs,
+    data = data,
+    omega = omega
+  ))
 
   main_model$rank_terms_indices <- rank_terms_indices
-  main_model$ranked_instrument_indices <- ranked_instrument_indices
+  main_model$ranked_instruments_indices <- ranked_instruments_indices
   main_model$call <- original_call
   main_model$df.residual <- NA
   main_model$omega <- omega
@@ -152,7 +162,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 #' \code{terms.labels} attribute of \code{terms(formula)}, which correspond to
 #' ranked regressors for the outcome equation.
 #' This vector might be empty, which indicates no ranked regressors.
-#' - `ranked_instrument_indices`, integer vector with indices of entries of the
+#' - `ranked_instruments_indices`, integer vector with indices of entries of the
 #' ranked instrumental variables
 #' - `ranked_response`, logical.
 #' - `formula`, corrected formula.
@@ -178,7 +188,8 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
 
   formula <- Formula::as.Formula(formula)
   if (length(formula)[2] == 1) {
-    cli::cli_abort(c("{.var formula} must contain two regressor parts"),
+    cli::cli_abort(
+      c("{.var formula} must at least two/at most three regressor parts"),
       "x" = "The passed {.var formula} has a single part regressor",
       "i" = "Use lmranks."
     )
@@ -190,41 +201,67 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
       or more than three-part regressors."
     ))
   }
+  if (length(formula)[2L] == 3L) {
+    formula <- Formula::as.Formula(
+      formula(formula, rhs = c(2L, 1L), collapse = TRUE),
+      formula(formula, lhs = 0L, rhs = c(3L, 1L), collapse = TRUE)
+    )
+  }
+
   formula_terms <- stats::terms(formula,
-    specials = "r", keep.order = TRUE,
-    allowDotAsName = TRUE
-  )
-  terms_seqn <- stats::terms(formula,
     rhs = 1,
     specials = "r",
     allowDotAsName = TRUE
   )
-  terms_fs <- stats::terms(formula,
+  regressors_terms <- stats::terms(formula,
+    lhs = 0,
+    rhs = 1,
+    specials = "r",
+    allowDotAsName = TRUE
+  )
+  instruments_terms <- stats::terms(formula,
     lhs = 0, rhs = 2, specials = "r",
     allowDotAsName = TRUE
   )
 
-  print(terms_seqn)
-  l <- process_lmranks_formula(
-    Formula::as.Formula(terms_seqn),
+  # makes sure the the structural eqn is alright.
+  l <- adapt_lmranks_formula_errors(process_lmranks_formula(
+    Formula::as.Formula(formula_terms),
     rank_env
+  ))
+  # makes sure the the first-stage eqn is alright.
+  adapt_lmranks_formula_errors(
+    process_lmranks_formula(
+      Formula::as.Formula(instruments_terms),
+      rank_env
+    )
   )
 
-  rank_variables_indices <- attr(formula_terms, "specials")[["r"]]
-  ranked_instrument_indices <- ifelse(attr(terms_fs, "intercept") == 1,
-    attr(terms_fs, "specials")[["r"]] + 1,
-    attr(terms_fs, "specials")[["r"]]
-  )
-  if (length(ranked_instrument_indices) > 1) {
+  r_terms_regressors <- attr(regressors_terms, "specials")[["r"]]
+  rank_terms_indices <- if (attr(regressors_terms, "intercept")) {
+    r_terms_regressors + 1
+  } else {
+    r_terms_regressors
+  }
+  r_terms_fs <- attr(instruments_terms, "specials")[["r"]]
+  ranked_instruments_indices <- if (is.null(r_terms_fs)) {
+    NULL
+  } else if (attr(instruments_terms, "intercept") == 1) {
+    r_terms_fs + 1
+  } else {
+    r_terms_fs
+  }
+  if (length(ranked_instruments_indices) > 1) {
     cli::cli_abort(c("In formula there may be at most one ranked instrument."),
       "x" = "There are mulple ranked instruments."
     )
   }
 
   environment(formula) <- rank_env
+
   return(list(
-    rank_variables_indices = rank_variables_indices,
-    ranked_instrument_indices = ranked_instrument_indices,
+    rank_terms_indices = rank_terms_indices,
+    ranked_instruments_indices = ranked_instruments_indices,
     ranked_response = l$ranked_response, formula = formula
   ))
 }
@@ -275,4 +312,28 @@ plot.ivregranks <- function(x, which = 1, ...) {
       plot is supported.")
   }
   NextMethod(which = which)
+}
+
+#' @noRd
+suppress_no_rank_lmranks <- function(expr,
+                                     pattern = "no ranked terms") {
+  withCallingHandlers(
+    expr,
+    warning = function(w) {
+      if (grepl(pattern, conditionMessage(w), fixed = TRUE)) {
+        invokeRestart("muffleWarning") # note the capital W
+      }
+    }
+  )
+}
+
+#' @noRd
+adapt_lmranks_formula_errors <- function(expr) {
+  rlang::try_fetch(
+    expr,
+    error = function(e) {
+      message <- sub("formula", "instrument formula", e$message)
+      cli::cli_abort(c(message, e$body), call = rlang::current_call())
+    }
+  )
 }
