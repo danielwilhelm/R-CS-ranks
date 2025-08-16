@@ -69,6 +69,7 @@ test_that("ivregranks and ivreg provide coherent results", {
 
   rank_m <- ivregranks(r(Y) ~ W | r(X) | r(Z))
   raw_rank_m <- unclass(rank_m)
+  raw_rank_m$formula<- formula(raw_rank_m$formula)
   raw_rank_m$call <- as.character(raw_rank_m$call)
   raw_rank_m$terms <- NULL
   attr(raw_rank_m$model, "terms") <- NULL

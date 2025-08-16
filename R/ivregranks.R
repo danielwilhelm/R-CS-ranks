@@ -137,6 +137,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
     omega = omega
   ))
 
+  main_model$formula <- corrected_formula
   main_model$rank_terms_indices <- rank_terms_indices
   main_model$ranked_instruments_indices <- ranked_instruments_indices
   main_model$call <- original_call
