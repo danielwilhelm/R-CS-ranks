@@ -32,3 +32,4 @@ inst/doc
 tests/testthat/testthat-problems.rds
 tests/spelling.Rout.save
 tests/.DS_Store
+docs
