@@ -150,7 +150,7 @@ calculate_H1.ivregranks <- function(object, projection_residuals) {
 calculate_H2.ivregranks <- function(object, projection_residuals, H1_mean = NULL) {
   rank_column_index <- get_ranked_indices(
     object$object_seqn,
-    "rank_column_index"
+    "rank_terms_indices"
   )
   model_matrix_seqn <- stats::model.matrix(object$object_seqn)
   l <- get_and_separate_regressors(
@@ -162,9 +162,9 @@ calculate_H2.ivregranks <- function(object, projection_residuals, H1_mean = NULL
   NextMethod(l = l, RY = RY)
 }
 calculate_H3.ivregranks <- function(object, projection_residual_matrix, H1_mean) {
-  ranked_instrument_indices <- object$ranked_instrument_indices
-  model_matrix <- stats::model.matrix(object)
-  l <- get_and_separate_regressors(model_matrix, ranked_instrument_indices)
+  ranked_instruments_indices <- object$ranked_instruments_indices
+  model_matrix <- stats::model.matrix(object, components = "instruments")
+  l <- get_and_separate_regressors(model_matrix, ranked_instruments_indices)
 
   NextMethod(l = l)
 }

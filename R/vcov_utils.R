@@ -52,9 +52,11 @@ get_ranked_indices <- function(object, name) {
   if ("lm" %in% class(object)) {
     return(which(object$assign %in% object$rank_terms_indices))
   } else if ("ivreg" %in% class(object)) {
-    return(object$ranked_instrument_indices)
+    model_matrix <- model.matrix(object, component = "instruments")
+    return(which(attr(model_matrix, "assign") %in%
+      object$ranked_instruments_indices))
   } else {
-    cli::cli_abort("Object of type {.class object} not supported for this
+    cli::cli_abort("Object of type {.cls object} not supported for this
       function")
   }
 }
