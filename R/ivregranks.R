@@ -214,44 +214,34 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
     specials = "r",
     allowDotAsName = TRUE
   )
-  regressors_terms <- stats::terms(formula,
-    lhs = 0,
-    rhs = 1,
-    specials = "r",
-    allowDotAsName = TRUE
-  )
   instruments_terms <- stats::terms(formula,
-    lhs = 0, rhs = 2, specials = "r",
+    rhs = 2, specials = "r",
     allowDotAsName = TRUE
   )
 
   # makes sure the the structural eqn is alright.
-  l <- adapt_lmranks_formula_errors(process_lmranks_formula(
+  l1 <- adapt_lmranks_formula_errors(process_lmranks_formula(
     Formula::as.Formula(formula_terms),
     rank_env
   ))
   # makes sure the the first-stage eqn is alright.
-  adapt_lmranks_formula_errors(
+  l2 <- adapt_lmranks_formula_errors(
     process_lmranks_formula(
       Formula::as.Formula(instruments_terms),
       rank_env
     )
   )
 
-  r_terms_regressors <- attr(regressors_terms, "specials")[["r"]]
-  rank_terms_indices <- if (attr(regressors_terms, "intercept")) {
-    r_terms_regressors + 1
-  } else {
-    r_terms_regressors
-  }
-  r_terms_fs <- attr(instruments_terms, "specials")[["r"]]
-  ranked_instruments_indices <- if (is.null(r_terms_fs)) {
-    NULL
-  } else if (attr(instruments_terms, "intercept") == 1) {
-    r_terms_fs + 1
-  } else {
-    r_terms_fs
-  }
+  l1$formula <- Formula::as.Formula(l1$formula)
+  l2$formula <- Formula::as.Formula(l2$formula)
+
+  formula <- Formula::as.Formula(
+    paste(deparse(l1$formula), "|", deparse(l2$formula[[3]]))
+  )
+
+  rank_terms_indices <- l1$rank_terms_indices
+  ranked_instruments_indices <- l2$rank_terms_indices
+
   if (length(ranked_instruments_indices) > 1) {
     cli::cli_abort(c("In formula there may be at most one ranked instrument."),
       "x" = "There are mulple ranked instruments."
@@ -263,7 +253,7 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   return(list(
     rank_terms_indices = rank_terms_indices,
     ranked_instruments_indices = ranked_instruments_indices,
-    ranked_response = l$ranked_response, formula = formula
+    ranked_response = l1$ranked_response, formula = formula
   ))
 }
 
