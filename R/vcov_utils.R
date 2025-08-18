@@ -47,11 +47,16 @@ get_rowwise_rho <- function(object, rank_column_index) {
   return(rho[coef_groups])
 }
 
-get_ranked_indices <- function(object, name) {
-  if (length(object[[name]]) > 1) cli::cli_abort("Not implemented yet")
-  if ("lm" %in% class(object)) {
-    return(which(object$assign %in% object$rank_terms_indices))
-  } else if ("ivreg" %in% class(object)) {
+# @noRd
+get_ranked_indices <- function(object, component = c(
+                                 "regressors",
+                                 "instruments"
+                               )) {
+  component <- match.arg(component, c("regressors", "instruments"))
+  if (component == "regressors") {
+    model_matrix <- model.matrix(object)
+    return(which(attr(model_matrix, "assign") %in% object$rank_terms_indices))
+  } else if (component == "instruments") {
     model_matrix <- model.matrix(object, component = "instruments")
     return(which(attr(model_matrix, "assign") %in%
       object$ranked_instruments_indices))

@@ -156,7 +156,7 @@ calculate_H1.lmranks <- function(object, projection_residuals) {
 #' (Wbeta)' %*% (R_X(X)-Wgamma) / n
 #' @noRd
 calculate_H2.lmranks <- function(object, projection_residuals, H1_mean = NULL) {
-  rank_column_index <- get_ranked_indices(object, "rank_terms_indices")
+  rank_column_index <- get_ranked_indices(object, component="regressors")
   model_matrix <- stats::model.matrix(object)
   l <- get_and_separate_regressors(model_matrix, rank_column_index)
   RY <- stats::model.response(stats::model.frame(object))
