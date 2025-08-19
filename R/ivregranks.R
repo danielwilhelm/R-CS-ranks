@@ -91,7 +91,10 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        x = FALSE, method = c("OLS", "M", "MM"), omega = 1,
                        ...) {
   rank_env <- create_env_to_interpret_r_mark(omega)
-  l <- process_ivregranks_formula(formula, rank_env)
+  l <- process_ivregranks_formula(formula,
+    data = if (missing(data)) NULL else data,
+    rank_env = rank_env
+  )
   ranked_instruments_indices <- l$ranked_instruments_indices
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
@@ -176,18 +179,39 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 #' * It will not detect func(r(expr)).
 #'
 #' @noRd
-process_ivregranks_formula <- function(formula, rank_env = NULL) {
+process_ivregranks_formula <- function(formula, instruments,
+                                       data, rank_env = NULL) {
   if (!inherits(formula, "formula")) {
     cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
       "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."
     ))
   }
-
   if (is.null(rank_env)) {
     rank_env <- environment(formula)
   }
+  if (!missing(instruments)) {
+    formula <- Formula::as.Formula(formula, instruments)
+  } else {
+    formula <- Formula::as.Formula(formula)
+  }
 
-  formula <- Formula::as.Formula(formula)
+  has_dot <- function(formula) {
+    inherits(
+      try(terms(formula), silent = TRUE),
+      "try-error"
+    )
+  }
+  if (has_dot(formula)) {
+    f1 <- formula(formula, rhs = 1L)
+    f2 <- formula(formula, lhs = 0L, rhs = 2L)
+    if (!has_dot(f1) & has_dot(f2)) {
+      formula <- Formula::as.Formula(
+        f1,
+        update(formula(formula, lhs = 0L, rhs = 1L), f2)
+      )
+    }
+  }
+
   if (length(formula)[2] == 1) {
     cli::cli_abort(
       c("{.var formula} must at least two/at most three regressor parts"),
@@ -212,11 +236,11 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   formula_terms <- stats::terms(formula,
     rhs = 1,
     specials = "r",
-    allowDotAsName = TRUE
+    allowDotAsName = TRUE, data = data
   )
   instruments_terms <- stats::terms(formula,
     rhs = 2, specials = "r",
-    allowDotAsName = TRUE
+    allowDotAsName = TRUE, data = data
   )
 
   # makes sure the the structural eqn is alright.
@@ -236,7 +260,7 @@ process_ivregranks_formula <- function(formula, rank_env = NULL) {
   l2$formula <- Formula::as.Formula(l2$formula)
 
   formula <- Formula::as.Formula(
-    paste(deparse(l1$formula), "|", deparse(l2$formula[[3]]))
+    paste(deparse1(l1$formula), "|", deparse1(l2$formula[[3]]))
   )
 
   rank_terms_indices <- l1$rank_terms_indices

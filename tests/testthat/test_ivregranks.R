@@ -124,131 +124,189 @@ test_that("ivregranks raises error if NA is encountered in data", {
 })
 
 test_that("process_ivregranks_formula catches illegal formulas", {
-  expect_error(process_ivregranks_formula("y ~ x + w | z + w"))
-  expect_error(process_ivregranks_formula(y ~ r(x) + r(w) | z + w))
-  expect_error(process_ivregranks_formula(y ~ x + w | r(z) + r(w)))
-  expect_error(process_ivregranks_formula(r(y) ~ r(x) * w | z))
-  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z) * w))
-  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z) + r(z):w))
-  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):v:w))
-  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):v + w))
-  expect_error(process_ivregranks_formula(r(y) ~ w | r(x) + v | r(z1) + r(z2)))
+  expect_error(process_ivregranks_formula("y ~ x + w | z + w", data = NULL))
+  expect_error(process_ivregranks_formula(y ~ r(x) + r(w) | z + w, data = NULL))
+  expect_error(process_ivregranks_formula(y ~ x + w | r(z) + r(w), data = NULL))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) * w | z, data = NULL))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z) * w, data = NULL))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z) + r(z):w,
+    data = NULL
+  ))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):v:w, data = NULL))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):v + w,
+    data = NULL
+  ))
+  expect_error(process_ivregranks_formula(r(y) ~ w | r(x) + v | r(z1) + r(z2),
+    data = NULL
+  ))
 
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z)))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + w))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z) + w))
-  expect_silent(process_ivregranks_formula(r(y) ~ w | r(x) | r(z)))
-  expect_silent(process_ivregranks_formula(r(y) ~ w | r(x) + v | r(z1) + z2))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | (r(z) + w):G))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G + G))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G - 1))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z), data = NULL))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + w,
+    data = NULL
+  ))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z) + w, data = NULL))
+  expect_silent(process_ivregranks_formula(r(y) ~ w | r(x) | r(z), data = NULL))
+  expect_silent(process_ivregranks_formula(r(y) ~ w | r(x) + v | r(z1) + z2,
+    data = NULL
+  ))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G, data = NULL))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | (r(z) + w):G,
+    data = NULL
+  ))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G + G,
+    data = NULL
+  ))
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G - 1,
+    data = NULL
+  ))
 })
 
 test_that("process_ivregranks_formula returns correct regressors indices", {
   expect_equal(
-    process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + w)$rank_terms_indices, 1
+    process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + w,
+      data = NULL
+    )$rank_terms_indices, 1
   )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ w * z + r(x) |
-      w * z + r(z))$rank_terms_indices, 3
+    process_ivregranks_formula(
+      r(y) ~ w * z + r(x) |
+        w * z + r(z),
+      data = NULL
+    )$rank_terms_indices, 3
   )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ w + z + w:z + r(x) |
-      w + z + w:z + r(z))$rank_terms_indices, 3
+    process_ivregranks_formula(
+      r(y) ~ w + z + w:z + r(x) |
+        w + z + w:z + r(z),
+      data = NULL
+    )$rank_terms_indices, 3
   )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ w * z + r(x) - z |
-      w * z + r(z) - z)$rank_terms_indices, 2
+    process_ivregranks_formula(
+      r(y) ~ w * z + r(x) - z |
+        w * z + r(z) - z,
+      data = NULL
+    )$rank_terms_indices, 2
   )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ w * v |
-      r(z))$rank_terms_indices, integer(0)
+    process_ivregranks_formula(
+      r(y) ~ w * v |
+        r(z),
+      data = NULL
+    )$rank_terms_indices, integer(0)
   )
   expect_equal(process_ivregranks_formula(
-    r(y) ~ -1 + (r(x) + w):G | (r(z) + w):G
+    r(y) ~ -1 + (r(x) + w):G | (r(z) + w):G,
+    data = NULL
   )$rank_terms_indices, 1)
   expect_equal(process_ivregranks_formula(
-    r(y) ~ (r(x) + w):G | (r(z) + w):G
+    r(y) ~ (r(x) + w):G | (r(z) + w):G,
+    data = NULL
   )$rank_terms_indices, 2)
   expect_equal(process_ivregranks_formula(
-    r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G
+    r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G,
+    data = NULL
   )$rank_terms_indices, 2)
 })
 
 test_that("process_ivregranks_formula returns correct instruments indices", {
   expect_equal(
     process_ivregranks_formula(
-      r(y) ~ r(x) + w | r(z) + w
+      r(y) ~ r(x) + w | r(z) + w,
+      data = NULL
     )$ranked_instruments_indices, 1
   )
   expect_equal(
     process_ivregranks_formula(
-      r(y) ~ r(x) + w | w + r(z)
+      r(y) ~ r(x) + w | w + r(z),
+      data = NULL
     )$ranked_instruments_indices, 2
   )
   expect_equal(
     process_ivregranks_formula(r(y) ~ w * z + r(x) |
-      w * z + r(z))$ranked_instruments_indices, 3
+      w * z + r(z), data = NULL)$ranked_instruments_indices, 3
   )
   expect_equal(
     process_ivregranks_formula(r(y) ~ w + z + w:z + r(x) |
-      w + z + w:z + r(z))$ranked_instruments_indices, 3
+      w + z + w:z + r(z), data = NULL)$ranked_instruments_indices, 3
   )
   expect_equal(
     process_ivregranks_formula(r(y) ~ w * z + r(x) - z |
-      w * z + r(z) - z)$ranked_instruments_indices, 2
+      w * z + r(z) - z, data = NULL)$ranked_instruments_indices, 2
   )
   expect_equal(
     process_ivregranks_formula(r(y) ~ w * v |
-      z)$ranked_instruments_indices, integer(0)
+      z, data = NULL)$ranked_instruments_indices, integer(0)
   )
   expect_equal(process_ivregranks_formula(
-    r(y) ~ -1 + (r(x) + w):G | -1 + (r(z) + w):G
+    r(y) ~ -1 + (r(x) + w):G | -1 + (r(z) + w):G,
+    data = NULL
   )$ranked_instruments_indices, 1)
   expect_equal(process_ivregranks_formula(
-    r(y) ~ (r(x) + w):G | (r(z) + w):G
+    r(y) ~ (r(x) + w):G | (r(z) + w):G,
+    data = NULL
   )$ranked_instruments_indices, 2)
   expect_equal(process_ivregranks_formula(
-    r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G
+    r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G,
+    data = NULL
   )$ranked_instruments_indices, 2)
 })
 
 test_that("process_ivregranks_formula returns correct ranked_response flag", {
   expect_true(process_ivregranks_formula(
-    r(y) ~ r(x) + w | r(z) + w
+    r(y) ~ r(x) + w | r(z) + w,
+    data = NULL
   )$ranked_response)
   expect_false(process_ivregranks_formula(
-    y ~ r(x) + w | r(z) + w
+    y ~ r(x) + w | r(z) + w,
+    data = NULL
   )$ranked_response)
 })
 
 test_that("process_ivregranks_formula returns corrected formula", {
+  data <- data.frame(
+    y = c(1, 2, 3), x = c(4, 5, 6), w = c(7, 8, 9),
+    z = c(10, 11, 12)
+  )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ r(x) + w:G | r(z) + w:G)$formula,
+    process_ivregranks_formula(r(y) ~ . | ., data = data)$formula,
+    Formula::as.Formula(r(y) ~ x + w + z | x + w + z)
+  )
+  expect_equal(
+    process_ivregranks_formula(r(y) ~ x + w | z + . - x, data = data)$formula,
+    Formula::as.Formula(r(y) ~ x + w | z + w)
+  )
+  expect_equal(
+    process_ivregranks_formula(r(y) ~ r(x) + w:G | r(z) + w:G,
+      data = NULL
+    )$formula,
     Formula::as.Formula(r(y) ~ r(x) + w:G | r(z) + w:G)
   )
   expect_equal(
     process_ivregranks_formula(
-      r(y) ~ (r(x) + w):G - 1 | (r(z) + w):G - 1
+      r(y) ~ (r(x) + w):G - 1 | (r(z) + w):G - 1,
+      data = NULL
     )$formula,
     Formula::as.Formula(r(y) ~ (r(x) + w):G - 1 | (r(z) + w):G - 1)
   )
   expect_equal(
     process_ivregranks_formula(
-      r(y) ~ (r(x) + w):G | (r(z) + w):G
+      r(y) ~ (r(x) + w):G | (r(z) + w):G,
+      data = NULL
     )$formula,
     Formula::as.Formula(r(y) ~ r(x):G + w:G + G - 1 | r(z):G + w:G + G - 1)
   )
   expect_equal(
     process_ivregranks_formula(
-      r(y) ~ (r(x) + w):G + G - 1 | (r(z) + w):G + G - 1
+      r(y) ~ (r(x) + w):G + G - 1 | (r(z) + w):G + G - 1,
+      data = NULL
     )$formula,
     Formula::as.Formula(r(y) ~ (r(x) + w):G + G - 1 | (r(z) + w):G + G - 1)
   )
   expect_equal(
     process_ivregranks_formula(
-      r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G
+      r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G,
+      data = NULL
     )$formula,
     Formula::as.Formula(r(y) ~ r(x):G + w:G + G - 1 | r(z):G + w:G + G - 1)
   )
@@ -257,15 +315,20 @@ test_that("process_ivregranks_formula returns corrected formula", {
 test_that("process_ivregranks_formula env to formula", {
   env <- new.env()
 
-  actual <- process_ivregranks_formula(r(y) ~ w | r(x) | r(z), env)$formula
+  actual <- process_ivregranks_formula(r(y) ~ w | r(x) | r(z),
+    data = NULL, rank_env = env
+  )$formula
   expect_equal(environment(actual), env)
 
-  actual <- process_ivregranks_formula(r(y) ~ r(x) | r(z):G, env)$formula
+  actual <- process_ivregranks_formula(r(y) ~ r(x) | r(z):G,
+    data = NULL, rank_env = env
+  )$formula
   expect_equal(environment(actual), env)
 
   actual <- process_ivregranks_formula(
-    r(y) ~ r(x) | r(z):G - 1,
-    env
+    r(y) ~ r(x) | r(z):G - 1, ,
+    data = NULL,
+    rank_env = env
   )$formula
   expect_equal(environment(actual), env)
 })
@@ -273,14 +336,14 @@ test_that("process_ivregranks_formula env to formula", {
 test_that("process_ivregranks_formula returns correct index for simplest
   fits", {
   expect_equal(
-    process_ivregranks_formula(r(y) ~ r(x) | r(z)),
+    process_ivregranks_formula(r(y) ~ r(x) | r(z), data = NULL),
     list(
       rank_terms_indices = 1, ranked_instruments_indices = 1,
       ranked_response = TRUE, formula = Formula::as.Formula(r(y) ~ r(x) | r(z))
     )
   )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ r(x) - 1 | r(z)),
+    process_ivregranks_formula(r(y) ~ r(x) - 1 | r(z), data = NULL),
     list(
       rank_terms_indices = 1, ranked_instruments_indices = 1,
       ranked_response = TRUE,
@@ -288,7 +351,7 @@ test_that("process_ivregranks_formula returns correct index for simplest
     )
   )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ r(x) - 1 | r(z) - 1),
+    process_ivregranks_formula(r(y) ~ r(x) - 1 | r(z) - 1, data = NULL),
     list(
       rank_terms_indices = 1, ranked_instruments_indices = 1,
       ranked_response = TRUE,
@@ -296,7 +359,7 @@ test_that("process_ivregranks_formula returns correct index for simplest
     )
   )
   expect_equal(
-    process_ivregranks_formula(y ~ r(x) - 1 | r(z) - 1),
+    process_ivregranks_formula(y ~ r(x) - 1 | r(z) - 1, data = NULL),
     list(
       rank_terms_indices = 1, ranked_instruments_indices = 1,
       ranked_response = FALSE,
