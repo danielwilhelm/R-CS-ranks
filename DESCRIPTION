@@ -26,6 +26,7 @@ Imports:
     ivreg,
     lifecycle,
     MASS,
+    rlang,
     scales,
     stats
 Suggests:
