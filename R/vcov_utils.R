@@ -64,7 +64,7 @@ calculate_H2.default <- function(object, projection_residuals,
 #' Calculate H3 component for covariance estimation
 #'
 #' @noRd
-calculate_H3 <- function(object, projection_residuals, H1_mean, ...) {
+calculate_H3 <- function(object, projection_residual_matrix, H1_mean, ...) {
   UseMethod("calculate_H3")
 }
 

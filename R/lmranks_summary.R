@@ -141,7 +141,7 @@ get_projection_residual_matrix <- function(object) {
 #' @return n x p matrix
 #'
 #' @noRd
-calculate_H1.lmranks <- function(object, projection_residuals) {
+calculate_H1.lmranks <- function(object, projection_residuals, ...) {
   NextMethod()
 }
 
@@ -156,7 +156,7 @@ calculate_H1.lmranks <- function(object, projection_residuals) {
 #' (Wbeta)' %*% (R_X(X)-Wgamma) / n
 #'
 #' @noRd
-calculate_H2.lmranks <- function(object, projection_residuals, H1_mean = NULL) {
+calculate_H2.lmranks <- function(object, projection_residuals, H1_mean = NULL, ...) {
   rank_column_index <- get_ranked_indices(object, component = "regressors")
   model_matrix <- stats::model.matrix(object)
   l <- get_and_separate_regressors(model_matrix, rank_column_index)
@@ -185,7 +185,7 @@ calculate_H2.lmranks <- function(object, projection_residuals, H1_mean = NULL) {
 #' times indicator of grouping variable
 #'
 #' @noRd
-calculate_H3.lmranks <- function(object, projection_residual_matrix, H1_mean) {
+calculate_H3.lmranks <- function(object, projection_residual_matrix, H1_mean, ...) {
   if (length(object$rank_terms_indices) > 1) cli::cli_abort("Not implemented yet")
   rank_column_index <- which(object$assign %in% object$rank_terms_indices)
   model_matrix <- stats::model.matrix(object)

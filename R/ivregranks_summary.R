@@ -149,7 +149,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 #'
 #' @return n x p matrix
 #' @noRd
-calculate_H1.ivregranks <- function(object, projection_residuals) {
+calculate_H1.ivregranks <- function(object, projection_residuals, ...) {
   object <- object$object_seqn
   NextMethod()
 }
@@ -166,7 +166,7 @@ calculate_H1.ivregranks <- function(object, projection_residuals) {
 #'
 #' @noRd
 calculate_H2.ivregranks <- function(object, projection_residuals,
-                                    H1_mean = NULL) {
+                                    H1_mean = NULL, ...) {
   rank_column_index <- get_ranked_indices(
     object,
     component = "regressors"
@@ -198,7 +198,7 @@ calculate_H2.ivregranks <- function(object, projection_residuals,
 #'
 #' @noRd
 calculate_H3.ivregranks <- function(object, projection_residual_matrix,
-                                    H1_mean) {
+                                    H1_mean, ...) {
   rank_column_index <- get_ranked_indices(object,
     component = "instruments"
   )
