@@ -89,7 +89,7 @@ handled (if there are any).}
 
 \item{\dots}{further arguments passed to \code{\link[ivreg]{ivreg.fit}}.}
 
-\item{which}{As in \code{\link{plot.ivreg}}. Currently only no. 1 is
+\item{which}{As in \code{\link[ivreg]{plot.ivreg}}. Currently only no. 1 is
 available.}
 
 \item{object}{An object of class \code{"ivregranks"}.}
@@ -211,6 +211,10 @@ summary(fit)
 ivr <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
 summary(ivr)
 
+}
+\references{
+Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions".
+\href{http://arxiv.org/pdf/2310.15512}{arXiv preprint arXiv:2310.15512}
 }
 \seealso{
 \code{\link[ivreg]{ivreg.fit}}, \code{\link[csranks]{lmranks}}

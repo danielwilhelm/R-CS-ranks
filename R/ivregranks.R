@@ -71,6 +71,10 @@
 #' of the ranked instrumental variables.}
 #' \item{ranked_response}{a logical entry.}
 #' \item{omega}{an entry corresponding to the \code{omega} argument.}
+#'
+#' @references Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions".
+#' \href{http://arxiv.org/pdf/2310.15512}{arXiv preprint arXiv:2310.15512}
+#'
 #' @seealso \code{\link[ivreg]{ivreg.fit}}, \code{\link[csranks]{lmranks}}
 #'
 #' Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{residuals}},
@@ -328,7 +332,7 @@ prepare_ivreg_call <- function(ivreg_call, check_ivreg_args = TRUE) {
 #' plot is available, which plots fitted values against residuals
 #' (for homoscedacity check).
 #'
-#' @param which As in \code{\link{plot.ivreg}}. Currently only no. 1 is
+#' @param which As in \code{\link[ivreg]{plot.ivreg}}. Currently only no. 1 is
 #' available.
 #' @export
 plot.ivregranks <- function(x, which = 1, ...) {
