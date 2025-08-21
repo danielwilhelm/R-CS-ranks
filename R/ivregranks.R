@@ -116,8 +116,11 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   main_model <- eval(ivreg_call, rank_env)
 
   corrected_formula <- Formula::as.Formula(main_model$formula)
-
-  if (missing(data)) data <- environment(formula)
+  if (missing(data)) {
+    data <- environment(formula)
+  } else {
+    data <- augment_data_with_env(formula, data)
+  }
   formula_seqn <- Formula::as.Formula(stats::model.frame(corrected_formula,
     data = data,
     rhs = 1
@@ -351,4 +354,18 @@ adapt_lmranks_formula_errors <- function(expr) {
       cli::cli_abort(c(message, e$body), call = rlang::current_call())
     }
   )
+}
+
+augment_data_with_env <- function(fml, data = NULL,
+                                  envir = parent.frame(n = 2)) {
+  needed <- all.vars(formula(fml))
+
+  missing_in_data <- setdiff(needed, names(data))
+
+  for (nm in missing_in_data) {
+    if (exists(nm, envir = envir, inherits = FALSE)) {
+      data[[nm]] <- get(nm, envir = envir, inherits = FALSE)
+    }
+  }
+  data
 }

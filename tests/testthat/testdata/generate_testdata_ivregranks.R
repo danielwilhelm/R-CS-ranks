@@ -1,11 +1,8 @@
-library(csranks)
 set.seed(100)
 
 #######################
 ### vcov.ivregranks ###
 #######################
-
-Ifn <- function(u, v) u <= v
 
 for (covariates in c(TRUE, FALSE)) {
   n <- 10000
@@ -27,6 +24,7 @@ for (covariates in c(TRUE, FALSE)) {
   RZ <- frank(Z, increasing = TRUE)
 
   # ------- compute asymptotic variance "by hand"
+  Ifn <- function(u, v) u <= v
 
   res1 <- lm(RZ ~ W - 1)
   Wgammahat <- predict(res1)
@@ -76,6 +74,8 @@ for (n in c(10, 50, 100)) {
   RY <- frank(Y, increasing = TRUE)
   RX <- frank(X, increasing = TRUE)
   RZ <- frank(Z, increasing = TRUE)
+
+  Ifn <- function(u, v) u <= v
 
   res1 <- lm(RZ ~ W - 1)
   Wgammahat <- predict(res1)
@@ -127,9 +127,11 @@ X <- Z + rowSums(W) + rnorm(n, 0, 0.5)
 Y <- X + rowSums(W) + rnorm(n, 0, 1)
 W <- cbind(1, W)
 
-RY <- frank(Y, increasing = FALSE)
-RX <- frank(X, increasing = FALSE)
-RZ <- frank(Z, increasing = FALSE)
+RY <- frank(Y, omega = 1, increasing = FALSE)
+RX <- frank(X, omega = 1, increasing = FALSE)
+RZ <- frank(Z, omega = 1, increasing = FALSE)
+
+Ifn <- function(u, v) u >= v
 
 res1 <- lm(RZ ~ W - 1)
 Wgammahat <- predict(res1)

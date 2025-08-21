@@ -117,12 +117,10 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 
     H1 <- calculate_H1(object, projection_residuals_fs)
     H1_mean <- colMeans(H1)
-
-    object_seqn <- object$object_seqn
     H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
     H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
-    # print(H3)
 
+    object_seqn <- object$object_seqn
     projection_residual_matrix_se <- get_projection_residual_matrix(object_seqn)
     X <- stats::model.matrix(object_seqn)
     projection_residuals_se <- X %*% projection_residual_matrix_se
@@ -144,14 +142,33 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   }
 }
 
+#' Calculate H1 component for covariance estimation
+#'
+#' Originally defined as h_1(x, y, z) = (R_Y(y) - rhoR_X(x) - Wbeta)(R_Z(z) - Wgamma)
+#'
+#' @return n x p matrix
+#' @keywords internal
 calculate_H1.ivregranks <- function(object, projection_residuals) {
+  object <- object$object_seqn
   NextMethod()
 }
 
-calculate_H2.ivregranks <- function(object, projection_residuals, H1_mean = NULL) {
+#' Calculate H2 component for covariance estimation
+#'
+#' Originally defined as h_2(x,y) = E[(I(y,Y)-rhoI(x,X)-Wbeta)(R_Z(Z) - Wgamma)]
+#' Estimator in matrix notation:
+#' (I_Y-rhoI_X-(Wbeta)') %*% (R_Z(Z)-Wgamma) / n
+#' Equal to
+#' I_Y %*% (R_Z(Z)-Wgamma) / n -
+#' rho \* I_X %*% (R_Z(Z)-Wgamma) / n -
+#' (Wbeta)' %*% (R_Z(Z)-Wgamma) / n
+#'
+#' @keywords internal
+calculate_H2.ivregranks <- function(object, projection_residuals,
+                                    H1_mean = NULL) {
   rank_column_index <- get_ranked_indices(
-    object$object_seqn,
-    component="regressors"
+    object,
+    component = "regressors"
   )
   model_matrix_seqn <- stats::model.matrix(object$object_seqn)
   l <- get_and_separate_regressors(
@@ -159,16 +176,34 @@ calculate_H2.ivregranks <- function(object, projection_residuals, H1_mean = NULL
     rank_column_index
   )
   RY <- stats::model.response(stats::model.frame(object$object_seqn))
+  object <- object$object_seqn
 
   NextMethod(l = l, RY = RY)
 }
+
+#' Calculate H3 component for covariance estimation
+#'
+#' Originally defined as h_3(x) = E[(R_Y(Y)-rhoR_X(X)-Wbeta)(I(z,Z) - Wgamma)];
+#' The second component depends on which projection model is considered
+#'
+#' Estimator in matrix notation:
+#' h_3(x) = (R_Y(Y)-rhoR_X(X)-Wbeta)' %*% [I_(z,Z); W] %*% R_S / n
+#' Where R_S is the projection residual matrix.
+#'
+#' For a given x this higly resembles colMeans(H1).
+#' The difference H3(x) - colMeans(H1)is
+#'  (R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I(z,Z) - RX)%*%R_S[r,] / n
+#' (last element is a row vector from R_S matrix corresponding to ranked regressor)
+#'
+#' @keywords internal
 calculate_H3.ivregranks <- function(object, projection_residual_matrix,
                                     H1_mean) {
   rank_column_index <- get_ranked_indices(object,
-    component= "instruments"
+    component = "instruments"
   )
   model_matrix <- stats::model.matrix(object, component = "instruments")
   l <- get_and_separate_regressors(model_matrix, rank_column_index)
+  object <- object$object_seqn
 
   NextMethod(l = l)
 }
