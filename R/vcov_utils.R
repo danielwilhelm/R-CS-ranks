@@ -2,7 +2,7 @@
 #'
 #' @return n x p matrix
 #' @noRd
-calculate_H1 <- function(object, ...) {
+calculate_H1 <- function(object, projection_residuals, ...) {
   UseMethod("calculate_H1")
 }
 
@@ -15,7 +15,7 @@ calculate_H1.default <- function(object, projection_residuals) {
 #' Calculate H2 component for covariance estimation
 #'
 #' @noRd
-calculate_H2 <- function(object, ...) {
+calculate_H2 <- function(object, projection_residuals, H1_mean = NULL, ...) {
   UseMethod("calculate_H2")
 }
 
@@ -64,7 +64,7 @@ calculate_H2.default <- function(object, projection_residuals,
 #' Calculate H3 component for covariance estimation
 #'
 #' @noRd
-calculate_H3 <- function(object, ...) {
+calculate_H3 <- function(object, projection_residuals, H1_mean, ...) {
   UseMethod("calculate_H3")
 }
 
