@@ -7,12 +7,6 @@
 #' regressors. Alternative robust-regression estimators are also provided,
 #' based on M-estimation (2SM) and MM-estimation (2SMM).
 #'
-#' \code{ivregranks} is the high-level interface to the work-horse function
-#' A set of standard methods (including \code{print}, \code{summary},
-#' \code{vcov}, \code{anova}, \code{predict}, \code{residuals}, \code{terms},
-#' \code{model.matrix}, \code{bread}, \code{estfun}) is available and described
-#' in \code{\link{ivregranks_summary}}.
-#'
 #' Regressors and instruments for \code{ivregranks} are most easily specified
 #' in a formula with two parts on the right-hand side, e.g.,
 #' \code{r(y) ~ x1 + r(x2) | r(z1) + z2 + z3}, where \code{x1} and \code{r(x2)}
@@ -39,7 +33,6 @@
 #' Internally, all specifications are converted to the version with two parts
 #' on the right-hand side.
 #'
-#' @aliases ivregranks
 #' @param formula,instruments formula specification(s) of the regression
 #' relationship and the instruments. Either \code{instruments} is missing and
 #' \code{formula} has three parts as in \code{r(y) ~ x1 + r(x2) | r(z1) + z2 +
@@ -64,27 +57,47 @@
 #' \code{"M"} for M-estimation, or \code{"MM"} for MM-estimation, with the
 #' latter two robust-regression methods implemented via the
 #' \code{\link[MASS]{rlm}} function in the \pkg{MASS} package.
+#' @param omega real number in the interval \[0,1\] defining how ties are
+#' handled (if there are any).
 #' @param \dots further arguments passed to \code{\link[ivreg]{ivreg.fit}}.
 #'
 #' @return \code{ivregranks} returns an object of class \code{"ivregranks"} that
-#' inherits as much as possible from class \code{"ivreg"}, with the following
-#' additional components:
+#' inherits as much as possible from class \code{\link[ivreg]{ivreg}},
+#' with the following additional components:
 #' \item{rank_terms_indices}{an integer vector with indices of entries of
-#' \code{terms.labels} attribute of \code{terms(formula) for the outcome
+#' \code{terms.labels} attribute of \code{terms(formula)} for the outcome
 #' equation which correspond to ranked regressors.}
 #' \item{ranked_instruments_indices}{an integer vector with indices of entries
 #' of the ranked instrumental variables.}
 #' \item{ranked_response}{a logical entry.}
 #' \item{omega}{an entry corresponding to the \code{omega} argument.}
 #' @seealso \code{\link[ivreg]{ivreg.fit}}, \code{\link[csranks]{lmranks}}
-#' @keywords regression
 #'
-#' Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{effects}},
-#' \code{\link[stats]{residuals}},
+#' Generic functions \code{\link[stats]{coef}}, \code{\link[stats]{residuals}},
 #' \code{\link[stats]{fitted}}, \code{\link[stats]{model.frame}},
 #' \code{\link[stats]{model.matrix}}, \code{\link[stats]{update}} .
 #'
 #' @examples
+#' # rank-rank regression:
+#' Z <- rnorm(500)
+#' X <- Z + rnorm(500)
+#' Y <- X + rnorm(500)
+#' rrfit <- ivregranks(r(Y) ~ r(X) | r(Z))
+#' summary(rrfit)
+#'
+#' # naive version of the rank-rank regression:
+#' RZ <- frank(Z, increasing = TRUE, omega = 1)
+#' RX <- frank(X, increasing = TRUE, omega = 1)
+#' RY <- frank(Y, increasing = TRUE, omega = 1)
+#' fit <- ivreg::ivreg(RY ~ RX | RZ)
+#' summary(fit)
+#' # the coefficient estimates are the same as in the ivregranks function, but
+#' # the standard errors, t-values, p-values are incorrect.
+#'
+#' # support for `data` argument:
+#' ivr <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
+#' summary(ivr)
+#'
 #' @export
 ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        offset, contrasts = NULL, model = TRUE, y = TRUE,
@@ -161,7 +174,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 #'
 #' For now only formulas with (at most) one rank regressor and one
 #' ranked instrument are allowed.
-#' The outcome can be either ranked or usual, continuous.
+#' The outcome can be either ranked or not.
 #' Additionally, the rank regressor/instrument cannot be part of interactions.
 #'
 #' @return A list with four entries:
@@ -200,7 +213,7 @@ process_ivregranks_formula <- function(formula, instruments,
 
   has_dot <- function(formula) {
     inherits(
-      try(terms(formula), silent = TRUE),
+      try(stats::terms(formula), silent = TRUE),
       "try-error"
     )
   }
@@ -210,7 +223,7 @@ process_ivregranks_formula <- function(formula, instruments,
     if (!has_dot(f1) & has_dot(f2)) {
       formula <- Formula::as.Formula(
         f1,
-        update(formula(formula, lhs = 0L, rhs = 1L), f2)
+        stats::update(formula(formula, lhs = 0L, rhs = 1L), f2)
       )
     }
   }
@@ -309,13 +322,7 @@ prepare_ivreg_call <- function(ivreg_call, check_ivreg_args = TRUE) {
   return(ivreg_call)
 }
 
-# Inherited `ivreg` methods:
-slotsFromS3.ivregranks <- function(object) {
-  cli::cli_warn("This method might not return correct results.")
-  NextMethod()
-}
-
-#' @describeIn lmranks Plot diagnostics for an \code{ivregranks} object
+#' @describeIn ivregranks Plot diagnostics for an \code{ivregranks} object
 #'
 #' Displays plots useful for assessing quality of model fit. Currently, only one
 #' plot is available, which plots fitted values against residuals
@@ -358,7 +365,7 @@ adapt_lmranks_formula_errors <- function(expr) {
 
 augment_data_with_env <- function(fml, data = NULL,
                                   envir = parent.frame(n = 2)) {
-  needed <- all.vars(formula(fml))
+  needed <- all.vars(stats::formula(fml))
 
   missing_in_data <- setdiff(needed, names(data))
 

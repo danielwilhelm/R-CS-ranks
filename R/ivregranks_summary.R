@@ -1,9 +1,10 @@
 #' @describeIn ivregranks Summary and Inference Methods for \code{"ivregranks"}
 #' Objects
 #'
-#' @param object An object of class \code{"ivregranks"}.
-#'
 #' @inheritParams ivreg::summary.ivreg
+#' @param object An object of class \code{"ivregranks"}.
+#' @param diagnostics currently not supported.
+#'
 #' @export
 summary.ivregranks <- function(object, vcov. = NULL, df = NULL,
                                diagnostics = NULL, ...) {
@@ -147,7 +148,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 #' Originally defined as h_1(x, y, z) = (R_Y(y) - rhoR_X(x) - Wbeta)(R_Z(z) - Wgamma)
 #'
 #' @return n x p matrix
-#' @keywords internal
+#' @noRd
 calculate_H1.ivregranks <- function(object, projection_residuals) {
   object <- object$object_seqn
   NextMethod()
@@ -163,7 +164,7 @@ calculate_H1.ivregranks <- function(object, projection_residuals) {
 #' rho \* I_X %*% (R_Z(Z)-Wgamma) / n -
 #' (Wbeta)' %*% (R_Z(Z)-Wgamma) / n
 #'
-#' @keywords internal
+#' @noRd
 calculate_H2.ivregranks <- function(object, projection_residuals,
                                     H1_mean = NULL) {
   rank_column_index <- get_ranked_indices(
@@ -195,7 +196,7 @@ calculate_H2.ivregranks <- function(object, projection_residuals,
 #'  (R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I(z,Z) - RX)%*%R_S[r,] / n
 #' (last element is a row vector from R_S matrix corresponding to ranked regressor)
 #'
-#' @keywords internal
+#' @noRd
 calculate_H3.ivregranks <- function(object, projection_residual_matrix,
                                     H1_mean) {
   rank_column_index <- get_ranked_indices(object,
