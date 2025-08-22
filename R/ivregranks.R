@@ -44,7 +44,7 @@
 #' \code{formula}.
 #' @param subset currently not supported.
 #' @param na.action currently not supported.
-#' @param weights currenty not supported.
+#' @param weights currently not supported.
 #' @param offset an optional offset that can be used to specify an a priori
 #' known component to be included during fitting.
 #' @param contrasts an optional list. See the \code{contrasts.arg} of

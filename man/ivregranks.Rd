@@ -66,7 +66,7 @@ By default the variables are taken from the environment of the
 
 \item{na.action}{currently not supported.}
 
-\item{weights}{currenty not supported.}
+\item{weights}{currently not supported.}
 
 \item{offset}{an optional offset that can be used to specify an a priori
 known component to be included during fitting.}
