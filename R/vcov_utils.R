@@ -7,7 +7,7 @@ calculate_H1 <- function(object, projection_residuals, ...) {
 }
 
 #' @noRd
-calculate_H1.default <- function(object, projection_residuals) {
+calculate_H1.default <- function(object, projection_residuals, ...) {
   original_resids <- resid(object)
   projection_residuals * original_resids
 }
