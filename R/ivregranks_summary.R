@@ -150,7 +150,6 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 #' @return n x p matrix
 #' @noRd
 calculate_H1.ivregranks <- function(object, projection_residuals, ...) {
-  object <- object$object_seqn
   NextMethod()
 }
 
@@ -177,7 +176,6 @@ calculate_H2.ivregranks <- function(object, projection_residuals,
     rank_column_index
   )
   RY <- stats::model.response(stats::model.frame(object$object_seqn))
-  object <- object$object_seqn
 
   NextMethod(l = l, RY = RY)
 }
@@ -204,7 +202,6 @@ calculate_H3.ivregranks <- function(object, projection_residual_matrix,
   )
   model_matrix <- stats::model.matrix(object, component = "instruments")
   l <- get_and_separate_regressors(model_matrix, rank_column_index)
-  object <- object$object_seqn
 
   NextMethod(l = l)
 }

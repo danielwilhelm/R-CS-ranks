@@ -1,3 +1,4 @@
+library(ivreg)
 set.seed(100)
 
 #######################
@@ -34,7 +35,7 @@ for (covariates in c(TRUE, FALSE)) {
   res2 <- lm(RX ~ W - 1)
   zetahat <- resid(res2)
 
-  res3 <- lm(RY ~ RX + W - 1)
+  res3 <- ivreg(RY ~ RX + W - 1 | RZ + W - 1)
   rhohat <- coef(res3)[1]
   betahat <- coef(res3)[-1]
   epsilonhat <- resid(res3)
@@ -85,7 +86,7 @@ for (n in c(10, 50, 100)) {
   res2 <- lm(RX ~ W - 1)
   zetahat <- resid(res2)
 
-  res3 <- lm(RY ~ RX + W - 1)
+  res3 <- ivreg(RY ~ RX + W - 1 | RZ + W - 1)
   rhohat <- coef(res3)[1]
   betahat <- coef(res3)[-1]
   epsilonhat <- resid(res3)
@@ -141,7 +142,7 @@ gammahat <- coef(res1)
 res2 <- lm(RX ~ W - 1)
 zetahat <- resid(res2)
 
-res3 <- lm(RY ~ RX + W - 1)
+res3 <- ivreg(RY ~ RX + W - 1 | RZ + W - 1)
 rhohat <- coef(res3)[1]
 betahat <- coef(res3)[-1]
 epsilonhat <- resid(res3)
