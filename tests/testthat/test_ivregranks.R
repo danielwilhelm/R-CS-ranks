@@ -76,7 +76,6 @@ test_that("ivregranks and ivreg provide coherent results", {
   raw_rank_m$omega <- NULL
   raw_rank_m$rank_terms_indices <- NULL
   raw_rank_m$ranked_instruments_indices <- NULL
-  raw_rank_m$object_seqn <- NULL
   raw_rank_m$object_fs <- NULL
 
   m <- ivreg::ivreg(y_frank ~ W | x_frank | z_frank)

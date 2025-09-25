@@ -121,20 +121,22 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
     H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
     H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
 
-    object_seqn <- object$object_seqn
-    projection_residual_matrix_se <- get_projection_residual_matrix(object_seqn)
-    X <- stats::model.matrix(object_seqn)
-    projection_residuals_se <- X %*% projection_residual_matrix_se
-    projection_variances <- colMeans(projection_residuals_se *
+    projection_residual_matrix <- get_projection_residual_matrix(object)
+    X <- stats::model.matrix(object, component = "regressors")
+    projection_residuals <- X %*% projection_residual_matrix
+    projection_variances <- colMeans(projection_residuals *
       projection_residuals_fs)
     psi <- t(t(H1 + H2 + H3) / projection_variances)
 
     sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
-    colnames(sigmahat) <- names(coef(object_seqn))
+    colnames(sigmahat) <- names(coef(object, component = "stage2"))
     rownames(sigmahat) <- colnames(sigmahat)
 
     if (!complete) {
-      sigmahat <- sigmahat[!is.na(coef(object_seqn)), !is.na(coef(object_seqn))]
+      sigmahat <- sigmahat[
+        !is.na(coef(object, component = "stage2")),
+        !is.na(coef(object, component = "stage2"))
+      ]
     }
 
     return(sigmahat)
@@ -170,12 +172,12 @@ calculate_H2.ivregranks <- function(object, projection_residuals,
     object,
     component = "regressors"
   )
-  model_matrix_seqn <- stats::model.matrix(object$object_seqn)
+  model_matrix_seqn <- stats::model.matrix(object, component = "regressors")
   l <- get_and_separate_regressors(
     model_matrix_seqn,
     rank_column_index
   )
-  RY <- stats::model.response(stats::model.frame(object$object_seqn))
+  RY <- stats::model.response(stats::model.frame(object))
 
   NextMethod(l = l, RY = RY)
 }

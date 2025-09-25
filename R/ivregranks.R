@@ -147,13 +147,6 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
     rhs = 2
   ))
 
-  object_seqn <- suppress_no_rank_lmranks(lmranks(formula_seqn,
-    data = data,
-    # subset = subset,
-    # weights = weights, na.action = na.action, contrasts = contrasts,
-    # offset = offset,
-    omega = omega
-  ))
   # needed to correctly compute the vcov for the first-stage
   object_fs <- suppress_no_rank_lmranks(lmranks(formula_fs,
     data = data,
@@ -167,7 +160,6 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   main_model$df.residual <- NA
   main_model$omega <- omega
   main_model$ranked_response <- ranked_response
-  main_model$object_seqn <- object_seqn
   main_model$object_fs <- object_fs
   class(main_model) <- c("ivregranks", class(main_model))
 
