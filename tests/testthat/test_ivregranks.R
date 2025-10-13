@@ -110,6 +110,13 @@ test_that("ivregranks falls back to ivreg in no rank case", {
   expect_equivalent(m, m2)
 })
 
+test_that("ivregranks raises error if estimation method is not OLS", {
+  df <- mtcars
+  expect_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "K"))
+  expect_no_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "O"))
+  expect_no_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "OLS"))
+})
+
 test_that("ivregranks raises error if NA is encountered in data", {
   df1 <- mtcars
   df1[5, "disp"] <- NA

@@ -1,11 +1,10 @@
-#' Instrumental-Variable Regression by 2SLS, 2SM, or 2SMM Estimation Involving
+#' Instrumental-Variable Regression by 2SLS Estimation Involving
 #' Ranks
 #'
 #' Fit instrumental-variable regression involving ranks by two-stage least
 #' squares (2SLS). This is equivalent to direct instrumental-variables
 #' estimation when the number of instruments is equal to the number of
-#' regressors. Alternative robust-regression estimators are also provided,
-#' based on M-estimation (2SM) and MM-estimation (2SMM).
+#' regressors.
 #'
 #' Regressors and instruments for \code{ivregranks} are most easily specified
 #' in a formula with two parts on the right-hand side, e.g.,
@@ -53,10 +52,7 @@
 #' the fit (the model frame, the model matrices, the response) are returned.
 #' These components are necessary for computing regression diagnostics.
 #' @param method the method used to fit the stage 1 and 2 regression:
-#' \code{"OLS"} for traditional 2SLS regression (the default),
-#' \code{"M"} for M-estimation, or \code{"MM"} for MM-estimation, with the
-#' latter two robust-regression methods implemented via the
-#' \code{\link[MASS]{rlm}} function in the \pkg{MASS} package.
+#' \code{"OLS"} for traditional 2SLS regression (the default and only option).
 #' @param omega real number in the interval \[0,1\] defining how ties are
 #' handled (if there are any).
 #' @param \dots further arguments passed to \code{\link[ivreg]{ivreg.fit}}.
@@ -105,8 +101,11 @@
 #' @export
 ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        offset, contrasts = NULL, model = TRUE, y = TRUE,
-                       x = FALSE, method = c("OLS", "M", "MM"), omega = 1,
+                       x = FALSE, method = "OLS", omega = 1,
                        ...) {
+  method <- rlang::try_fetch(match.arg(method), error = function(e) {
+    cli::cli_abort("Estimation method {method} is not supported")
+  })
   rank_env <- create_env_to_interpret_r_mark(omega)
   l <- process_ivregranks_formula(formula,
     data = if (missing(data)) NULL else data,
