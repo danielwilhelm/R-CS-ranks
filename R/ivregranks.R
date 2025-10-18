@@ -104,7 +104,9 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
                        x = FALSE, method = "OLS", omega = 1,
                        ...) {
   method <- rlang::try_fetch(match.arg(method), error = function(e) {
-    cli::cli_abort("Estimation method {method} is not supported")
+    cli::cli_abort(c("Only the OLS method is supported.",
+      "x" = "Estimation method {method} is not supported."
+    ))
   })
   rank_env <- create_env_to_interpret_r_mark(omega)
   l <- process_ivregranks_formula(formula,
@@ -193,7 +195,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 process_ivregranks_formula <- function(formula, instruments,
                                        data, rank_env = NULL) {
   if (!inherits(formula, "formula")) {
-    cli::cli_abort(c("{.var formula} must be a {.class formula} object.",
+    cli::cli_abort(c("{.var formula} must be a {.cls {class(formula)}} object.",
       "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."
     ))
   }
@@ -225,9 +227,10 @@ process_ivregranks_formula <- function(formula, instruments,
 
   if (length(formula)[2] == 1) {
     cli::cli_abort(
-      c("{.var formula} must at least two/at most three regressor parts"),
-      "x" = "The passed {.var formula} has a single part regressor",
-      "i" = "Use lmranks."
+      c("{.var formula} must at least two/at most three regressor parts",
+        "x" = "The passed {.var formula} has a single part regressor",
+        "i" = "Use lmranks."
+      )
     )
   }
   if (length(formula)[1] != 1 || length(formula)[2] > 3) {
@@ -278,8 +281,10 @@ process_ivregranks_formula <- function(formula, instruments,
   ranked_instruments_indices <- l2$rank_terms_indices
 
   if (length(ranked_instruments_indices) > 1) {
-    cli::cli_abort(c("In formula there may be at most one ranked instrument."),
-      "x" = "There are mulple ranked instruments."
+    cli::cli_abort(c("In formula there may be at most one ranked instrument.",
+      "x" = "There are multiple ranked instruments."
+    ))
+  }
     )
   }
 
