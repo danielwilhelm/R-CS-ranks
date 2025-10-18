@@ -126,7 +126,7 @@ with the following additional components:
 \item{rank_terms_indices}{an integer vector with indices of entries of
 \code{terms.labels} attribute of \code{terms(formula)} for the outcome
 equation which correspond to ranked regressors.}
-\item{ranked_instruments_indices}{an integer vector with indices of entries
+\item{rank_instruments_indices}{an integer vector with indices of entries
 of the ranked instrumental variables.}
 \item{ranked_response}{a logical entry.}
 \item{omega}{an entry corresponding to the \code{omega} argument.}

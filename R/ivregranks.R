@@ -63,7 +63,7 @@
 #' \item{rank_terms_indices}{an integer vector with indices of entries of
 #' \code{terms.labels} attribute of \code{terms(formula)} for the outcome
 #' equation which correspond to ranked regressors.}
-#' \item{ranked_instruments_indices}{an integer vector with indices of entries
+#' \item{rank_instruments_indices}{an integer vector with indices of entries
 #' of the ranked instrumental variables.}
 #' \item{ranked_response}{a logical entry.}
 #' \item{omega}{an entry corresponding to the \code{omega} argument.}
@@ -113,14 +113,14 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
     data = if (missing(data)) NULL else data,
     rank_env = rank_env
   )
-  ranked_instruments_indices <- l$ranked_instruments_indices
+  rank_instruments_indices <- l$rank_instruments_indices
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
   formula <- l$formula
   original_call <- match.call()
 
   if (length(rank_terms_indices) == 0 &&
-    length(ranked_instruments_indices) == 0 &&
+    length(rank_instruments_indices) == 0 &&
     !ranked_response) {
     cli::cli_warn("{.var ivregranks} called with no ranked terms.
       Using regular ivreg...")
@@ -152,7 +152,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 
   main_model$formula <- corrected_formula
   main_model$rank_terms_indices <- rank_terms_indices
-  main_model$ranked_instruments_indices <- ranked_instruments_indices
+  main_model$rank_instruments_indices <- rank_instruments_indices
   main_model$call <- original_call
   main_model$df.residual <- NA
   main_model$omega <- omega
@@ -175,7 +175,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 #' \code{terms.labels} attribute of \code{terms(formula)}, which correspond to
 #' ranked regressors for the outcome equation.
 #' This vector might be empty, which indicates no ranked regressors.
-#' - `ranked_instruments_indices`, integer vector with indices of entries of the
+#' - `rank_instruments_indices`, integer vector with indices of entries of the
 #' ranked instrumental variables
 #' - `ranked_response`, logical.
 #' - `formula`, corrected formula.
@@ -248,12 +248,12 @@ process_ivregranks_formula <- function(formula, instruments,
     specials = "r",
     allowDotAsName = TRUE, data = data
   )
-  t1 <- attr(formula_terms, "term.labels")
+  regressors <- attr(formula_terms, "term.labels")
   instruments_terms <- stats::terms(formula,
     rhs = 2, specials = "r",
     allowDotAsName = TRUE, data = data
   )
-  t2 <- attr(instruments_terms, "term.labels")
+  instruments <- attr(instruments_terms, "term.labels")
 
   # makes sure the the structural eqn is alright.
   l1 <- adapt_lmranks_formula_errors(process_lmranks_formula(
@@ -276,20 +276,35 @@ process_ivregranks_formula <- function(formula, instruments,
   )
 
   rank_terms_indices <- l1$rank_terms_indices
-  ranked_instruments_indices <- l2$rank_terms_indices
+  rank_instruments_indices <- l2$rank_terms_indices
 
+  endo_regressors <- setdiff(regressors, instruments)
+  instruments_for_endo_regressor <- setdiff(instruments, regressors)
 
-  if (length(ranked_instruments_indices) > 1) {
-    cli::cli_abort(c("In formula there may be at most one ranked instrument.",
-      "x" = "There are multiple ranked instruments."
-    ))
+  if (length(endo_regressors) > 1) {
+    cli::cli_abort(
+      c("In formula there may be at most one endogenous regressors.",
+        "i" = "Multiple endogenous regressors not yet implemented",
+        "x" = "There is more than one endogenous regressor."
+      )
+    )
+  }
+  if (length(instruments_for_endo_regressor) != 1) {
+    cli::cli_abort(
+      c("In formula there must be exactly one
+        instrument for the endogenous regressor.",
+        "i" = "Multiple endogenous regressors and instruments
+        not yet implemented.",
+        "x" = "There is more than one instrument for the endogenous regressor."
+      )
+    )
   }
 
   environment(formula) <- rank_env
 
   return(list(
     rank_terms_indices = rank_terms_indices,
-    ranked_instruments_indices = ranked_instruments_indices,
+    rank_instruments_indices = rank_instruments_indices,
     ranked_response = l1$ranked_response, formula = formula
   ))
 }

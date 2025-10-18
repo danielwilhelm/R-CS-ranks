@@ -155,7 +155,7 @@ get_ranked_indices <- function(object, component = c(
   } else if (component == "instruments") {
     model_matrix <- stats::model.matrix(object, component = "instruments")
     return(which(attr(model_matrix, "assign") %in%
-      object$ranked_instruments_indices))
+      object$rank_instruments_indices))
   } else {
     cli::cli_abort("Object of type {.cls object} not supported for this
       function")
