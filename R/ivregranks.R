@@ -139,10 +139,6 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   } else {
     data <- augment_data_with_env(formula, data)
   }
-  formula_seqn <- Formula::as.Formula(stats::model.frame(corrected_formula,
-    data = data,
-    rhs = 1
-  ))
   formula_fs <- Formula::as.Formula(stats::model.frame(corrected_formula,
     data = data,
     rhs = 2
@@ -252,10 +248,12 @@ process_ivregranks_formula <- function(formula, instruments,
     specials = "r",
     allowDotAsName = TRUE, data = data
   )
+  t1 <- attr(formula_terms, "term.labels")
   instruments_terms <- stats::terms(formula,
     rhs = 2, specials = "r",
     allowDotAsName = TRUE, data = data
   )
+  t2 <- attr(instruments_terms, "term.labels")
 
   # makes sure the the structural eqn is alright.
   l1 <- adapt_lmranks_formula_errors(process_lmranks_formula(
@@ -280,12 +278,11 @@ process_ivregranks_formula <- function(formula, instruments,
   rank_terms_indices <- l1$rank_terms_indices
   ranked_instruments_indices <- l2$rank_terms_indices
 
+
   if (length(ranked_instruments_indices) > 1) {
     cli::cli_abort(c("In formula there may be at most one ranked instrument.",
       "x" = "There are multiple ranked instruments."
     ))
-  }
-    )
   }
 
   environment(formula) <- rank_env
