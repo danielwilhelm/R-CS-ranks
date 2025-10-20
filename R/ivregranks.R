@@ -281,10 +281,15 @@ process_ivregranks_formula <- function(formula, instruments,
   endo_regressors <- setdiff(regressors, instruments)
   instruments_for_endo_regressor <- setdiff(instruments, regressors)
 
+  interaction_terms_endo <- grep(":", endo_regressors, value = TRUE)
+  interaction_terms_instru <- grep(":", instruments_for_endo_regressor,
+    value = TRUE
+  )
+
   if (length(endo_regressors) > 1) {
     cli::cli_abort(
       c("In formula there may be at most one endogenous regressors.",
-        "i" = "Multiple endogenous regressors not yet implemented",
+        "i" = "Multiple endogenous regressors not yet implemented.",
         "x" = "There is more than one endogenous regressor."
       )
     )
@@ -296,6 +301,16 @@ process_ivregranks_formula <- function(formula, instruments,
         "i" = "Multiple endogenous regressors and instruments
         not yet implemented.",
         "x" = "There is more than one instrument for the endogenous regressor."
+      )
+    )
+  }
+  if (length(interaction_terms_endo) || length(interaction_terms_instru)) {
+    cli::cli_abort(
+      c("In formula there must not be interactions with the endogenous regressor
+        or its instrument.",
+        "i" = "Not yet implemented.",
+        "x" = "There are interaction terms with the endogenous regressor or
+        its instrument."
       )
     )
   }

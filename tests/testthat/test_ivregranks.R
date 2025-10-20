@@ -156,20 +156,20 @@ test_that("process_ivregranks_formula catches illegal formulas", {
   expect_error(process_ivregranks_formula(r(y) ~ w | r(x) + v | r(z1) + r(z2),
     data = NULL
   ))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):G, data = NULL))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) + G | r(z):G + G,
+    data = NULL
+  ))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) + w:G | (r(z) + w):G,
+    data = NULL
+  ))
+  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):G - 1,
+    data = NULL
+  ))
 
   expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z), data = NULL))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + w,
-    data = NULL
-  ))
   expect_silent(process_ivregranks_formula(r(y) ~ w | r(x) | r(z), data = NULL))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G, data = NULL))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) + G | r(z):G + G,
-    data = NULL
-  ))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) + w:G | (r(z) + w):G,
-    data = NULL
-  ))
-  expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z):G - 1,
+  expect_silent(process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + w,
     data = NULL
   ))
 })
