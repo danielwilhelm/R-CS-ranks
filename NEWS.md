@@ -1,3 +1,5 @@
+# csranks (development version)
+
 # csranks 1.2.3
 * Fixed S3 inheritance for the `proj` method of `lmranks`. Added it to `lmranks` documentation page.
 * Changed column names of `coefficients` in `summary.lmranks` from `t value` to `z value` and from `Pr(<|t|)` to `Pr(<|z|)`.
