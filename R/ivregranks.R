@@ -197,15 +197,15 @@ process_ivregranks_formula <- function(formula, instruments,
   if (is.null(rank_env)) {
     rank_env <- environment(formula)
   }
-  
+
   # Following logic is a copy-paste from iverg.R
-  
+
   if (!missing(instruments)) {
     formula <- Formula::as.Formula(formula, instruments)
   } else {
     formula <- Formula::as.Formula(formula)
   }
-  
+
   has_dot <- function(formula) {
     inherits(
       try(stats::terms(formula), silent = TRUE),
@@ -222,9 +222,9 @@ process_ivregranks_formula <- function(formula, instruments,
       )
     }
   }
-  
+
   # validation - ours
-  
+
   if (length(formula)[2] == 1) {
     cli::cli_abort(
       c("{.var formula} must at least two/at most three regressor parts",
@@ -240,62 +240,80 @@ process_ivregranks_formula <- function(formula, instruments,
       or more than three-part regressors."
     ))
   }
-  
+
   # Again, copy-paste
-  
+
   if (length(formula)[2L] == 3L) {
     formula <- Formula::as.Formula(
       formula(formula, rhs = c(2L, 1L), collapse = TRUE),
       formula(formula, lhs = 0L, rhs = c(3L, 1L), collapse = TRUE)
     )
   }
-  
+
   # processing of formula terms on our side
-  
+
+  formula_terms <- stats::terms(formula,
+    rhs = 1,
+    specials = "r",
+    allowDotAsName = TRUE, data = data
+  )
+
+  instruments_terms <- stats::terms(formula,
+    rhs = 2, specials = "r",
+    allowDotAsName = TRUE, data = data
+  )
+
+  # Create ivregranks-specific processor with prohibit_interactions validator
+  ivregranks_processor <- make_formula_processor(prohibit_interactions)
+
+  # Process structural equation (stage 2)
+  structural_formula <- Formula::as.Formula(formula_terms)
+  l1 <- adapt_lmranks_formula_errors(ivregranks_processor(structural_formula, rank_env))
+
+  # Process instrument equation (stage 1) with same validator
+  instruments_formula <- Formula::as.Formula(instruments_terms)
+  l2 <- adapt_lmranks_formula_errors(ivregranks_processor(instruments_formula, rank_env))
+
+  l1$formula <- Formula::as.Formula(l1$formula)
+  l2$formula <- Formula::as.Formula(l2$formula)
+
+  rank_terms_indices <- l1$rank_terms_indices
+  rank_instruments_indices <- l2$rank_terms_indices
+
+  check_are_interactions_present(formula, l1, l2, data)
+
+  environment(formula) <- rank_env
+
+  return(list(
+    rank_terms_indices = rank_terms_indices,
+    rank_instruments_indices = rank_instruments_indices,
+    ranked_response = l1$ranked_response, formula = formula
+  ))
+}
+
+
+#' @param l1 Processed formula of stage 2 model.
+#' @param l2 Processed formula of stage 1 model.
+#' @param formula_terms terms of stage 2 model.
+#' @noRd
+check_are_interactions_present <- function(formula, l1, l2, data) {
+  # ?
+
   formula_terms <- stats::terms(formula,
     rhs = 1,
     specials = "r",
     allowDotAsName = TRUE, data = data
   )
   regressors <- attr(formula_terms, "term.labels")
+
   instruments_terms <- stats::terms(formula,
     rhs = 2, specials = "r",
     allowDotAsName = TRUE, data = data
   )
   instruments <- attr(instruments_terms, "term.labels")
 
-  # makes sure the the structural eqn is alright.
-  l1 <- adapt_lmranks_formula_errors(process_lmranks_formula(
-    Formula::as.Formula(formula_terms),
-    rank_env
-  ))
-  # makes sure the the first-stage eqn is alright.
-  l2 <- adapt_lmranks_formula_errors(
-    process_lmranks_formula(
-      Formula::as.Formula(instruments_terms),
-      rank_env
-    )
-  )
-
-  l1$formula <- Formula::as.Formula(l1$formula)
-  l2$formula <- Formula::as.Formula(l2$formula)
-
-  # ?
-  formula <- Formula::as.Formula(
-    paste(deparse1(l1$formula), "|", deparse1(l2$formula[[3]]))
-  )
-
-  rank_terms_indices <- l1$rank_terms_indices
-  rank_instruments_indices <- l2$rank_terms_indices
-
   endo_regressors <- setdiff(regressors, instruments)
   instruments_for_endo_regressor <- setdiff(instruments, regressors)
-
-  # Ugly
-  interaction_terms_endo <- grep(":", endo_regressors, value = TRUE)
-  interaction_terms_instru <- grep(":", instruments_for_endo_regressor,
-    value = TRUE
-  )
 
   if (length(endo_regressors) > 1) {
     cli::cli_abort(
@@ -315,24 +333,6 @@ process_ivregranks_formula <- function(formula, instruments,
       )
     )
   }
-  if (length(interaction_terms_endo) || length(interaction_terms_instru)) {
-    cli::cli_abort(
-      c("In formula there must not be interactions with the endogenous regressor
-        or its instrument.",
-        "i" = "Not yet implemented.",
-        "x" = "There are interaction terms with the endogenous regressor or
-        its instrument."
-      )
-    )
-  }
-
-  environment(formula) <- rank_env
-
-  return(list(
-    rank_terms_indices = rank_terms_indices,
-    rank_instruments_indices = rank_instruments_indices,
-    ranked_response = l1$ranked_response, formula = formula
-  ))
 }
 
 #' @noRd

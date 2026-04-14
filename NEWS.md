@@ -1,5 +1,6 @@
 # csranks (development version)
 TODO: munch through ivregranks and ivregranks_summary. Comment (or separate?) parts copy-pasted from ivreg. Maintain patterns from lmranks.
+Test the validators.
 * Fixed a bug which caused object_fs to have a wrong target (endogenous variable).
 
 # csranks 1.2.3
