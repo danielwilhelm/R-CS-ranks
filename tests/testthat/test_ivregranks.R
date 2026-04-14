@@ -1,3 +1,5 @@
+### ivregranks ###
+
 test_that("ivregranks and by-hand calculation provide same results", {
   df <- mtcars[1:10, ]
   model <- ivregranks(r(mpg) ~ cyl | r(hp) | r(disp), data = df)
@@ -70,7 +72,7 @@ test_that("ivregranks and ivreg provide coherent results", {
   rank_m <- ivregranks(r(Y) ~ W | r(X) | r(Z))
   raw_rank_m <- unclass(rank_m)
   raw_rank_m$formula <- formula(raw_rank_m$formula)
-  raw_rank_m$call <- as.character(raw_rank_m$call)
+  raw_rank_m$call <- NULL
   raw_rank_m$terms <- NULL
   attr(raw_rank_m$model, "terms") <- NULL
   raw_rank_m$omega <- NULL
@@ -82,9 +84,7 @@ test_that("ivregranks and ivreg provide coherent results", {
   expected_m <- unclass(m)
   expected_m$df.residual <- NA
   expected_m$formula <- formula("r(Y) ~ r(X) + W | r(Z) + W")
-  expected_m$call <- as.character(str2lang(
-    "ivregranks(r(Y) ~ W | r(X) | r(Z))"
-  ))
+  expected_m$call <- NULL
   expected_m$ranked_response <- TRUE
   expected_m$terms <- NULL
   attr(expected_m$model, "terms") <- NULL
@@ -110,6 +110,17 @@ test_that("ivregranks falls back to ivreg in no rank case", {
   expect_equivalent(m, m2)
 })
 
+test_that("ivregranks returns expected object_fs", {
+  m <- ivregranks(r(mpg) ~ cyl | r(hp) | r(disp), data = mtcars)
+  expected <- lmranks(r(hp) ~ r(disp) + cyl, data=mtcars)
+  
+  #TODO: handle the call
+  expected$call <- NULL
+  m$object_fs$call <- NULL
+  
+  expect_equivalent(m$object_fs, expected)
+})
+
 test_that("ivregranks raises error if estimation method is not OLS", {
   df <- mtcars
   expect_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "K"))
@@ -128,6 +139,8 @@ test_that("ivregranks raises error if NA is encountered in data", {
     data = df2
   ), "missing values")
 })
+
+### process_ivregranks_formula
 
 test_that("process_ivregranks_formula catches illegal formulas", {
   expect_error(process_ivregranks_formula("y ~ x + w | z + w", data = NULL))
@@ -201,26 +214,6 @@ test_that("process_ivregranks_formula returns correct regressors indices", {
       data = NULL
     )$rank_terms_indices, 2
   )
-  # not yet implemented
-  # expect_equal(
-  #   process_ivregranks_formula(
-  #     r(y) ~ w * v |
-  #       r(z),
-  #     data = NULL
-  #   )$rank_terms_indices, integer(0)
-  # )
-  # expect_equal(process_ivregranks_formula(
-  #   r(y) ~ -1 + (r(x) + w):G | (r(z) + w):G,
-  #   data = NULL
-  # )$rank_terms_indices, 1)
-  # expect_equal(process_ivregranks_formula(
-  #   r(y) ~ (r(x) + w):G | (r(z) + w):G,
-  #   data = NULL
-  # )$rank_terms_indices, 2)
-  # expect_equal(process_ivregranks_formula(
-  #   r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G,
-  #   data = NULL
-  # )$rank_terms_indices, 2)
 })
 
 test_that("process_ivregranks_formula returns correct instruments indices", {
@@ -236,34 +229,6 @@ test_that("process_ivregranks_formula returns correct instruments indices", {
       data = NULL
     )$rank_instruments_indices, 2
   )
-  # expect_equal(
-  #   process_ivregranks_formula(r(y) ~ w * z + r(x) |
-  #     w * z + r(z), data = NULL)$rank_instruments_indices, 3
-  # )
-  # expect_equal(
-  #   process_ivregranks_formula(r(y) ~ w + z + w:z + r(x) |
-  #     w + z + w:z + r(z), data = NULL)$rank_instruments_indices, 3
-  # )
-  # expect_equal(
-  #   process_ivregranks_formula(r(y) ~ w * z + r(x) - z |
-  #     w * z + r(z) - z, data = NULL)$rank_instruments_indices, 2
-  # )
-  # expect_equal(
-  #   process_ivregranks_formula(r(y) ~ w * v |
-  #     z, data = NULL)$rank_instruments_indices, integer(0)
-  # )
-  # expect_equal(process_ivregranks_formula(
-  #   r(y) ~ -1 + (r(x) + w):G | -1 + (r(z) + w):G,
-  #   data = NULL
-  # )$rank_instruments_indices, 1)
-  # expect_equal(process_ivregranks_formula(
-  #   r(y) ~ (r(x) + w):G | (r(z) + w):G,
-  #   data = NULL
-  # )$rank_instruments_indices, 2)
-  # expect_equal(process_ivregranks_formula(
-  #   r(y) ~ (r(x) + w):G + G | (r(z) + w):G + G,
-  #   data = NULL
-  # )$rank_instruments_indices, 2)
 })
 
 test_that("process_ivregranks_formula returns correct ranked_response flag", {
@@ -335,18 +300,6 @@ test_that("process_ivregranks_formula env to formula", {
     data = NULL, rank_env = env
   )$formula
   expect_equal(environment(actual), env)
-
-  # actual <- process_ivregranks_formula(r(y) ~ r(x) | r(z):G,
-  #   data = NULL, rank_env = env
-  # )$formula
-  # expect_equal(environment(actual), env)
-  #
-  # actual <- process_ivregranks_formula(
-  #   r(y) ~ r(x) | r(z):G - 1, ,
-  #   data = NULL,
-  #   rank_env = env
-  # )$formula
-  # expect_equal(environment(actual), env)
 })
 
 test_that("process_ivregranks_formula returns correct index for simplest

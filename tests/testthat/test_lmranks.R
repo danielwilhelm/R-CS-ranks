@@ -104,6 +104,8 @@ test_that("lmranks raises error if NA is encountered in data", {
   expect_error(lmranks(r(mpg) ~ r(hp) + disp, data=mtcars), "missing values")
 })
 
+### process_lmranks_formula ###
+
 test_that("process_lmranks_formula catches illegal formulas", {
   expect_error(process_lmranks_formula("y ~ x + w"))
   expect_error(process_lmranks_formula(r(y) ~ r(x) + r(w)))
