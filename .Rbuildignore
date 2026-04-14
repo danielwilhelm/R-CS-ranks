@@ -13,3 +13,4 @@
 shiny-demo-v1.gif
 ^_pkgdown\.yml$
 ^pkgdown$
+^\.lintr$
