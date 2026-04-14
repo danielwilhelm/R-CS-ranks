@@ -139,10 +139,9 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
   } else {
     data <- augment_data_with_env(formula, data)
   }
-  formula_fs <- Formula::as.Formula(stats::model.frame(corrected_formula,
-    data = data,
-    rhs = 2
-  ))
+  endogenous_target <- names(main_model$endogenous)
+  formula_update <- as.formula(paste0(endogenous_target, "~."))
+  formula_fs <- update(main_model$terms$instruments, formula_update)
 
   # needed to correctly compute the vcov for the first-stage
   object_fs <- suppress_no_rank_lmranks(lmranks(formula_fs,
@@ -198,12 +197,15 @@ process_ivregranks_formula <- function(formula, instruments,
   if (is.null(rank_env)) {
     rank_env <- environment(formula)
   }
+  
+  # Following logic is a copy-paste from iverg.R
+  
   if (!missing(instruments)) {
     formula <- Formula::as.Formula(formula, instruments)
   } else {
     formula <- Formula::as.Formula(formula)
   }
-
+  
   has_dot <- function(formula) {
     inherits(
       try(stats::terms(formula), silent = TRUE),
@@ -220,7 +222,9 @@ process_ivregranks_formula <- function(formula, instruments,
       )
     }
   }
-
+  
+  # validation - ours
+  
   if (length(formula)[2] == 1) {
     cli::cli_abort(
       c("{.var formula} must at least two/at most three regressor parts",
@@ -236,13 +240,18 @@ process_ivregranks_formula <- function(formula, instruments,
       or more than three-part regressors."
     ))
   }
+  
+  # Again, copy-paste
+  
   if (length(formula)[2L] == 3L) {
     formula <- Formula::as.Formula(
       formula(formula, rhs = c(2L, 1L), collapse = TRUE),
       formula(formula, lhs = 0L, rhs = c(3L, 1L), collapse = TRUE)
     )
   }
-
+  
+  # processing of formula terms on our side
+  
   formula_terms <- stats::terms(formula,
     rhs = 1,
     specials = "r",
@@ -271,6 +280,7 @@ process_ivregranks_formula <- function(formula, instruments,
   l1$formula <- Formula::as.Formula(l1$formula)
   l2$formula <- Formula::as.Formula(l2$formula)
 
+  # ?
   formula <- Formula::as.Formula(
     paste(deparse1(l1$formula), "|", deparse1(l2$formula[[3]]))
   )
@@ -281,6 +291,7 @@ process_ivregranks_formula <- function(formula, instruments,
   endo_regressors <- setdiff(regressors, instruments)
   instruments_for_endo_regressor <- setdiff(instruments, regressors)
 
+  # Ugly
   interaction_terms_endo <- grep(":", endo_regressors, value = TRUE)
   interaction_terms_instru <- grep(":", instruments_for_endo_regressor,
     value = TRUE

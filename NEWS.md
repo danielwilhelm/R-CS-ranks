@@ -1,4 +1,6 @@
 # csranks (development version)
+TODO: munch through ivregranks and ivregranks_summary. Comment (or separate?) parts copy-pasted from ivreg. Maintain patterns from lmranks.
+* Fixed a bug which caused object_fs to have a wrong target (endogenous variable).
 
 # csranks 1.2.3
 * Fixed S3 inheritance for the `proj` method of `lmranks`. Added it to `lmranks` documentation page.
