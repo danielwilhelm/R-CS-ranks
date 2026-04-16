@@ -79,3 +79,9 @@ test_that("process_lmranks_formula returns correct index for simplest fits", {
                     ranked_response = TRUE,
                     formula = r(y) ~ r(x)))
 })
+
+test_that("prohibit_interactions works", {
+  expect_error(prohibit_interactions(r(y) ~ r(x):w, 2))
+  expect_error(prohibit_interactions(r(y) ~ r(x) + r(x):w, 2))
+  expect_error(prohibit_interactions(r(y) ~ r(x):w:z, 2))
+})
