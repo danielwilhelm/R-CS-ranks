@@ -5,24 +5,23 @@
 #' @title Prohibit All Interactions
 #' @description Validator that prohibits any interactions involving ranked regressors
 #' @param formula_terms Terms object from stats::terms()
-#' @param rank_variables_indices Indices of ranked variables
+#' @param ranked_regressor_index Index of ranked variable (could be empty)
 #' @param formula Original formula
 #' @return Original formula if validation passes, throws error otherwise
 #' @noRd
-prohibit_interactions <- function(formula, rank_variables_indices) {
-    formula_terms <- stats::terms(formula,
-        specials = "r",
-        keep.order = TRUE,
-        allowDotAsName = TRUE
-    )
-    variables_table <- attr(formula_terms, "factors")
-    ranked_regressor_index <- setdiff(rank_variables_indices, attr(formula_terms, "response"))
-
+prohibit_interactions <- function(formula, ranked_regressor_index) {
     # If no ranked regressors, validation passes
     if (length(ranked_regressor_index) == 0) {
         return(formula)
     }
 
+    formula_terms <- stats::terms(formula,
+        specials = "r",
+        keep.order = TRUE,
+        allowDotAsName = TRUE
+    )
+
+    variables_table <- attr(formula_terms, "factors")
     ranked_regressor_present_in_term <- variables_table[ranked_regressor_index, ] != 0
     order_of_terms_with_ranked_regressor <- attr(formula_terms, "order")[ranked_regressor_present_in_term]
 
@@ -37,29 +36,28 @@ prohibit_interactions <- function(formula, rank_variables_indices) {
     return(formula)
 }
 
+
+
 #' @title Allow Only Grouping Interactions
 #' @description Validator that allows ranked regressors only in interactions with grouping variables
 #' @param formula Original formula
-#' @param rank_variables_indices Indices of ranked variables
+#' @param ranked_regressor_index Index of ranked variable (could be empty)
 #' @return Modified formula if grouping interaction detected, original formula otherwise
 #' @noRd
-allow_only_grouping_interaction <- function(formula, rank_variables_indices) {
+allow_only_grouping_interaction <- function(formula, ranked_regressor_index) {
+    if (length(ranked_regressor_index) == 0) {
+        return(formula)
+    }
+
     formula_terms <- stats::terms(formula,
         specials = "r",
         keep.order = TRUE,
         allowDotAsName = TRUE
     )
     variables_table <- attr(formula_terms, "factors")
-    response_variable_index <- attr(formula_terms, "response")
-    ranked_regressor_indices <- setdiff(rank_variables_indices, response_variable_index)
-
-    # If no ranked regressors, validation passes
-    if (length(ranked_regressor_indices) == 0) {
-        return(formula)
-    }
 
     # Check interaction patterns
-    rank_regressor_present_in_term <- variables_table[ranked_regressor_indices, ] != 0
+    rank_regressor_present_in_term <- variables_table[ranked_regressor_index, ] != 0
     rank_regressor_present_in_only_1_term <- sum(rank_regressor_present_in_term) == 1
 
     if (!rank_regressor_present_in_only_1_term) {
@@ -80,7 +78,7 @@ allow_only_grouping_interaction <- function(formula, rank_variables_indices) {
         }
 
         interacting_var <- is_variable_present_in_ranked_term
-        interacting_var[ranked_regressor_indices] <- FALSE
+        interacting_var[ranked_regressor_index] <- FALSE
         interacring_var_present_in_every_term <- all(variables_table[interacting_var, ] != 0)
 
         if (!interacring_var_present_in_every_term) {
@@ -126,11 +124,6 @@ make_formula_processor <- function(interaction_validator) {
             rank_env <- environment(formula)
         }
 
-        formula_terms <- stats::terms(formula,
-            specials = "r",
-            keep.order = TRUE,
-            allowDotAsName = TRUE
-        )
         # Rest of the processing logic from original process_lmranks_formula
         # We need to re-parse the terms in case the formula was modified
         formula_terms <- stats::terms(formula,
@@ -144,8 +137,8 @@ make_formula_processor <- function(interaction_validator) {
         ranked_regressor_variable_index <- setdiff(rank_variables_indices, response_variable_index)
 
         if (length(ranked_regressor_variable_index) > 1) {
-            cli::cli_abort(c("In formula there may be at most one ranked regressor.",
-                "x" = "There are multiple ranked regressors."
+            cli::cli_abort(c("In formula there may be at most one term with ranked regressor.",
+                "x" = "There are multiple terms with ranked regressors."
             ))
         }
 
@@ -161,7 +154,7 @@ make_formula_processor <- function(interaction_validator) {
         }
 
         # Process interactions using the injected validator
-        processed_formula <- interaction_validator(formula, rank_variables_indices)
+        processed_formula <- interaction_validator(formula, ranked_regressor_variable_index)
 
 
         variables_terms_table <- attr(formula_terms, "factors")
