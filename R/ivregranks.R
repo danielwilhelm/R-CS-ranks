@@ -199,19 +199,80 @@ process_ivregranks_formula <- function(formula, instruments,
   }
 
   # Following logic is a copy-paste from iverg.R
-
+  ## handle instruments for backward compatibility
   if (!missing(instruments)) {
     formula <- Formula::as.Formula(formula, instruments)
   } else {
     formula <- Formula::as.Formula(formula)
   }
 
-  has_dot <- function(formula) {
-    inherits(
-      try(stats::terms(formula), silent = TRUE),
-      "try-error"
+  canonical_formula <- convert_formula_to_canonical_form(formula)
+
+  if (length(canonical_formula)[2] == 1) {
+    cli::cli_abort(
+      c("{.var formula} must at have least two/at most three regressor parts",
+        "x" = "The passed {.var formula} has a single part regressor",
+        "i" = "Use lmranks."
+      )
     )
   }
+  formula <- canonical_formula
+
+  # Create ivregranks-specific processor with prohibit_interactions validator
+  ivregranks_processor <- make_formula_processor(prohibit_interactions)
+
+  # Process structural equation (stage 2)
+  structural_formula <- formula(formula, lhs = 1, rhs = 1)
+  l1 <- adapt_lmranks_formula_errors(ivregranks_processor(structural_formula, rank_env))
+
+  # Process instrument equation (stage 1) with same validator
+  instruments_formula <- formula(formula, rhs = 2)
+  # Here it matters whether the endogenous target is ranked or not
+  l2 <- adapt_lmranks_formula_errors(ivregranks_processor(instruments_formula, rank_env))
+
+  rank_terms_indices <- l1$rank_terms_indices
+  rank_instruments_indices <- l2$rank_terms_indices
+
+  environment(formula) <- rank_env
+
+  return(list(
+    rank_terms_indices = rank_terms_indices,
+    rank_instruments_indices = rank_instruments_indices,
+    ranked_response = l1$ranked_response,
+    formula = formula
+  ))
+}
+
+#' @noRd
+has_dot <- function(formula) {
+  inherits(
+    try(stats::terms(formula), silent = TRUE),
+    "try-error"
+  )
+}
+
+convert_formula_to_canonical_form <- function(formula) {
+  # Following logic is a copy-paste from iverg.R
+  if (length(formula)[2L] == 3L) {
+    canonical_formula <- Formula::as.Formula(
+      formula(formula, rhs = c(2L, 1L), collapse = TRUE),
+      formula(formula, lhs = 0L, rhs = c(3L, 1L), collapse = TRUE)
+    )
+  } else {
+    canonical_formula <- formula
+  }
+
+  # More graceful than stopifnot
+  if (length(canonical_formula)[1] != 1 || length(canonical_formula)[2] >= 3) {
+    cli::cli_abort(c("{.var formula} must contain a single outcome and at least
+      an instrument part.",
+      "x" = "The passed {.var formula} has either a multi-part response
+      or more than three-part regressors."
+    ))
+  }
+  formula <- canonical_formula
+
+  ## try to handle dots in formula
   if (has_dot(formula)) {
     f1 <- formula(formula, rhs = 1L)
     f2 <- formula(formula, lhs = 0L, rhs = 2L)
@@ -223,117 +284,9 @@ process_ivregranks_formula <- function(formula, instruments,
     }
   }
 
-  # validation - ours
-
-  if (length(formula)[2] == 1) {
-    cli::cli_abort(
-      c("{.var formula} must at least two/at most three regressor parts",
-        "x" = "The passed {.var formula} has a single part regressor",
-        "i" = "Use lmranks."
-      )
-    )
-  }
-  if (length(formula)[1] != 1 || length(formula)[2] > 3) {
-    cli::cli_abort(c("{.var formula} must contain a single outcome and at least
-      an instrument part.",
-      "x" = "The passed {.var formula} has either a multi-part response
-      or more than three-part regressors."
-    ))
-  }
-
-  # Again, copy-paste
-
-  if (length(formula)[2L] == 3L) {
-    formula <- Formula::as.Formula(
-      formula(formula, rhs = c(2L, 1L), collapse = TRUE),
-      formula(formula, lhs = 0L, rhs = c(3L, 1L), collapse = TRUE)
-    )
-  }
-
-  # processing of formula terms on our side
-
-  formula_terms <- stats::terms(formula,
-    rhs = 1,
-    specials = "r",
-    allowDotAsName = TRUE, data = data
-  )
-
-  instruments_terms <- stats::terms(formula,
-    rhs = 2, specials = "r",
-    allowDotAsName = TRUE, data = data
-  )
-
-  # Create ivregranks-specific processor with prohibit_interactions validator
-  ivregranks_processor <- make_formula_processor(prohibit_interactions)
-
-  # Process structural equation (stage 2)
-  structural_formula <- Formula::as.Formula(formula_terms)
-  l1 <- adapt_lmranks_formula_errors(ivregranks_processor(structural_formula, rank_env))
-
-  # Process instrument equation (stage 1) with same validator
-  instruments_formula <- Formula::as.Formula(instruments_terms)
-  l2 <- adapt_lmranks_formula_errors(ivregranks_processor(instruments_formula, rank_env))
-
-  l1$formula <- Formula::as.Formula(l1$formula)
-  l2$formula <- Formula::as.Formula(l2$formula)
-
-  rank_terms_indices <- l1$rank_terms_indices
-  rank_instruments_indices <- l2$rank_terms_indices
-
-  check_are_interactions_present(formula, l1, l2, data)
-
-  environment(formula) <- rank_env
-
-  return(list(
-    rank_terms_indices = rank_terms_indices,
-    rank_instruments_indices = rank_instruments_indices,
-    ranked_response = l1$ranked_response, formula = formula
-  ))
+  return(formula)
 }
 
-
-#' @param l1 Processed formula of stage 2 model.
-#' @param l2 Processed formula of stage 1 model.
-#' @param formula_terms terms of stage 2 model.
-#' @noRd
-check_are_interactions_present <- function(formula, l1, l2, data) {
-  # ?
-
-  formula_terms <- stats::terms(formula,
-    rhs = 1,
-    specials = "r",
-    allowDotAsName = TRUE, data = data
-  )
-  regressors <- attr(formula_terms, "term.labels")
-
-  instruments_terms <- stats::terms(formula,
-    rhs = 2, specials = "r",
-    allowDotAsName = TRUE, data = data
-  )
-  instruments <- attr(instruments_terms, "term.labels")
-
-  endo_regressors <- setdiff(regressors, instruments)
-  instruments_for_endo_regressor <- setdiff(instruments, regressors)
-
-  if (length(endo_regressors) > 1) {
-    cli::cli_abort(
-      c("In formula there may be at most one endogenous regressors.",
-        "i" = "Multiple endogenous regressors not yet implemented.",
-        "x" = "There is more than one endogenous regressor."
-      )
-    )
-  }
-  if (length(instruments_for_endo_regressor) != 1) {
-    cli::cli_abort(
-      c("In formula there must be exactly one
-        instrument for the endogenous regressor.",
-        "i" = "Multiple endogenous regressors and instruments
-        not yet implemented.",
-        "x" = "There is more than one instrument for the endogenous regressor."
-      )
-    )
-  }
-}
 
 #' @noRd
 prepare_ivreg_call <- function(ivreg_call, check_ivreg_args = TRUE) {
