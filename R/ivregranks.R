@@ -32,12 +32,9 @@
 #' Internally, all specifications are converted to the version with two parts
 #' on the right-hand side.
 #'
-#' @param formula,instruments formula specification(s) of the regression
-#' relationship and the instruments. Either \code{instruments} is missing and
-#' \code{formula} has three parts as in \code{r(y) ~ x1 + r(x2) | r(z1) + z2 +
-#' z3} (recommended) or \code{formula} is \code{r(y) ~ x1 + r(x2)} and
-#' \code{instruments} is a one-sided formula \code{~ z1 + z2 + z3} (only for
-#' backward compatibility).
+#' @param formula formula specification(s) of the regression
+#' relationship and the instruments. \code{formula} has three parts as in \code{r(y) ~ x1 + r(x2) | r(z1) + z2 +
+#' z3}.
 #' @param data an optional data frame containing the variables in the model.
 #' By default the variables are taken from the environment of the
 #' \code{formula}.
@@ -99,7 +96,7 @@
 #' summary(ivr)
 #'
 #' @export
-ivregranks <- function(formula, instruments, data, subset, na.action, weights,
+ivregranks <- function(formula, data, subset, na.action, weights,
                        offset, contrasts = NULL, model = TRUE, y = TRUE,
                        x = FALSE, method = "OLS", omega = 1,
                        ...) {
@@ -187,8 +184,7 @@ ivregranks <- function(formula, instruments, data, subset, na.action, weights,
 #' * It will not detect func(r(expr)).
 #'
 #' @noRd
-process_ivregranks_formula <- function(formula, instruments,
-                                       data, rank_env = NULL) {
+process_ivregranks_formula <- function(formula, data, rank_env = NULL) {
   if (!inherits(formula, "formula")) {
     cli::cli_abort(c("{.var formula} must be a {.cls {class(formula)}} object.",
       "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."
@@ -196,14 +192,6 @@ process_ivregranks_formula <- function(formula, instruments,
   }
   if (is.null(rank_env)) {
     rank_env <- environment(formula)
-  }
-
-  # Following logic is a copy-paste from iverg.R
-  ## handle instruments for backward compatibility
-  if (!missing(instruments)) {
-    formula <- Formula::as.Formula(formula, instruments)
-  } else {
-    formula <- Formula::as.Formula(formula)
   }
 
   canonical_formula <- convert_formula_to_canonical_form(formula)
@@ -252,6 +240,7 @@ has_dot <- function(formula) {
 }
 
 convert_formula_to_canonical_form <- function(formula) {
+  formula <- as.Formula(formula)
   # Following logic is a copy-paste from iverg.R
   if (length(formula)[2L] == 3L) {
     canonical_formula <- Formula::as.Formula(
