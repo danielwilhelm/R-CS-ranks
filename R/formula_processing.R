@@ -23,9 +23,15 @@ prohibit_interactions <- function(formula, rank_variables_indices) {
         return(formula)
     }
 
+    ranked_regressor_present_in_term <- variables_table[ranked_regressor_index, ] != 0
+    order_of_terms_with_ranked_regressor <- attr(formula_terms, "order")[ranked_regressor_present_in_term]
+
     # Assume single ranked regressor
-    if (sum(variables_table[ranked_regressor_index, ] != 0) > 1) {
-        cli::cli_abort("Ranked regressors cannot be part of any interactions.")
+    if (length(order_of_terms_with_ranked_regressor) > 1 || order_of_terms_with_ranked_regressor > 1) {
+        violating_terms <- attr(formula_terms, "term.labels")[ranked_regressor_present_in_term & (attr(formula_terms, "order") > 1)]
+        cli::cli_abort(c("Ranked regressors cannot be part of any interactions.",
+            "x" = "The following interactions contain the ranked regresor: {.var violatin_terms}"
+        ))
     }
 
     return(formula)

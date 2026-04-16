@@ -112,12 +112,12 @@ test_that("ivregranks falls back to ivreg in no rank case", {
 
 test_that("ivregranks returns expected object_fs", {
   m <- ivregranks(r(mpg) ~ cyl | r(hp) | r(disp), data = mtcars)
-  expected <- lmranks(r(hp) ~ r(disp) + cyl, data=mtcars)
-  
-  #TODO: handle the call
+  expected <- lmranks(r(hp) ~ r(disp) + cyl, data = mtcars)
+
+  # TODO: handle the call
   expected$call <- NULL
   m$object_fs$call <- NULL
-  
+
   expect_equivalent(m$object_fs, expected)
 })
 
@@ -160,9 +160,6 @@ test_that("process_ivregranks_formula catches illegal formulas", {
     data = NULL
   ))
   expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):v:w, data = NULL))
-  expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):v + w,
-    data = NULL
-  ))
   expect_error(process_ivregranks_formula(r(y) ~ w | r(x) + v | r(z1) + z2,
     data = NULL
   ))
@@ -179,6 +176,11 @@ test_that("process_ivregranks_formula catches illegal formulas", {
   expect_error(process_ivregranks_formula(r(y) ~ r(x) | r(z):G - 1,
     data = NULL
   ))
+
+  # Test prohibit_interactions directly for illegal interactions
+  expect_error(prohibit_interactions(r(y) ~ r(x):w, c(1, 2)))
+  expect_error(prohibit_interactions(r(y) ~ r(x) + r(x):w, c(1, 2)))
+  expect_error(prohibit_interactions(r(y) ~ r(x):w:z, c(1, 2)))
 
   expect_silent(process_ivregranks_formula(r(y) ~ r(x) | r(z), data = NULL))
   expect_silent(process_ivregranks_formula(r(y) ~ w | r(x) | r(z), data = NULL))
