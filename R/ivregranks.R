@@ -136,6 +136,7 @@ ivregranks <- function(formula, data, subset, na.action, weights,
   formula_fs <- update(main_model$terms$instruments, formula_update)
 
   # needed to correctly compute the vcov for the first-stage
+  # TODO: call lm() if nothing is ranked
   lmranks_call_fs <- prepare_lmranks_call_for_stage_1(original_call)
   lmranks_call_fs$formula <- substitute(formula_fs)
 
