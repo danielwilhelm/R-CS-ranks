@@ -131,11 +131,6 @@ ivregranks <- function(formula, data, subset, na.action, weights,
   main_model <- eval(ivreg_call, rank_env)
 
   corrected_formula <- Formula::as.Formula(main_model$formula)
-  if (missing(data)) {
-    data <- environment(formula)
-  } else {
-    data <- augment_data_with_env(formula, data)
-  }
   endogenous_target <- names(main_model$endogenous)
   formula_update <- as.formula(paste0(endogenous_target, "~."))
   formula_fs <- update(main_model$terms$instruments, formula_update)
@@ -157,6 +152,17 @@ ivregranks <- function(formula, data, subset, na.action, weights,
   class(main_model) <- c("ivregranks", class(main_model))
 
   return(main_model)
+}
+
+#' @param formula a Formula::Formula in canonical form.
+#' @noRd
+get_exogenous_variable_names <- function(formula, data) {
+  stage_2_terms <- terms(formula, lhs = 0, rhs = 1, data = data)
+  stage_2_variables <- rownames(attr(terms, "factors"))
+  stage_1_terms <- terms(formula, lhs = 0, rhs = 2, data = data)
+  stage_1_variables <- rownames(attr(stage_1_terms, "factors"))
+
+  return(setdiff(stage_2_variables, stage_1_variables))
 }
 
 #' Check validity of passed formula and identify ranked terms
@@ -206,17 +212,18 @@ process_ivregranks_formula <- function(formula, data, rank_env = NULL) {
   }
   formula <- canonical_formula
 
-  # Create ivregranks-specific processor with prohibit_interactions validator
-  ivregranks_processor <- make_formula_processor(prohibit_interactions)
-
   # Process structural equation (stage 2)
   structural_formula <- formula(formula, lhs = 1, rhs = 1)
-  l1 <- adapt_lmranks_formula_errors(ivregranks_processor(structural_formula, rank_env))
+  l1 <- ivregranks_processor(structural_formula, rank_env, "Error while processing structural formula (for stage 2) {.var structural_formula}.")
 
   # Process instrument equation (stage 1) with same validator
   instruments_formula <- formula(formula, rhs = 2)
+  endogeneous_variables <- get_exogenous_variable_names(formula, data)
+  formula_update <- as.formula(paste0(paste(endogeneous_variables, sep = "+"), "~."))
+  instruments_formula <- update(instruments_formula, formula_update)
+
   # Here it matters whether the endogenous target is ranked or not
-  l2 <- adapt_lmranks_formula_errors(ivregranks_processor(instruments_formula, rank_env))
+  l2 <- ivregranks_processor(instruments_formula, rank_env, "Error while processing instruments formula (for stage 1) {.var instruments_formula}.")
 
   rank_terms_indices <- l1$rank_terms_indices
   rank_instruments_indices <- l2$rank_terms_indices
@@ -239,8 +246,9 @@ has_dot <- function(formula) {
   )
 }
 
+#' @noRd
 convert_formula_to_canonical_form <- function(formula) {
-  formula <- as.Formula(formula)
+  formula <- Formula::as.Formula(formula)
   # Following logic is a copy-paste from iverg.R
   if (length(formula)[2L] == 3L) {
     canonical_formula <- Formula::as.Formula(
@@ -276,6 +284,18 @@ convert_formula_to_canonical_form <- function(formula) {
   return(formula)
 }
 
+#' @noRd
+internal_processor <- make_formula_processor(prohibit_interactions)
+
+#' @noRd
+ivregranks_processor <- function(formula, rank_env, error_message) {
+  rlang::try_fetch(
+    internal_processor(formula, rank_env),
+    error = function(e) {
+      cli::cli_abort(error_message, parent = e)
+    }
+  )
+}
 
 #' @noRd
 prepare_ivreg_call <- function(ivreg_call, check_ivreg_args = TRUE) {
