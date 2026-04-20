@@ -141,10 +141,10 @@ ivregranks <- function(formula, data, subset, na.action, weights,
   formula_fs <- update(main_model$terms$instruments, formula_update)
 
   # needed to correctly compute the vcov for the first-stage
-  object_fs <- suppress_no_rank_lmranks(lmranks(formula_fs,
-    data = data,
-    omega = omega
-  ))
+  lmranks_call_fs <- prepare_lmranks_call_for_stage_1(original_call)
+  lmranks_call_fs$formula <- substitute(formula_fs)
+
+  object_fs <- eval(lmranks_call_fs, rank_env)
 
   main_model$formula <- corrected_formula
   main_model$rank_terms_indices <- rank_terms_indices
@@ -302,6 +302,14 @@ prepare_ivreg_call <- function(ivreg_call, check_ivreg_args = TRUE) {
   return(ivreg_call)
 }
 
+#' @noRd
+prepare_lmranks_call_for_stage_1 <- function(ivreg_call) {
+  # no checking, since it will be checked downstream by lmranks
+  ivreg_call[[1]] <- quote(csranks::lmranks)
+  ivreg_call$method <- NULL
+  ivreg_call
+}
+
 #' @describeIn ivregranks Plot diagnostics for an \code{ivregranks} object
 #'
 #' Displays plots useful for assessing quality of model fit. Currently, only one
@@ -328,17 +336,6 @@ suppress_no_rank_lmranks <- function(expr,
       if (grepl(pattern, conditionMessage(w), fixed = TRUE)) {
         invokeRestart("muffleWarning") # note the capital W
       }
-    }
-  )
-}
-
-#' @noRd
-adapt_lmranks_formula_errors <- function(expr) {
-  rlang::try_fetch(
-    expr,
-    error = function(e) {
-      message <- sub("formula", "instrument formula", e$message)
-      cli::cli_abort(c(message, e$body), call = rlang::current_call())
     }
   )
 }

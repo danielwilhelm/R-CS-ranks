@@ -112,13 +112,18 @@ test_that("ivregranks falls back to ivreg in no rank case", {
 
 test_that("ivregranks returns expected object_fs", {
   m <- ivregranks(r(mpg) ~ cyl | r(hp) | r(disp), data = mtcars)
-  expected <- lmranks(r(hp) ~ r(disp) + cyl, data=mtcars)
-  
-  #TODO: handle the call
-  expected$call <- NULL
-  m$object_fs$call <- NULL
-  
+  expected <- csranks::lmranks(r(hp) ~ r(disp) + cyl, data = mtcars)
+
   expect_equivalent(m$object_fs, expected)
+})
+
+test_that("ivregranks works with mixture of data and env variables", {
+  data(mtcars)
+  W <- mtcars$disp
+  expect_no_error(ivregranks(r(mpg) ~ r(cyl) + W, data = mtcars))
+
+  load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
+  expect_no_error(ivregranks(r(Y) ~ r(X) + W | r(Z) + W))
 })
 
 test_that("ivregranks raises error if estimation method is not OLS", {
