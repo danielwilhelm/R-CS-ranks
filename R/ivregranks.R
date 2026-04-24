@@ -203,6 +203,7 @@ process_ivregranks_formula <- function(formula, data, rank_env = NULL) {
 
   canonical_formula <- convert_formula_to_canonical_form(formula)
 
+  # TODO: call lmranks ourselves?
   if (length(canonical_formula)[2] == 1) {
     cli::cli_abort(
       c("{.var formula} must at have least two/at most three regressor parts",
@@ -286,7 +287,40 @@ convert_formula_to_canonical_form <- function(formula) {
 }
 
 #' @noRd
-internal_processor <- make_formula_processor(prohibit_interactions)
+internal_processor <- function(formula, rank_env) {
+  assert_is_formula(formula)
+
+  if (is.null(rank_env)) {
+    rank_env <- environment(formula)
+  }
+
+  parsed_formula <- parse_lmranks_formula(formula)
+
+  is_response_ranked <- parsed_formula[["is_response_ranked"]]
+
+  if (length(parsed_formula$ranked_regressor_variable_indices) == 0) {
+    environment(formula) <- rank_env
+    return(list(
+      rank_terms_indices = integer(0),
+      ranked_response = is_response_ranked,
+      formula = formula
+    ))
+  }
+  assert_has_at_most_one_ranked_regressor(parsed_formula)
+  assert_has_at_most_one_term_with_ranked_regressor(parsed_formula)
+  assert_ranked_regressor_does_not_interact_with_other_variables(parsed_formula)
+
+  # Find rank terms for the final output
+  rank_terms_names <- parsed_formula[["ranked_terms_labels"]]
+  rank_terms_indices <- get_rank_terms_indices_after_reordering(formula, rank_terms_names)
+
+  environment(formula) <- rank_env
+  return(list(
+    rank_terms_indices = rank_terms_indices,
+    ranked_response = is_response_ranked,
+    formula = formula
+  ))
+}
 
 #' @noRd
 ivregranks_processor <- function(formula, rank_env, error_message) {

@@ -222,7 +222,45 @@ lmranks <- function(formula, data, subset,
 #' * It will not detect func(r(expr)).
 #'
 #' @noRd
-process_lmranks_formula <- make_formula_processor(allow_only_grouping_interaction)
+process_lmranks_formula <- function(formula, rank_env = NULL) {
+  assert_is_formula(formula)
+
+  if (is.null(rank_env)) {
+    rank_env <- environment(formula)
+  }
+
+  parsed_formula <- parse_lmranks_formula(formula)
+
+  is_response_ranked <- parsed_formula[["is_response_ranked"]]
+
+  if (length(parsed_formula$ranked_regressor_variable_indices) == 0) {
+    environment(formula) <- rank_env
+    return(list(
+      rank_terms_indices = integer(0),
+      ranked_response = is_response_ranked,
+      formula = formula
+    ))
+  }
+  assert_has_at_most_one_ranked_regressor(parsed_formula)
+  assert_has_at_most_one_term_with_ranked_regressor(parsed_formula)
+  if (any(parsed_formula[["does_variable_interact_with_ranked_regressor"]])) {
+    assert_ranked_regressor_interacts_only_with_global_grouping_variable(parsed_formula)
+    processed_formula <- update_formula_intercept(parsed_formula)
+  } else {
+    processed_formula <- formula
+  }
+
+  # Find rank terms for the final output
+  rank_terms_names <- parsed_formula[["ranked_terms_labels"]]
+  rank_terms_indices <- get_rank_terms_indices_after_reordering(processed_formula, rank_terms_names)
+
+  environment(processed_formula) <- rank_env
+  return(list(
+    rank_terms_indices = rank_terms_indices,
+    ranked_response = is_response_ranked,
+    formula = processed_formula
+  ))
+}
 
 prepare_lm_call <- function(lm_call, check_lm_args = TRUE) {
   lm_call[[1]] <- quote(stats::lm)
@@ -247,6 +285,7 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE) {
 
 #' Return grouping variable index
 #' @return integer i s.t. model.frame(object)[,i] gives the grouping variable.
+#' # TODO: parse formula -> use does_interact_with...
 #' @noRd
 get_grouping_var_index <- function(object) {
   rank_terms_indices <- object$rank_terms_indices
