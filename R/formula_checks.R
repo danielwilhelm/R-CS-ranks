@@ -6,10 +6,35 @@ assert_is_formula <- function(formula) {
     }
 }
 
+assert_has_ranked_response <- function(parsed_formula) {
+    if (!parsed_formula[["is_response_ranked"]]) {
+        cli::cli_abort("In formula the response must be ranked.")
+    }
+}
+
 assert_has_at_most_one_ranked_regressor <- function(parsed_formula) {
     if (length(parsed_formula[["ranked_regressor_variable_indices"]]) > 1) {
         cli::cli_abort(c("In formula there may be at most one term with ranked regressor.",
             "x" = "There are multiple terms with ranked regressors."
+        ))
+    }
+}
+
+assert_has_exactly_one_ranked_regressor <- function(parsed_formula) {
+    if (length(parsed_formula[["ranked_regressor_variable_indices"]]) != 1) {
+        cli::cli_abort(c("In formula there must be exactly one term with ranked regressor.",
+            "x" = "There are multiple ranked regressors."
+        ))
+    }
+}
+
+assert_has_exactly_one_ranked_regressor_equal_to <- function(parsed_formula, expected) {
+    variables <- as.character(attr(parsed_formula, "variables"))[-1]
+    ranked_variables <- variables[parsed_formula[["ranked_regressor_variable_indices"]]]
+
+    if (length(ranked_variables) != length(expected) || any(ranked_variables != expected)) {
+        cli::cli_abort(c("The following variable is expected to be ranked: {.var {expected}}",
+            "x" = "The following variables are acutally ranked: {.var {ranked_variables}}"
         ))
     }
 }

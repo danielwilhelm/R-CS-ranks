@@ -166,6 +166,15 @@ get_exogenous_variable_names <- function(formula, data) {
   return(setdiff(stage_2_variables, stage_1_variables))
 }
 
+get_instrument_variable_names <- function(formula, data) {
+  stage_2_terms <- terms(formula, lhs = 0, rhs = 1, data = data)
+  stage_2_variables <- rownames(attr(terms, "factors"))
+  stage_1_terms <- terms(formula, lhs = 0, rhs = 2, data = data)
+  stage_1_variables <- rownames(attr(stage_1_terms, "factors"))
+
+  return(setdiff(stage_1_variables, stage_2_variables))
+}
+
 #' Check validity of passed formula and identify ranked terms
 #'
 #' For now only formulas with (at most) one rank regressor and one
@@ -192,11 +201,7 @@ get_exogenous_variable_names <- function(formula, data) {
 #'
 #' @noRd
 process_ivregranks_formula <- function(formula, data, rank_env = NULL) {
-  if (!inherits(formula, "formula")) {
-    cli::cli_abort(c("{.var formula} must be a {.cls {class(formula)}} object.",
-      "x" = "The passed {.var formula} is of {.cls {class(formula)}} class."
-    ))
-  }
+  assert_is_formula(formula)
   if (is.null(rank_env)) {
     rank_env <- environment(formula)
   }
@@ -215,16 +220,15 @@ process_ivregranks_formula <- function(formula, data, rank_env = NULL) {
   formula <- canonical_formula
 
   # Process structural equation (stage 2)
+  # One instrument for 1 endogenous variable is allowed.
+  # The instrument, as well as endogenous variable and final target, must be ranked.
   structural_formula <- formula(formula, lhs = 1, rhs = 1)
+  # Here we check whether the final response is ranked
   l1 <- ivregranks_processor(structural_formula, rank_env, "Error while processing structural formula (for stage 2) {.var structural_formula}.")
 
-  # Process instrument equation (stage 1) with same validator
-  instruments_formula <- formula(formula, rhs = 2)
-  endogeneous_variables <- get_exogenous_variable_names(formula, data)
-  formula_update <- as.formula(paste0(paste(endogeneous_variables, sep = "+"), "~."))
-  instruments_formula <- update(instruments_formula, formula_update)
+  instruments_formula <- get_instruments_formula(formula, data)
 
-  # Here it matters whether the endogenous target is ranked or not
+  # Here we check whether the endogeneous variable is ranked
   l2 <- ivregranks_processor(instruments_formula, rank_env, "Error while processing instruments formula (for stage 1) {.var instruments_formula}.")
 
   rank_terms_indices <- l1$rank_terms_indices
@@ -286,8 +290,15 @@ convert_formula_to_canonical_form <- function(formula) {
   return(formula)
 }
 
+get_instruments_formula <- function(formula, data) {
+  instruments_formula <- formula(formula, rhs = 2)
+  endogeneous_variables <- get_exogenous_variable_names(formula, data)
+  formula_update <- as.formula(paste0(paste(endogeneous_variables, sep = "+"), "~."))
+  update(instruments_formula, formula_update)
+}
+
 #' @noRd
-internal_processor <- function(formula, rank_env) {
+internal_processor <- function(formula, rank_env, expected_ranked_variable_str = NULL) {
   assert_is_formula(formula)
 
   if (is.null(rank_env)) {
@@ -296,17 +307,13 @@ internal_processor <- function(formula, rank_env) {
 
   parsed_formula <- parse_lmranks_formula(formula)
 
-  is_response_ranked <- parsed_formula[["is_response_ranked"]]
-
-  if (length(parsed_formula$ranked_regressor_variable_indices) == 0) {
-    environment(formula) <- rank_env
-    return(list(
-      rank_terms_indices = integer(0),
-      ranked_response = is_response_ranked,
-      formula = formula
-    ))
+  assert_has_ranked_response(parsed_formula)
+  if (is.null(expected_ranked_variable_str)) {
+    assert_has_exactly_one_ranked_regressor(parsed_formula)
+  } else {
+    assert_has_exactly_one_ranked_regressor_equal_to(parsed_formula, expected_ranked_variable_str)
   }
-  assert_has_at_most_one_ranked_regressor(parsed_formula)
+
   assert_has_at_most_one_term_with_ranked_regressor(parsed_formula)
   assert_ranked_regressor_does_not_interact_with_other_variables(parsed_formula)
 
