@@ -118,8 +118,9 @@ test_that("ivregranks returns expected object_fs", {
 })
 
 test_that("ivregranks works with mixture of data and env variables", {
-  load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  expect_no_error(ivregranks(r(Y) ~ r(X) + W | r(Z) + W))
+  data(mtcars)
+  w <- rnorm(nrow(mtcars))
+  expect_no_error(ivregranks(r(mpg) ~ r(disp) + w | r(hp) + w, data = mtcars))
 })
 
 test_that("ivregranks raises error if estimation method is not OLS", {

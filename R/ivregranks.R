@@ -225,13 +225,13 @@ process_ivregranks_formula <- function(formula, data, rank_env = NULL) {
   structural_formula <- formula(formula, lhs = 1, rhs = 1)
   # Here we check whether the final response is ranked
 
-  l1 <- ivregranks_processor(structural_formula, rank_env, "Error while processing structural formula (for stage 2): ")
+  l1 <- ivregranks_processor(structural_formula, "Error while processing structural formula (for stage 2): ")
 
   instruments_formula <- get_instruments_formula(formula, data)
   instrument_variable <- get_instrument_variable_names(formula, data)
 
   # Here we check whether the endogeneous variable is ranked
-  l2 <- ivregranks_processor(instruments_formula, rank_env, "Error while processing instruments formula (for stage 1): ", instrument_variable)
+  l2 <- ivregranks_processor(instruments_formula, "Error while processing instruments formula (for stage 1): ", instrument_variable)
 
   rank_terms_indices <- l1$rank_terms_indices
   rank_instruments_indices <- l2$rank_terms_indices
@@ -295,22 +295,17 @@ convert_formula_to_canonical_form <- function(formula) {
 get_instruments_formula <- function(formula, data) {
   instruments_formula <- formula(formula, rhs = 2)
   endogeneous_variables <- get_exogenous_variable_names(formula, data)
-  formula_update <- as.formula(paste0(paste(endogeneous_variables, sep = "+"), "~."))
+  formula_update <- as.formula(paste0(paste(endogeneous_variables, collapse = "+"), "~."))
   update(instruments_formula, formula_update)
 }
 
 #' @noRd
-internal_processor <- function(formula, rank_env, expected_ranked_variable_str = NULL) {
+internal_processor <- function(formula, expected_ranked_variable_str = NULL) {
   assert_is_formula(formula)
-
-  if (is.null(rank_env)) {
-    rank_env <- environment(formula)
-  }
 
   parsed_formula <- parse_lmranks_formula(formula)
 
   if (has_no_ranked_terms_nor_response(parsed_formula)) {
-    environment(formula) <- rank_env
     return(list(
       rank_terms_indices = integer(0),
       ranked_response = FALSE,
@@ -332,7 +327,6 @@ internal_processor <- function(formula, rank_env, expected_ranked_variable_str =
   rank_terms_names <- parsed_formula[["ranked_terms_labels"]]
   rank_terms_indices <- get_rank_terms_indices_after_reordering(formula, rank_terms_names)
 
-  environment(formula) <- rank_env
   return(list(
     rank_terms_indices = rank_terms_indices,
     ranked_response = parsed_formula[["is_response_ranked"]],
@@ -341,10 +335,10 @@ internal_processor <- function(formula, rank_env, expected_ranked_variable_str =
 }
 
 #' @noRd
-ivregranks_processor <- function(formula, rank_env, error_message, expected_ranked_variable_str = NULL) {
+ivregranks_processor <- function(formula, error_message, expected_ranked_variable_str = NULL) {
   error_message <- glue::glue(error_message, deparse(formula))
   rlang::try_fetch(
-    internal_processor(formula, rank_env, expected_ranked_variable_str),
+    internal_processor(formula, expected_ranked_variable_str),
     error = function(e) {
       cli::cli_abort(error_message, parent = e)
     }
