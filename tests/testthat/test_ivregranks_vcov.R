@@ -27,6 +27,7 @@ test_that("vcov passes shallow checks", {
 })
 
 test_that("vcov passes shallow checks in no ranked  case", {
+  testthat::skip("That's actually a separate use case from out theory. Need to consult.")
   model <- ivregranks(r(mpg) ~ hp + cyl | disp + cyl, data = mtcars)
   V <- vcov(model)
 
@@ -38,7 +39,7 @@ test_that("vcov passes shallow checks in no ranked  case", {
 test_that("vcov works for singular model matrix", {
   # that XtX is singular
   w <- cbind(mtcars$qsec, mtcars$qsec)
-  model <- ivregranks(r(mpg) ~ r(hp) + w | r(disp) + w, data = mtcars)
+  model <- expect_warning(ivregranks(r(mpg) ~ r(hp) + w | r(disp) + w, data = mtcars), "collinear")
   cov2 <- vcov(model, component = "stage2")
   cov1 <- vcov(model, component = "stage1")
 

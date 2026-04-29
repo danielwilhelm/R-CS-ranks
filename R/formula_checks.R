@@ -29,7 +29,7 @@ assert_has_exactly_one_ranked_regressor <- function(parsed_formula) {
 }
 
 assert_has_exactly_one_ranked_regressor_equal_to <- function(parsed_formula, expected) {
-    variables <- as.character(attr(parsed_formula, "variables"))[-1]
+    variables <- as.character(attr(parsed_formula[["formula_terms"]], "variables"))[-1]
     ranked_variables <- variables[parsed_formula[["ranked_regressor_variable_indices"]]]
 
     if (length(ranked_variables) != length(expected) || any(ranked_variables != expected)) {

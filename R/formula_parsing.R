@@ -30,3 +30,7 @@ is_variable_present_in_term <- function(formula_terms, variable_index) {
     variables_table <- attr(formula_terms, "factors")
     variables_table[variable_index, ] != 0
 }
+
+has_no_ranked_terms_nor_response <- function(parsed_formula) {
+    return(!parsed_formula[["is_response_ranked"]] && length(parsed_formula[["ranked_regressor_variable_indices"]]) == 0)
+}

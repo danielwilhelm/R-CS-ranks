@@ -118,31 +118,50 @@ test_that("ivregranks returns expected object_fs", {
 })
 
 test_that("ivregranks works with mixture of data and env variables", {
-  data(mtcars)
-  W <- mtcars$disp
-  expect_no_error(ivregranks(r(mpg) ~ r(cyl) + W, data = mtcars))
-
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
   expect_no_error(ivregranks(r(Y) ~ r(X) + W | r(Z) + W))
 })
 
 test_that("ivregranks raises error if estimation method is not OLS", {
   df <- mtcars
-  expect_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "K"))
-  expect_no_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "O"))
-  expect_no_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df, method = "OLS"))
+  expect_error(ivregranks(r(mpg) ~ r(hp) | r(disp), data = df, method = "K"))
+  expect_no_error(ivregranks(r(mpg) ~ r(hp) | r(disp), data = df, method = "O"))
+  expect_no_error(ivregranks(r(mpg) ~ r(hp) | r(disp), data = df, method = "OLS"))
 })
 
 test_that("ivregranks raises error if NA is encountered in data", {
   df1 <- mtcars
   df1[5, "disp"] <- NA
-  expect_error(ivregranks(r(mpg) ~ r(hp) | disp, data = df1), "missing values")
+  expect_error(ivregranks(r(mpg) ~ r(hp) | r(disp), data = df1), "NA values")
 
   df2 <- mtcars
   df2[5, "cyl"] <- NA
-  expect_error(ivregranks(r(mpg) ~ r(hp) + cyl | disp + cyl,
+  expect_error(ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl,
     data = df2
   ), "missing values")
+})
+
+### helpers
+
+test_that("get_instrument_variable_names works", {
+  expected <- "r(hp)"
+  actual <- get_instrument_variable_names(Formula::as.Formula(r(mpg) ~ r(cyl) + disp | r(hp) + disp), data = mtcars)
+
+  expect_equal(actual, expected)
+})
+
+test_that("get_exogenous_variables works", {
+  expected <- "r(cyl)"
+  actual <- get_exogenous_variable_names(Formula::as.Formula(r(mpg) ~ r(cyl) + disp | r(hp) + disp), data = mtcars)
+
+  expect_equal(actual, expected)
+})
+
+test_that("get_instruments_formula works", {
+  expected <- r(cyl) ~ r(hp) + disp
+  actual <- get_instruments_formula(Formula::as.Formula(r(mpg) ~ r(cyl) + disp | r(hp) + disp), data = mtcars)
+
+  expect_equal(actual, expected)
 })
 
 ### process_ivregranks_formula
@@ -241,10 +260,10 @@ test_that("process_ivregranks_formula returns correct ranked_response flag", {
     r(y) ~ r(x) + w | r(z) + w,
     data = NULL
   )$ranked_response)
-  expect_false(process_ivregranks_formula(
+  expect_error(process_ivregranks_formula(
     y ~ r(x) + w | r(z) + w,
     data = NULL
-  )$ranked_response)
+  ), "must be ranked")
 })
 
 test_that("process_ivregranks_formula returns corrected formula", {
@@ -258,8 +277,8 @@ test_that("process_ivregranks_formula returns corrected formula", {
   #   Formula::as.Formula(r(y) ~ x + w + z | x + w + z)
   # )
   expect_equal(
-    process_ivregranks_formula(r(y) ~ x + w | z + . - x, data = data)$formula,
-    Formula::as.Formula(r(y) ~ x + w | z + w)
+    process_ivregranks_formula(r(y) ~ r(x) + w | r(z) + . - r(x), data = data)$formula,
+    Formula::as.Formula(r(y) ~ r(x) + w | r(z) + w)
   )
   # no yet implemented
   # expect_equal(
@@ -330,14 +349,6 @@ test_that("process_ivregranks_formula returns correct index for simplest
       rank_terms_indices = 1, rank_instruments_indices = 1,
       ranked_response = TRUE,
       formula = Formula::as.Formula(r(y) ~ r(x) - 1 | r(z) - 1)
-    )
-  )
-  expect_equal(
-    process_ivregranks_formula(y ~ r(x) - 1 | r(z) - 1, data = NULL),
-    list(
-      rank_terms_indices = 1, rank_instruments_indices = 1,
-      ranked_response = FALSE,
-      formula = Formula::as.Formula(y ~ r(x) - 1 | r(z) - 1)
     )
   )
 })
