@@ -71,6 +71,42 @@ test_that("vcov works for singular model matrix, complete=FALSE", {
   )
 })
 
+#######################
+### Low-level tests ###
+#######################
+
+test_that("update_coefficients_by_dropping_exogenous_vars works", {
+  data(mtcars)
+  model <- model <- ivregranks(r(mpg) ~ r(hp) + cyl + drat | r(disp) + cyl + drat, data = mtcars)
+  projection_matrix <- get_projection_residual_matrix_ivregranks(model)
+
+  # expectation
+  proj_1 <- lmranks(r(hp) ~ r(disp) + cyl + drat - 1, data = mtcars)
+  proj_2 <- lmranks(r(hp) ~ r(disp) + drat, data = mtcars)
+  proj_3 <- lmranks(r(hp) ~ r(disp) + cyl, data = mtcars)
+
+  expected <- matrix(c(0, coef(proj_1), coef(proj_2)[1:2], 0, coef(proj_2)[3], coef(proj_3), 0), ncol = 3, byrow = FALSE)
+
+  actual <- update_coefficients_by_dropping_exogenous_vars(model, projection_matrix)
+
+  expect_equal(actual, expected)
+})
+
+test_that("update_coefficients_by_dropping_exogenous_vars works for 1 regressor", {
+  data(mtcars)
+  model <- model <- ivregranks(r(mpg) ~ r(hp) + 1 | r(disp) + 1, data = mtcars)
+  projection_matrix <- calculate_projection_residual_matrix_ivregranks(model)
+
+  # expectation
+  proj_1 <- lmranks(r(hp) ~ r(disp) - 1, data = mtcars)
+
+  expected <- matrix(coef(proj_1), ncol = 1)
+
+  actual <- update_coefficients_by_dropping_exogenous_vars(model, projection_matrix)
+
+  expect_equal(actual, expected)
+})
+
 ######################################################
 ### High-level checks against by-hand calculations ###
 ######################################################
