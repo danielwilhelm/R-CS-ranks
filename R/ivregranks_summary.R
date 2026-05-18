@@ -62,9 +62,10 @@ print.summary.ivregranks <- function(x, ...) {
 #' @inheritParams ivreg::confint.ivreg
 #' @export
 confint.ivregranks <- function(
-    object, parm, level = 0.95,
-    component = c("stage2", "stage1"), complete = TRUE, vcov. = NULL,
-    df = NULL, ...) {
+  object, parm, level = 0.95,
+  component = c("stage2", "stage1"), complete = TRUE, vcov. = NULL,
+  df = NULL, ...
+) {
   if (!is.null(vcov.)) {
     cli::cli_abort("{.var vcov.} argument is not yet supported. ")
   }
@@ -100,49 +101,138 @@ confint.ivregranks <- function(
 vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
                             complete = TRUE, ...) {
   component <- match.arg(component, c("stage2", "stage1"))
-  ## default: stage 2
-  if (component == "stage2") {
-    regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
-    Z <- stats::model.matrix(object, component = "instruments")
-    if (any(regressor_dropped_fs)) {
-      R <- qr.R(qr(Z[, !regressor_dropped_fs]))
-    } else {
-      R <- qr.R(qr(Z))
-    }
-    projection_residual_matrix_fs <- calculate_projection_residual_matrix(
-      R,
-      regressor_dropped_fs,
-      length(coef(object, component = "stage1"))
-    )
-    projection_residuals_fs <- Z %*% projection_residual_matrix_fs
-
-    H1 <- calculate_H1(object, projection_residuals_fs)
-    H1_mean <- colMeans(H1)
-    H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
-    H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
-
-    projection_residual_matrix <- get_projection_residual_matrix(object)
-    X <- stats::model.matrix(object, component = "regressors")
-    projection_residuals <- X %*% projection_residual_matrix
-    projection_variances <- colMeans(projection_residuals *
-      projection_residuals_fs)
-    psi <- t(t(H1 + H2 + H3) / projection_variances)
-
-    sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
-    colnames(sigmahat) <- names(coef(object, component = "stage2"))
-    rownames(sigmahat) <- colnames(sigmahat)
-
-    if (!complete) {
-      sigmahat <- sigmahat[
-        !is.na(coef(object, component = "stage2")),
-        !is.na(coef(object, component = "stage2"))
-      ]
-    }
-
-    return(sigmahat)
-  } else {
+  if (component == "stage1") {
     return(vcov(object$object_fs, complete = complete, ...))
   }
+  ## default: stage 2
+  # For Z the H1 would be sth like
+  # resid_Z <- resid(lm(Z ~ W)) (Bleeh)
+  # resid_Y <- resid(object)
+  # resid_Z * resid_Y
+
+
+  regressor_dropped_fs <- is.na(coef(object))
+  if (any(regressor_dropped_fs)) {
+    X <- stats::model.matrix(object, component = "regressors")
+    R <- qr.R(qr(X[, !regressor_dropped_fs]))
+  } else {
+    R <- qr.R(qr(X))
+  }
+  projection_residual_matrix_fs <- calculate_projection_residual_matrix(
+    R,
+    regressor_dropped_fs,
+    length(coef(object, component = "stage1"))
+  )
+  projection_residuals_fs <- Z %*% projection_residual_matrix_fs
+
+  # Why first stage? calculate_H1 would not accept this signature normally
+  H1 <- calculate_H1(object, projection_residuals_fs)
+  H1_mean <- colMeans(H1)
+  H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
+  H3 <- calculate_H3(object, projection_residual_matrix_fs, H1_mean)
+
+  projection_residual_matrix <- get_projection_residual_matrix(object)
+  X <- stats::model.matrix(object, component = "regressors")
+  projection_residuals <- X %*% projection_residual_matrix
+  projection_variances <- colMeans(projection_residuals *
+    projection_residuals_fs)
+  psi <- t(t(H1 + H2 + H3) / projection_variances)
+
+  sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
+  colnames(sigmahat) <- names(coef(object, component = "stage2"))
+  rownames(sigmahat) <- colnames(sigmahat)
+
+  if (!complete) {
+    sigmahat <- sigmahat[
+      !is.na(coef(object, component = "stage2")),
+      !is.na(coef(object, component = "stage2"))
+    ]
+  }
+
+  return(sigmahat)
+}
+
+get_projection_residual_matrix_ivregranks <- function(object){
+  stage_1_coefficients <- coef(object, component="stage1")
+  regressor_dropped <- is.na(stage_1_coefficients)
+  n_coef <- length(stage_1_coefficients)
+  if (any(regressor_dropped)) {
+    Z <- stats::model.matrix(object, component="stage1")[, !regressor_dropped]
+    R <- qr.R(qr(Z))
+  } else if (is.null(object[["qr1"]])) {
+    R <- qr.R(qr(stats::model.matrix(object, component="stage1")))
+  } else {
+    R <- qr.R(object[["qr1"]])
+  }
+  
+  calculate_projection_residual_matrix(R, regressor_dropped) 
+}
+
+calculate_projection_residual_matrix_ivregranks <- function(object){
+  # Per eqn 8 from doc 'Inference for Rank-Rank Regressions with Instrumental Variables'
+  # We're interested in projecting exogenous variable W_l on R(X) and other W's
+  # However, on R(X) we project using 2SLS estimation.
+  # We want to do that for all W's
+
+  # For each l:
+    # Step 1: project X on Z and W_-l.
+    # We really don't want to do that naively (fitting a model from scratch).
+    # Fortunately, we can project W_l on Z and W_-l easily using same trick as in lmranks.
+  stage_1_coefficients <- coef(object, component="stage1")
+  regressor_dropped <- is.na(stage_1_coefficients)
+
+  exogenous_residual_matrix <- get_projection_residual_matrix_ivregranks(object)
+
+  # And now the FWL theorem will convince us that we can retrieve
+  # the coefficients of regression X ~ Z + W_-l by:
+  # 'substituting' the linear formula for W_l from other exogeneous regressors
+  # into respective coefficient.
+
+  # unoptimized:
+  # for(i in 1:nrow(exogenous_residual_matrix)){
+  #   if(<i corresponds to Z>){do nothing}
+  #   residual_coefficients <- exogeneous_residual_matrix[,i]
+
+  #   W_l_coef_in_X <- stage_1_coefficients[!regressor_dropped][i]
+  #   substitute <- W_l_coef_in_X * residual_coefficients * -1
+  #   X_coef_without_W_l <- W_l_coef_in_X[-i] + substitute
+  # }
+  # opzimized:
+  instrument_index <- which((1:length(stage_1_coefficients) == object[["rank_instruments_indices"]])[!regressor_dropped])
+  exogeneous_residual_matrix_without_Z_projection <- exogeneous_residual_matrix[-instrument_index]
+
+  stage_1_coefficients_cleaned <- matrix(stage_1_coefficients[!regressor_dropped][-instrument_index], nrow=1)
+
+  substitute <- exogeneous_residual_matrix_without_Z_projection * stage_1_coefficients_cleaned * -1
+
+  X_coefs_without_W_l <- matrix(stage_1_coefficients_cleaned, ncol=1) + substitute
+  
+  # suppose we have p regressors W
+  # X_coefs_without_W_l is a matrix (p+1) x p
+  # where in lth we have coefficients for regression
+  # X ~ Z + W_-l (W_l is kept with 0)
+
+  # Step 2
+  # So we have coefficients for:
+  # X ~ Z + W_-l, call fitted values X_-l (1-dim vector), coefficients a
+  # W_l ~ Z + W_-l, coefficients c
+  # And we want W_l ~ X_-l + W_-l (coefficients d)
+  # This is a change of vector base operation
+  # Where we start from base [Z; W_-l]
+  # And go to [X_-l; W_-l]
+  # After some linear algebra that I leave as an exercise for the reader
+  # d = c - c_k/a_k * (a - e_k)
+  # where k is the index of Z in original base
+  # AKA instrument_index R variable
+
+  # Inefficient:
+
+  c_k_div_a_k <- exogeneous_residual_matrix[instrument_index,-instrument_index] / X_coefs_without_W_l[instrument_index,]
+  a_minus_e_k <- X_coefs_without_W_l - matrix(1:nrow(X_coefs_without_W_l) == instrument_index, ncol=1)
+  update <- matrix(c_k_div_a_k, nrow=1) * a_minus_e_k * -1
+
+  old_coefficients <- exogeneous_residual_matrix
+  new_coefficients_l <- exogeneous_residual_matrix[-l,l] + update
 }
 
 #' Calculate H1 component for covariance estimation
@@ -152,7 +242,12 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 #' @return n x p matrix
 #' @noRd
 calculate_H1.ivregranks <- function(object, projection_residuals, ...) {
-  NextMethod()
+  # We need something like
+  main_model_residuals <- object$residuals
+  Z_projection_residuals <- # requires a 'new model' or to be read from projection_residuals
+
+
+    NextMethod()
 }
 
 #' Calculate H2 component for covariance estimation
