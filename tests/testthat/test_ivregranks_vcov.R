@@ -75,34 +75,50 @@ test_that("vcov works for singular model matrix, complete=FALSE", {
 ### Low-level tests ###
 #######################
 
-test_that("update_coefficients_by_dropping_exogenous_vars works", {
+test_that("update_coefficients_when_dropping_regressors works", {
   data(mtcars)
-  model <- model <- ivregranks(r(mpg) ~ r(hp) + cyl + drat | r(disp) + cyl + drat, data = mtcars)
+  model <- ivregranks(r(mpg) ~ r(hp) + cyl + drat | r(disp) + cyl + drat, data = mtcars)
   projection_matrix <- get_projection_residual_matrix_ivregranks(model)
 
   # expectation
   proj_1 <- lmranks(r(hp) ~ r(disp) + cyl + drat - 1, data = mtcars)
+  proj_no_instrument <- lmranks(r(hp) ~ cyl + drat, data = mtcars)
   proj_2 <- lmranks(r(hp) ~ r(disp) + drat, data = mtcars)
   proj_3 <- lmranks(r(hp) ~ r(disp) + cyl, data = mtcars)
 
-  expected <- matrix(c(0, coef(proj_1), coef(proj_2)[1:2], 0, coef(proj_2)[3], coef(proj_3), 0), ncol = 3, byrow = FALSE)
+  expected <- matrix(c(
+    0, coef(proj_1),
+    coef(proj_no_instrument)[1], 0, coef(proj_no_instrument)[2:3],
+    coef(proj_2)[1:2], 0, coef(proj_2)[3],
+    coef(proj_3), 0
+  ), ncol = 4, byrow = FALSE)
 
-  actual <- update_coefficients_by_dropping_exogenous_vars(model, projection_matrix)
+  actual <- update_coefficients_when_dropping_regressors(model, projection_matrix)
 
   expect_equal(actual, expected)
 })
 
-test_that("update_coefficients_by_dropping_exogenous_vars works for 1 regressor", {
+test_that("calculate_projection_residual_matrix_ivregranks works", {
   data(mtcars)
-  model <- model <- ivregranks(r(mpg) ~ r(hp) + 1 | r(disp) + 1, data = mtcars)
-  projection_matrix <- calculate_projection_residual_matrix_ivregranks(model)
+  model <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
 
   # expectation
-  proj_1 <- lmranks(r(hp) ~ r(disp) - 1, data = mtcars)
 
-  expected <- matrix(coef(proj_1), ncol = 1)
+  X_proj_1 <- lmranks(r(hp) ~ r(disp) + cyl - 1, data = mtcars)
+  X_proj_2 <- lmranks(r(hp) ~ r(disp), data = mtcars)
 
-  actual <- update_coefficients_by_dropping_exogenous_vars(model, projection_matrix)
+  Z_proj <- lmranks(r(disp) ~ cyl, data = mtcars)
+  intercept <- rep(1, nrow(mtcars))
+  cyl_proj <- lm(cyl ~ X_proj_2$fitted.values, data = mtcars)
+  intercept_proj <- lm(intercept ~ X_proj_1$fitted.values + cyl - 1, data = mtcars)
+
+  expected <- matrix(c(
+    1, -coef(intercept_proj),
+    -coef(Z_proj)[1], 1, -coef(Z_proj)[2],
+    -coef(cyl_proj), 1
+  ), ncol = 3, byrow = FALSE)
+
+  actual <- calculate_projection_residual_matrix_ivregranks(model)
 
   expect_equal(actual, expected)
 })
