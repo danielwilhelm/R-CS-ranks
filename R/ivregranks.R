@@ -407,17 +407,3 @@ suppress_no_rank_lmranks <- function(expr,
     }
   )
 }
-
-augment_data_with_env <- function(fml, data = NULL,
-                                  envir = parent.frame(n = 2)) {
-  needed <- all.vars(stats::formula(fml))
-
-  missing_in_data <- setdiff(needed, names(data))
-
-  for (nm in missing_in_data) {
-    if (exists(nm, envir = envir, inherits = FALSE)) {
-      data[[nm]] <- get(nm, envir = envir, inherits = FALSE)
-    }
-  }
-  data
-}
