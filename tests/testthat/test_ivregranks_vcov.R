@@ -186,7 +186,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slow
 
 test_that("h1 works for ranked regressor with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  res <- ivregranks(r(Y) ~ r(X) + W  - 1| r(Z) + W - 1)
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
   U <- stats::model.matrix(res, component = "instruments")
   R <- qr.R(qr(U[, !regressor_dropped_fs]))
@@ -196,12 +196,12 @@ test_that("h1 works for ranked regressor with covariates", {
   )
   proj_residuals <- U %*% proj_resid_matrix
   h1_ivregranks <- calculate_H1(res, proj_residuals)
-  expect_equivalent(h1_ivregranks[, 2], h1)
+  expect_equivalent(h1_ivregranks[, 1], h1)
 })
 
 test_that("h2 works for ranked regressor with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
   U <- stats::model.matrix(res, component = "instruments")
   R <- qr.R(qr(U[, !regressor_dropped_fs]))
@@ -213,12 +213,12 @@ test_that("h2 works for ranked regressor with covariates", {
   h1_ivregranks <- calculate_H1(res, proj_residuals)
   h1_mean <- colMeans(h1_ivregranks)
   h2_ivregranks <- calculate_H2(res, proj_residuals, h1_mean)
-  expect_equivalent(h2_ivregranks[, 2], h2)
+  expect_equivalent(h2_ivregranks[, 1], h2)
 })
 
 test_that("h3 works for ranked regressor with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
   U <- stats::model.matrix(res, component = "instruments")
   R <- qr.R(qr(U[, !regressor_dropped_fs]))
@@ -230,40 +230,40 @@ test_that("h3 works for ranked regressor with covariates", {
   h1_ivregranks <- calculate_H1(res, proj_residuals)
   h1_mean <- colMeans(h1_ivregranks)
   h3_ivregranks <- calculate_H3(res, proj_resid_matrix, h1_mean)
-  expect_equivalent(h3_ivregranks[, 2], h3)
+  expect_equivalent(h3_ivregranks[, 1], h3)
 })
 
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
-  sigma2hat_ivregranks <- vcov(res)[2, 2] * n
+  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
+  sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 })
 
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   with smaller datasets", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_n_10.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
-  sigma2hat_ivregranks <- vcov(res)[2, 2] * n
+  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
+  sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 
   load(test_path("testdata", "ivregranks_cov_sigmahat_n_50.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
-  sigma2hat_ivregranks <- vcov(res)[2, 2] * n
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
+  sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 
   load(test_path("testdata", "ivregranks_cov_sigmahat_n_100.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
-  sigma2hat_ivregranks <- vcov(res)[2, 2] * n
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
+  sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 })
 
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   with increasing=FALSE", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_increasing_FALSE.rda"))
-  res <- ivregranks(r(Y, increasing = FALSE) ~ r(X, increasing = FALSE) + W |
-    r(Z, increasing = FALSE) + W, omega = 1)
-  sigma2hat_ivregranks <- vcov(res)[2, 2] * n
+  res <- ivregranks(r(Y, increasing = FALSE) ~ r(X, increasing = FALSE) + W - 1 |
+    r(Z, increasing = FALSE) + W - 1, omega = 1)
+  sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 })
