@@ -139,6 +139,15 @@ get_instrument_index_after_dropping_NAs <- function(object) {
   instrument_index
 }
 
+get_regressor_index_after_dropping_NAs <- function(object) {
+  stage_2_coefficients <- coef(object, component = "stage2")
+  regressor_dropped <- is.na(stage_2_coefficients)
+
+  regressor_term <- object[["rank_terms_indices"]]
+  regressor_index <- which((1:length(stage_2_coefficients) == regressor_term)[!regressor_dropped])
+  regressor_index
+}
+
 calculate_projection_residual_matrix_stage_2 <- function(object, exogenous_residual_matrix, X_coefs_without_W_l) {
   # Step 2
   # So we have coefficients for:
@@ -203,11 +212,6 @@ calculate_projection_residual_matrix_ivregranks <- function(object) {
 #' @return n x p matrix
 #' @noRd
 calculate_H1.ivregranks <- function(object, projection_residuals, ...) {
-  # We need something like
-  main_model_residuals <- object$residuals
-  Z_projection_residuals <- # requires a 'new model' or to be read from projection_residuals
-
-
     NextMethod()
 }
 
