@@ -117,6 +117,58 @@ for (n in c(10, 50, 100)) {
   ))
 }
 
+n <- 1000
+Z <- rnorm(n)
+W <- rnorm(n)
+X <- Z + W + rnorm(n, 0, 0.5)
+Y <- X + W + rnorm(n, 0, 1)
+
+RY <- frank(Y, increasing = TRUE)
+RX <- frank(X, increasing = TRUE)
+RZ <- frank(Z, increasing = TRUE)
+
+Ifn <- function(u, v) u <= v
+
+main_model <- ivreg(RY ~ RX + W | RZ + W)
+RX_fitted_values <- RX - resid(main_model, component = "stage1")
+
+stage_1_model <- lm(RX ~ RZ + W)
+
+projection_model_1 <- ivreg(W ~ RX | RZ)
+theta_1 <- coef(projection_model_1)["RX"]
+v_hat_1 <- W - theta_1 * RX_fitted_values - coef(projection_model_1)["(Intercept)"]
+
+rhohat <- coef(main_model)["RX"]
+betahat_W <- coef(main_model)["W"]
+intercept <- coef(main_model)["(Intercept)"]
+epsilonhat <- resid(main_model)
+
+# construct h1
+h1 <- epsilonhat * v_hat_1
+
+# construct h2
+h2fn <- function(xy) {
+  mean((Ifn(xy[2], Y) - rhohat * Ifn(xy[1], X) - W * betahat_W - intercept) * v_hat_1)
+}
+h2 <- apply(cbind(X, Y), 1, h2fn)
+
+# construct h3
+h3fn <- function(z) {
+  prediction_data <- data.frame(W = W, RZ = as.numeric(Ifn(z, Z)))
+  X_fitted_using_ifn <- predict(stage_1_model, prediction_data)
+  new_v_hat <- (W - theta_1 * X_fitted_using_ifn - coef(projection_model_1)["(Intercept)"])
+  mean(epsilonhat * new_v_hat)
+}
+h3 <- sapply(Z, h3fn)
+
+# compute asymptotic variance
+sigma2hat <- mean((h1 + h2 + h3)^2) / mean(v_hat_1^2)^2
+
+save(sigma2hat, Y, X, W, Z, n, h1, h2, h3, file = file.path(
+  "tests", "testthat",
+  "testdata", "ivregranks_cov_sigmahat_regressor_1.rda"
+))
+
 ########################
 ### increasing=FALSE ###
 ########################

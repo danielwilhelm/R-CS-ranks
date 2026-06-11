@@ -186,7 +186,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slow
 
 test_that("h1 works for ranked regressor with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W  - 1| r(Z) + W - 1)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
   U <- stats::model.matrix(res, component = "instruments")
   R <- qr.R(qr(U[, !regressor_dropped_fs]))
@@ -201,7 +201,7 @@ test_that("h1 works for ranked regressor with covariates", {
 
 test_that("h2 works for ranked regressor with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
   U <- stats::model.matrix(res, component = "instruments")
   R <- qr.R(qr(U[, !regressor_dropped_fs]))
@@ -218,7 +218,7 @@ test_that("h2 works for ranked regressor with covariates", {
 
 test_that("h3 works for ranked regressor with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
   U <- stats::model.matrix(res, component = "instruments")
   R <- qr.R(qr(U[, !regressor_dropped_fs]))
@@ -236,7 +236,7 @@ test_that("h3 works for ranked regressor with covariates", {
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   with covariates", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_covariates_TRUE.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
   sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 })
@@ -244,7 +244,7 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
 test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   with smaller datasets", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_n_10.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W - 1| r(Z) + W - 1)
+  res <- ivregranks(r(Y) ~ r(X) + W - 1 | r(Z) + W - 1)
   sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
 
@@ -266,4 +266,11 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
     r(Z, increasing = FALSE) + W - 1, omega = 1)
   sigma2hat_ivregranks <- vcov(res)[1, 1] * n
   expect_equal(sigma2hat, sigma2hat_ivregranks)
+})
+
+test_that("vcov produces correct asymptotic variance estimate of regressor variance", {
+  load(test_path("testdata", "ivregranks_cov_sigmahat_regressor_1.rda"))
+  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  sigma2hat_ivregranks <- vcov(res)[3, 3] * n
+  expect_equal(sigma2hat, sigma2hat_ivregranks, tolerance = 1e-3)
 })
