@@ -59,39 +59,15 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   # - residuals from X ~ W
   # - residuals from Z ~ W
   # - residuals from W_l ~ (X~Z+W_-l) + W_-l
-
-  instrument_index <- get_instrument_index_after_dropping_NAs(object)
-  regressor_dropped_ss <- is.na(coef(object, component = "stage2"))
-  X <- model.matrix(object, component = "regressors")[, object[["endogenous"]], drop = FALSE]
-  X <- X[, !regressor_dropped_ss[object[["endogenous"]]], drop = FALSE]
-  W <- model.matrix(object, component = "regressors")[, object[["exogenous"]], drop = FALSE]
-  W <- W[, !regressor_dropped_ss[object[["exogenous"]]], drop = FALSE]
-  # That causo non-conformable arrays here:
-  X_based_on_W <- W %*% X_coefs_without_W_l[-instrument_index, instrument_index, drop = FALSE]
-  residuals_X_W <- X - as.vector(X_based_on_W)
-  residuals_rest <- projection_residuals_fs
-  projection_residuals_ss <- projection_residuals_fs
-  projection_residuals_ss[, instrument_index] <- residuals_X_W
-
-  projection_variances <- colMeans(projection_residuals_ss *
-    projection_residuals_fs)
+  projection_variances <- get_projection_variances(object, X_coefs_without_W_l, projection_residuals_fs)
 
   psi <- t(t(H1 + H2 + H3) / projection_variances)
 
-  sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
+  raw_sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
 
-  if (complete && any(regressor_dropped_ss)) {
-    full_sigmahat <- matrix(NA, nrow = length(regressor_dropped_ss), ncol = length(regressor_dropped_ss))
-    full_sigmahat[!regressor_dropped_ss, !regressor_dropped_ss] <- sigmahat
-    colnames(full_sigmahat) <- names(coef(object, component = "stage2"))
-  } else {
-    full_sigmahat <- sigmahat
-    colnames(full_sigmahat) <- names(coef(object, component = "stage2"))[!regressor_dropped_ss]
-  }
+  sigmahat <- postprocess_sigmahat(object, raw_sigmahat, complete)
 
-  rownames(full_sigmahat) <- colnames(full_sigmahat)
-
-  return(full_sigmahat)
+  sigmahat
 }
 
 get_projection_residual_matrix_ivregranks <- function(object) {
@@ -130,6 +106,23 @@ substitute_coefs_change_base_to_stage_1 <- function(object, projection_residual_
   outcome
 }
 
+get_projection_variances <- function(object, X_coefs_without_W_l, projection_residuals_fs) {
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+  regressor_dropped_ss <- is.na(coef(object, component = "stage2"))
+  X <- model.matrix(object, component = "regressors")[, object[["endogenous"]], drop = FALSE]
+  X <- X[, !regressor_dropped_ss[object[["endogenous"]]], drop = FALSE]
+  W <- model.matrix(object, component = "regressors")[, object[["exogenous"]], drop = FALSE]
+  W <- W[, !regressor_dropped_ss[object[["exogenous"]]], drop = FALSE]
+  # That causo non-conformable arrays here:
+  X_based_on_W <- W %*% X_coefs_without_W_l[-instrument_index, instrument_index, drop = FALSE]
+  residuals_X_W <- X - as.vector(X_based_on_W)
+  residuals_rest <- projection_residuals_fs
+  projection_residuals_ss <- projection_residuals_fs
+  projection_residuals_ss[, instrument_index] <- residuals_X_W
+
+  colMeans(projection_residuals_ss * projection_residuals_fs)
+}
+
 get_instrument_index_after_dropping_NAs <- function(object) {
   stage_1_coefficients <- coef(object, component = "stage1")
   regressor_dropped <- is.na(stage_1_coefficients)
@@ -146,6 +139,21 @@ get_regressor_index_after_dropping_NAs <- function(object) {
   regressor_term <- object[["rank_terms_indices"]]
   regressor_index <- which((1:length(stage_2_coefficients) == regressor_term)[!regressor_dropped])
   regressor_index
+}
+
+postprocess_sigmahat <- function(object, sigmahat, complete) {
+  regressor_dropped_ss <- is.na(coef(object, component = "stage2"))
+  if (complete && any(regressor_dropped_ss)) {
+    full_sigmahat <- matrix(NA, nrow = length(regressor_dropped_ss), ncol = length(regressor_dropped_ss))
+    full_sigmahat[!regressor_dropped_ss, !regressor_dropped_ss] <- sigmahat
+    colnames(full_sigmahat) <- names(coef(object, component = "stage2"))
+  } else {
+    full_sigmahat <- sigmahat
+    colnames(full_sigmahat) <- names(coef(object, component = "stage2"))[!regressor_dropped_ss]
+  }
+
+  rownames(full_sigmahat) <- colnames(full_sigmahat)
+  full_sigmahat
 }
 
 calculate_projection_residual_matrix_stage_2 <- function(object, exogenous_residual_matrix, X_coefs_without_W_l) {
@@ -212,7 +220,7 @@ calculate_projection_residual_matrix_ivregranks <- function(object) {
 #' @return n x p matrix
 #' @noRd
 calculate_H1.ivregranks <- function(object, projection_residuals, ...) {
-    NextMethod()
+  NextMethod()
 }
 
 #' Calculate H2 component for covariance estimation
