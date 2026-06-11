@@ -22,6 +22,11 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 
   regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
 
+  # Per eqn 8 from doc 'Inference for Rank-Rank Regressions with Instrumental Variables'
+  # We're interested in projecting exogenous variable W_l on R(X) and other W's
+  # However, on R(X) we project using 2SLS estimation.
+  # We want to do that for all W's
+
   # This one has W_l ~ Z + W_-l as well as Z ~ W
   projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object)
 
@@ -54,12 +59,8 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
   H3 <- calculate_H3(object, projection_residual_matrix_stage_2_in_terms_stage_1, H1_mean)
 
-
-  # Now, we need
-  # - residuals from X ~ W
-  # - residuals from Z ~ W
-  # - residuals from W_l ~ (X~Z+W_-l) + W_-l
-  projection_variances <- get_projection_variances(object, X_coefs_without_W_l, projection_residuals_fs)
+  X_on_W <- calculate_residuals_of_endogenous_in_exogenous_terms(object, X_coefs_without_W_l)
+  projection_variances <- get_projection_variances(object, X_on_W, projection_residuals_fs)
 
   psi <- t(t(H1 + H2 + H3) / projection_variances)
 
@@ -70,6 +71,23 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   sigmahat
 }
 
+#' @title Get projection residual matrix for ivregranks
+#' @description In calculation of covariance matrix of parameters in ivregranks,
+#' we're interested in projections of exogenous variables (W) onto other exogenous variables, as well as on intrument variable Z.
+#' We really don't want to calculate the coefficients and residuals for these projections from scratch,
+#' because that involves fitting p linear models (p - number of exogenous variables).
+#' So we use the QR decomposition already calculated for purpose of first stage of main SLSS regression.
+#' Turns out, the inverse of R^TR is closely related to coefficients of projection models.
+#'
+#' Important: this function returns a matrix with rows&columns corresponding only to
+#' variables that were NOT colinear (their coefficients in first stage weren't NA).
+#'
+#' @return Suppose we have matrix U (exogenous variables + instrument, in column order as in main regression).
+#' Retuned is matrix P s.t. U %*% P gives residuals of projections of exogenous variables onto other exogenous variables as well as on instrument variable.
+#' First column corresponds to projection of first variable  in U etc.
+#'
+#' @seealso get_projection_residual_matrix - a counterpart for lmranks.
+#' @noRd
 get_projection_residual_matrix_ivregranks <- function(object) {
   stage_1_coefficients <- coef(object, component = "stage1")
   regressor_dropped <- is.na(stage_1_coefficients)
@@ -83,6 +101,35 @@ get_projection_residual_matrix_ivregranks <- function(object) {
   }
 
   calculate_projection_residual_matrix(R, regressor_dropped[!regressor_dropped], sum(!regressor_dropped))
+}
+
+#' Calculate coefficients of stage 1 regression with IVs
+#' when dropping the regressors, each separately
+#'
+#' @param object an `ivregranks` object
+#' @param stage_1_projection_residual_coefficients - A matrix of size pxp, where p is the
+#' number of instrumental variables + number of exogenous variables.
+#' ith column of the matrix relates to coefficients of regression of ith such variable in terms of everybody else,
+#' s.t. the ith row is 1 and the rest are negative coefficients of respective variables.
+#'
+#' @return A (pxp) matrix. Every column corresponds to regression
+#' r(X) (endogeneous variable) ~ W_-l + r(Z) or r(X) ~ W (i.e. with one of regressors dropped).
+#' @noRd
+update_coefficients_when_dropping_regressors <- function(
+  object, stage_1_projection_residual_coeffiecients
+) {
+  # And now the FWL theorem will convince us that we can retrieve
+  # the coefficients of regression X ~ Z + W_-l by:
+  # 'substituting' the linear formula for W_l from other exogeneous regressors
+  # into respective coefficient.
+  stage_1_coefficients <- coef(object, component = "stage1")
+  regressor_dropped <- is.na(stage_1_coefficients)
+
+  stage_1_coefficients_cleaned <- stage_1_coefficients[!regressor_dropped]
+
+  substitute <- stage_1_projection_residual_coeffiecients * stage_1_coefficients_cleaned[col(stage_1_projection_residual_coeffiecients)] * -1
+
+  stage_1_coefficients_cleaned[row(substitute)] + substitute
 }
 
 substitute_coefs_change_base_to_stage_1 <- function(object, projection_residual_matrix_stage_2) {
@@ -106,29 +153,42 @@ substitute_coefs_change_base_to_stage_1 <- function(object, projection_residual_
   outcome
 }
 
-get_projection_variances <- function(object, X_coefs_without_W_l, projection_residuals_fs) {
-  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+calculate_residuals_of_endogenous_in_exogenous_terms <- function(object, X_coefs_without_W_l) {
   regressor_dropped_ss <- is.na(coef(object, component = "stage2"))
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
   X <- model.matrix(object, component = "regressors")[, object[["endogenous"]], drop = FALSE]
   X <- X[, !regressor_dropped_ss[object[["endogenous"]]], drop = FALSE]
   W <- model.matrix(object, component = "regressors")[, object[["exogenous"]], drop = FALSE]
   W <- W[, !regressor_dropped_ss[object[["exogenous"]]], drop = FALSE]
   # That causo non-conformable arrays here:
   X_based_on_W <- W %*% X_coefs_without_W_l[-instrument_index, instrument_index, drop = FALSE]
-  residuals_X_W <- X - as.vector(X_based_on_W)
-  residuals_rest <- projection_residuals_fs
-  projection_residuals_ss <- projection_residuals_fs
-  projection_residuals_ss[, instrument_index] <- residuals_X_W
+  X - as.vector(X_based_on_W)
+}
 
-  colMeans(projection_residuals_ss * projection_residuals_fs)
+get_projection_variances <- function(
+  object,
+  projection_residuals_endogenous_on_exogenous, projection_residuals_fs
+) {
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+
+  projection_residuals_ss <- projection_residuals_fs
+  projection_residuals_ss[, instrument_index] <- projection_residuals_endogenous_on_exogenous
+
+  projection_variances_in_stage_1_order <- colMeans(projection_residuals_ss * projection_residuals_fs)
+  names(projection_variances_in_stage_1_order) <- names(coef(object, "stage1"))[!is.na(coef(object, "stage1"))]
+  target_names <- names(coef(object, "stage2"))
+  target_names[object[["endogenous"]]] <- names(coef(object, "stage1"))[instrument_index]
+  target_names <- target_names[!is.na(coef(object, "stage2"))]
+
+  projection_variances_in_stage_1_order[target_names]
 }
 
 get_instrument_index_after_dropping_NAs <- function(object) {
   stage_1_coefficients <- coef(object, component = "stage1")
   regressor_dropped <- is.na(stage_1_coefficients)
 
-  instrument_term <- object[["instruments"]][object[["rank_instruments_indices"]]]
-  instrument_index <- which((1:length(stage_1_coefficients) == instrument_term)[!regressor_dropped])
+  instrument_index <- object[["instruments"]] # Abuse the fact that we only support 1 ranked instrument and 0 non ranked
+  instrument_index <- which((1:length(stage_1_coefficients) == instrument_index)[!regressor_dropped])
   instrument_index
 }
 
@@ -157,7 +217,6 @@ postprocess_sigmahat <- function(object, sigmahat, complete) {
 }
 
 calculate_projection_residual_matrix_stage_2 <- function(object, exogenous_residual_matrix, X_coefs_without_W_l) {
-  # Step 2
   # So we have coefficients for:
   # X ~ Z + W_-l, call fitted values X_-l (1-dim vector), coefficients a
   # W_l ~ Z + W_-l, coefficients c
@@ -184,33 +243,6 @@ calculate_projection_residual_matrix_stage_2 <- function(object, exogenous_resid
   # But then we'll confuse the projections: sometimes we want to plug in estimates of RX, sometimes RZ
   # Carefully!
   new_coefficients
-}
-
-calculate_projection_residual_matrix_ivregranks <- function(object) {
-  # Per eqn 8 from doc 'Inference for Rank-Rank Regressions with Instrumental Variables'
-  # We're interested in projecting exogenous variable W_l on R(X) and other W's
-  # However, on R(X) we project using 2SLS estimation.
-  # We want to do that for all W's
-
-  # For each l:
-  # Step 1: project X on Z and W_-l.
-  # We really don't want to do that naively (fitting a model from scratch).
-  # Fortunately, we can project W_l on Z and W_-l easily using same trick as in lmranks.
-
-  exogenous_residual_matrix <- get_projection_residual_matrix_ivregranks(object)
-
-  # And now the FWL theorem will convince us that we can retrieve
-  # the coefficients of regression X ~ Z + W_-l by:
-  # 'substituting' the linear formula for W_l from other exogeneous regressors
-  # into respective coefficient.
-  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(object, exogenous_residual_matrix)
-
-  # suppose we have p regressors W
-  # X_coefs_without_W_l is a matrix (p+1) x p
-  # where in lth we have coefficients for regression
-  # X ~ Z + W_-l (W_l is kept with 0)
-
-  calculate_projection_residual_matrix_stage_2(object, exogenous_residual_matrix, X_coefs_without_W_l)
 }
 
 #' Calculate H1 component for covariance estimation
@@ -274,30 +306,4 @@ calculate_H3.ivregranks <- function(object, projection_residual_matrix,
   l <- get_and_separate_regressors(model_matrix, rank_column_index)
 
   NextMethod(l = l)
-}
-
-
-#' Calculate coefficients of stage 1 regression with IVs
-#' when dropping the regressors, each separately
-#'
-#' @param object an `ivregranks` object
-#' @param stage_1_projection_residual_coefficients - A matrix of size pxp, where p is the
-#' number of instrumental variables + number of exogenous variables.
-#' ith column of the matrix relates to coefficients of regression of ith such variable in terms of everybody else,
-#' s.t. the ith row is 1 and the rest are negative coefficients of respective variables.
-#'
-#' @return A (pxp) matrix. Every column corresponds to regression
-#' r(X) (endogeneous variable) ~ W_-l + r(Z) or r(X) ~ W (i.e. with one of regressors dropped).
-#' @noRd
-update_coefficients_when_dropping_regressors <- function(
-  object, stage_1_projection_residual_coeffiecients
-) {
-  stage_1_coefficients <- coef(object, component = "stage1")
-  regressor_dropped <- is.na(stage_1_coefficients)
-
-  stage_1_coefficients_cleaned <- stage_1_coefficients[!regressor_dropped]
-
-  substitute <- stage_1_projection_residual_coeffiecients * stage_1_coefficients_cleaned[col(stage_1_projection_residual_coeffiecients)] * -1
-
-  stage_1_coefficients_cleaned[row(substitute)] + substitute
 }

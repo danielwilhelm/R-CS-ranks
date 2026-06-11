@@ -118,9 +118,63 @@ test_that("calculate_projection_residual_matrix_ivregranks works", {
     -coef(cyl_proj), 1
   ), ncol = 3, byrow = FALSE)
 
-  actual <- calculate_projection_residual_matrix_ivregranks(model)
+  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(model)
+  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(model, projection_residual_matrix_stage_1)
+  actual <- calculate_projection_residual_matrix_stage_2(model, projection_residual_matrix_stage_1, X_coefs_without_W_l)
 
   expect_equal(actual, expected)
+})
+
+test_that("update_coefficients_when_dropping_regressors works", {
+  data(mtcars)
+  model <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
+  proj_resid_stage_1 <- get_projection_residual_matrix_ivregranks(model)
+
+  # Expectation
+  proj_1 <- lmranks(r(hp) ~ r(disp) + cyl - 1, data = mtcars)
+  proj_2 <- lmranks(r(hp) ~ cyl, data = mtcars)
+  proj_3 <- lmranks(r(hp) ~ r(disp), data = mtcars)
+
+  expected <- matrix(c(
+    0, coef(proj_1),
+    coef(proj_2)[1], 0, coef(proj_2)[2],
+    coef(proj_3), 0
+  ), byrow = FALSE, nrow = 3)
+
+  actual <- update_coefficients_when_dropping_regressors(model, proj_resid_stage_1)
+  expect_equal(actual, expected)
+})
+
+test_that("calculate_residuals_of_endogenous_in_exogenous_terms works", {
+  data(mtcars)
+  model <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
+
+  proj_model <- lmranks(r(hp) ~ cyl, data = mtcars)
+  expected <- resid(proj_model)
+
+  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(model)
+  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(model, projection_residual_matrix_stage_1)
+
+  actual <- calculate_residuals_of_endogenous_in_exogenous_terms(model, X_coefs_without_W_l)
+
+  expect_equivalent(actual, expected)
+})
+
+test_that("get_projection_variances works", {
+  data(mtcars)
+  model <- ivregranks(r(mpg) ~ r(hp) + cyl | cyl + r(disp), data = mtcars)
+
+  X_on_W <- 1:5
+  residuals_rest <- matrix(seq(0, 1, length.out = 15), ncol = 3)
+
+  expected <- c(
+    mean(residuals_rest[, 1]^2),
+    mean(residuals_rest[, 3] * X_on_W),
+    mean(residuals_rest[, 2]^2)
+  )
+  actual <- get_projection_variances(model, X_on_W, residuals_rest)
+
+  expect_equivalent(actual, expected)
 })
 
 ######################################################
