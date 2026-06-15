@@ -55,7 +55,7 @@ test_that("vcov works for singular model matrix", {
 test_that("vcov works for singular model matrix, complete=FALSE", {
   # that XtX is singular
   w <- cbind(mtcars$qsec, mtcars$qsec)
-  model <- ivregranks(r(mpg) ~ r(hp) + w | r(disp) + w, data = mtcars)
+  model <- expect_warning(ivregranks(r(mpg) ~ r(hp) + w | r(disp) + w, data = mtcars), "collinear")
   cov2 <- vcov(model, component = "stage2", complete = FALSE)
   cov1 <- vcov(model, component = "stage1", complete = FALSE)
 
