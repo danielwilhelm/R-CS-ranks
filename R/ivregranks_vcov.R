@@ -38,6 +38,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   # For estimation of residuals of regression X~W
 
   # This one has W_l ~ (X ~ W_-l + Z) + W_-l (eqn 8), as well as Z ~ W
+  
   projection_residual_matrix_stage_2 <- calculate_projection_residual_matrix_stage_2(object, projection_residual_matrix_stage_1, X_coefs_without_W_l)
 
   # We'll use it for residuals of W_l ~ X + W_-l
@@ -184,10 +185,13 @@ get_projection_variances <- function(
 }
 
 get_instrument_index_after_dropping_NAs <- function(object) {
+  # That's in model.matrix order
   stage_1_coefficients <- coef(object, component = "stage1")
   regressor_dropped <- is.na(stage_1_coefficients)
 
-  instrument_index <- object[["instruments"]] # Abuse the fact that we only support 1 ranked instrument and 0 non ranked
+  matrix_column_corresponds_to_ranked_term <- attr(model.matrix(object, "instruments"), "assign") %in% object[["rank_instruments_indices"]]
+  instrument_index <- which(matrix_column_corresponds_to_ranked_term)
+
   instrument_index <- which((1:length(stage_1_coefficients) == instrument_index)[!regressor_dropped])
   instrument_index
 }
@@ -196,7 +200,9 @@ get_regressor_index_after_dropping_NAs <- function(object) {
   stage_2_coefficients <- coef(object, component = "stage2")
   regressor_dropped <- is.na(stage_2_coefficients)
 
-  regressor_term <- object[["rank_terms_indices"]]
+  matrix_column_corresponds_to_ranked_term <- attr(model.matrix(object, "regressors"), "assign") %in% object[["rank_terms_indices"]]
+  regressor_term <- which(matrix_column_corresponds_to_ranked_term)
+
   regressor_index <- which((1:length(stage_2_coefficients) == regressor_term)[!regressor_dropped])
   regressor_index
 }

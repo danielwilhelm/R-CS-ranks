@@ -389,3 +389,10 @@ test_that("prepare_ivreg_call catches unsupported arguments", {
     na.action=na.action)")
   expect_error(prepare_ivreg_call(input_call), "na.action")
 })
+
+test_that("rank_instrument_indices handles reordered case", {
+  model_3 <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
+  expected <- 1
+  actual <- model_3[["rank_instruments_indices"]]
+  expect_equal(actual, expected)
+})
