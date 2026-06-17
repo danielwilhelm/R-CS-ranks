@@ -1,9 +1,9 @@
 ### lmranks ###
 
-test_that("lmranks and by-hand calculations provide same results",{
-  df <- mtcars[1:10,]
-  model <- lmranks(r(mpg) ~ r(hp) + disp + cyl + 1, data=df)
-  
+test_that("lmranks and by-hand calculations provide same results", {
+  df <- mtcars[1:10, ]
+  model <- lmranks(r(mpg) ~ r(hp) + disp + cyl + 1, data = df)
+
   expected_response <- c(0.6, 0.6, 0.9, 0.7, 0.3, 0.2, 0.1, 1.0, 0.9, 0.4)
   expected_model.matrix <- matrix(c(
     1, 0.7, 160.0, 6,
@@ -17,25 +17,31 @@ test_that("lmranks and by-hand calculations provide same results",{
     1, 0.3, 140.8, 4,
     1, 0.8, 167.6, 6
   ), byrow = TRUE, nrow = 10)
-  expected_coef <- solve(t(expected_model.matrix) %*% expected_model.matrix) %*% 
+  expected_coef <- solve(t(expected_model.matrix) %*% expected_model.matrix) %*%
     t(expected_model.matrix) %*% expected_response
-  
-  expect_equivalent(model.response(model.frame(model)),
-                    expected_response)
-  expect_equivalent(model.matrix(model),
-                    expected_model.matrix)
-  expect_equivalent(coef(model),
-                    expected_coef)
+
+  expect_equivalent(
+    model.response(model.frame(model)),
+    expected_response
+  )
+  expect_equivalent(
+    model.matrix(model),
+    expected_model.matrix
+  )
+  expect_equivalent(
+    coef(model),
+    expected_coef
+  )
 })
 
 test_that("lmranks and lm provide coherent results", {
-  Y <- c(3,1,2,4,5)
+  Y <- c(3, 1, 2, 4, 5)
   y_frank <- c(0.6, 0.2, 0.4, 0.8, 1.0)
   X <- 1:5
   omega <- 0.5
   x_frank <- c(0.2, 0.4, 0.6, 0.8, 1.0)
-  W <- c(1,3,2,5,4)
-  
+  W <- c(1, 3, 2, 5, 4)
+
   rank_m <- lmranks(r(Y) ~ r(X) + W)
   raw_rank_m <- unclass(rank_m)
   raw_rank_m$call <- as.character(raw_rank_m$call)
@@ -43,65 +49,67 @@ test_that("lmranks and lm provide coherent results", {
   attr(raw_rank_m$model, "terms") <- NULL
   raw_rank_m$omega <- NULL
   raw_rank_m$rank_terms_indices <- NULL
-  
+
   m <- lm(y_frank ~ x_frank + W)
   expected_m <- unclass(m)
   expected_m$df.residual <- NA
   expected_m$call <- as.character(str2lang("lmranks(r(Y) ~ r(X) + W)"))
   expected_m$terms <- NULL
   expected_m$ranked_response <- TRUE
-  attr(expected_m$model, "terms") <- NULL 
+  attr(expected_m$model, "terms") <- NULL
   names(expected_m$coefficients)[2] <- "r(X)"
   names(expected_m$effects)[2] <- "r(X)"
   dimnames(expected_m$qr$qr)[[2]][2] <- "r(X)"
   colnames(expected_m$model)[1:2] <- c("r(Y)", "r(X)")
-  
+
   expect_equal(raw_rank_m, expected_m)
 })
 
 test_that("lmranks falls back to lm in no rank case", {
-  expect_warning(m <- lmranks(mpg ~ disp + cyl, data=mtcars),
-                 "no ranked terms")
-  m2 <- stats::lm(mpg~disp + cyl, data=mtcars)
+  expect_warning(
+    m <- lmranks(mpg ~ disp + cyl, data = mtcars),
+    "no ranked terms"
+  )
+  m2 <- stats::lm(mpg ~ disp + cyl, data = mtcars)
   expect_equivalent(m, m2)
 })
 
 test_that("lmranks correctly estimates rank correlation", {
   set.seed(100)
-  
+
   # continuous X and Y should produce identical rank correlation estimates
   X <- rnorm(100)
   Y <- X + rnorm(100)
   for (omega in c(0, 0.5, 1)) {
-    RY <- frank(Y, omega=omega, increasing=TRUE)
-    RX <- frank(X, omega=omega, increasing=TRUE)
+    RY <- frank(Y, omega = omega, increasing = TRUE)
+    RX <- frank(X, omega = omega, increasing = TRUE)
     rcorr <- cor(RY, RX)
 
-    res <- lmranks(r(Y) ~ r(X), omega=omega)
+    res <- lmranks(r(Y) ~ r(X), omega = omega)
     rcorr.lmranks <- coef(res)[2]
     names(rcorr.lmranks) <- NULL
-    expect_equal(rcorr, rcorr.lmranks)     
+    expect_equal(rcorr, rcorr.lmranks)
   }
 
   # discrete X and Y should produce identical estimates after rescaling
   X <- rbinom(100, 5, 0.5)
   Y <- X + rbinom(100, 2, 0.5)
   for (omega in c(0, 0.5, 1)) {
-    RY <- frank(Y, omega=omega, increasing=TRUE)
-    RX <- frank(X, omega=omega, increasing=TRUE)
+    RY <- frank(Y, omega = omega, increasing = TRUE)
+    RX <- frank(X, omega = omega, increasing = TRUE)
     rcorr <- cor(RY, RX)
 
-    res <- lmranks(r(Y) ~ r(X), omega=omega)
+    res <- lmranks(r(Y) ~ r(X), omega = omega)
     rcorr.lmranks <- coef(res)[2] * sd(RX) / sd(RY)
     names(rcorr.lmranks) <- NULL
-    expect_equal(rcorr, rcorr.lmranks)     
-  }  
+    expect_equal(rcorr, rcorr.lmranks)
+  }
 })
 
 test_that("lmranks raises error if NA is encountered in data", {
   data(mtcars)
   mtcars[5, "disp"] <- NA
-  expect_error(lmranks(r(mpg) ~ r(hp) + disp, data=mtcars), "missing values")
+  expect_error(lmranks(r(mpg) ~ r(hp) + disp, data = mtcars), "missing values")
 })
 
 
@@ -109,39 +117,45 @@ test_that("prepare_lm_call works", {
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data)")
   expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data,
                             na.action=stats::na.fail)")
-  expect_equal(prepare_lm_call(input_call),
-               expected_call)
-  
+  expect_equal(
+    prepare_lm_call(input_call),
+    expected_call
+  )
+
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, omega=omega)")
   expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data,
                             na.action=stats::na.fail)")
-  expect_equal(prepare_lm_call(input_call),
-               expected_call)
-  
+  expect_equal(
+    prepare_lm_call(input_call),
+    expected_call
+  )
+
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, na.rm=na.rm)")
   expected_call <- str2lang("stats::lm(r(y) ~ r(x) + W, data=data,
                             na.action=stats::na.fail)")
-  expect_equal(prepare_lm_call(input_call),
-               expected_call)
+  expect_equal(
+    prepare_lm_call(input_call),
+    expected_call
+  )
 })
 
 test_that("prepare_lm_call catches unsupported arguments", {
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, subset=x>0)")
   expect_error(prepare_lm_call(input_call), "subset")
-  
+
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, weights=w)")
   expect_error(prepare_lm_call(input_call), "weights")
-  
+
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, na.action=na.omit)")
   expect_error(prepare_lm_call(input_call), "na.action")
 })
 
 test_that("omega argument is passed further correctly", {
-  Y <- c(4,4,4,3,1,10,7,7)
+  Y <- c(4, 4, 4, 3, 1, 10, 7, 7)
   y_frank <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)
   X <- 1:8
-  W <- matrix(c(1,4,3,2,5,8,7,6), ncol = 1)
-  
+  W <- matrix(c(1, 4, 3, 2, 5, 8, 7, 6), ncol = 1)
+
   rank_m <- lmranks(r(Y) ~ r(X) + W, omega = 0.4, y = TRUE)
   names(rank_m$y) <- NULL
   expect_equal(rank_m$y, y_frank)

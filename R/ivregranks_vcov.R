@@ -38,7 +38,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   # For estimation of residuals of regression X~W
 
   # This one has W_l ~ (X ~ W_-l + Z) + W_-l (eqn 8), as well as Z ~ W
-  
+
   projection_residual_matrix_stage_2 <- calculate_projection_residual_matrix_stage_2(object, projection_residual_matrix_stage_1, X_coefs_without_W_l)
 
   # We'll use it for residuals of W_l ~ X + W_-l

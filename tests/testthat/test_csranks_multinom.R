@@ -15,7 +15,7 @@ test_that("return value is of correct class and size", {
     expect_is(res3$L, "integer")
     expect_is(res3$U, "integer")
     expect_is(res3$rank, "numeric")
-    
+
     expect_equal(length(res1$L), 10)
     expect_equal(length(res1$U), 10)
     expect_equal(length(res1$rank), 10)
@@ -25,7 +25,7 @@ test_that("return value is of correct class and size", {
     expect_equal(length(res3$L), 3)
     expect_equal(length(res3$U), 3)
     expect_equal(length(res3$rank), 3)
-    
+
     expect_false(any(is.na(res1$L)))
     expect_false(any(is.na(res1$U)))
     expect_false(any(is.na(res1$rank)))

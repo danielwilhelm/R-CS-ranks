@@ -454,8 +454,7 @@ test_that("h3 works for regressor variance estimation", {
 
 test_that("vcov produces identical asymptotic variance estimate to simulations from dwilhelm's guys", {
   load(test_path("testdata", "ivregranks_vcov_sims.rda"))
-  res <- ivregranks(r(Y) ~ r(X) | r(Z), data=df)
+  res <- ivregranks(r(Y) ~ r(X) | r(Z), data = df)
   sigma2hat_ivregranks <- vcov(res)
-  expect_equal(var_est[2,2], sigma2hat_ivregranks[2,2])
+  expect_equal(var_est[2, 2], sigma2hat_ivregranks[2, 2])
 })
-
