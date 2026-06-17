@@ -171,7 +171,7 @@ lmranks <- function(formula, data, subset,
   l <- process_lmranks_formula(formula, rank_env)
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
-  corrected_formula <- l$formula
+  corrected_formula <- l$formula # nolint: object_usage_linter
   original_call <- match.call() # for the final output
   if (length(rank_terms_indices) == 0 && !ranked_response) {
     cli::cli_warn("{.var lmranks} called with no ranked terms. Using regular lm...")

@@ -29,7 +29,6 @@ calculate_H2.default <- function(object, projection_residuals,
     H1_mean <- colMeans(calculate_H1(object, projection_residuals))
   }
   rank_column_index <- l$rank_column_index
-  RX <- l$RX
   global_RX <- l$global_RX
   if (length(rank_column_index) > 0) {
     I_X_times_proj_resids <- ineq_indicator_matmult(global_RX,
@@ -74,7 +73,6 @@ calculate_H3.default <- function(object, projection_residual_matrix,
   l <- ..1
 
   rank_column_index <- l$rank_column_index
-  RX <- l$RX
   if (length(rank_column_index) == 0) {
     return(0)
   }
@@ -124,7 +122,7 @@ get_original_resid_times_grouping_indicators <- function(object) {
   original_resids <- resid(object)
   grouping_var_index <- get_grouping_var_index(object)
   if (length(grouping_var_index) > 0) {
-    grouping_var <- as.vector(stats::model.frame(object)[, grouping_var_index])
+    grouping_var <- as.vector(stats::model.frame(object)[, grouping_var_index]) # nolint: object_usage_linter
     return(stats::model.matrix(~ original_resids:grouping_var - 1))
   } else {
     return(matrix(original_resids, ncol = 1))
@@ -189,7 +187,7 @@ get_coef_groups <- function(object) {
     return(rep(1, length(coef(object))))
   }
   group_levels <- levels(stats::model.frame(object)[, grouping_variable_index])
-  group_indices <- sapply(1:length(coef(object)), function(i) {
+  group_indices <- sapply(seq_along(coef(object)), function(i) {
     coef_name <- names(coef(object))[i]
     regex <- prepare_regex_capturing_grouping_var(object, i)
     matches <- regexec(regex, coef_name, perl = TRUE)
@@ -336,7 +334,7 @@ prepare_mat_om1 <- function(mat, v) {
   if (all(equal_block_sizes == 1)) {
     return(mat)
   }
-  om1_eq_sums <- sapply((1:nrow(mat))[equal_block_sizes > 1], function(i) {
+  om1_eq_sums <- sapply(seq_len(nrow(mat))[equal_block_sizes > 1], function(i) {
     return(colSums(mat[i:(i + equal_block_sizes[i] - 1), , drop = FALSE]))
   })
   mat[equal_block_sizes == 0, ] <- 0

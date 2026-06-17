@@ -121,7 +121,7 @@ csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepd
   # compute Nminus and Nplus
   # AKA the number of populations, for which the feature value
   # is larger / smaller in a statistically significant way
-  if (stepdown & cstype == "two-sided") {
+  if (stepdown && cstype == "two-sided") {
     Nplus <- rowSums(L[indices, , drop = FALSE] > 0, na.rm = TRUE)
     Nminus <- colSums(L[, indices, drop = FALSE] > 0, na.rm = TRUE)
   } else {

@@ -12,7 +12,11 @@
 #' @importFrom stats quantile
 #' @importFrom stats rnorm
 #' @noRd
-csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "symmetric", stepdown = TRUE, R = 1000, seed = NA) {
+csdiffmeans <- function(
+  x,
+  cov_mat,
+  coverage = 0.95, indices = NA, cstype = "symmetric", stepdown = TRUE, R = 1000, seed = NA
+) {
   # check arguments
   cstype <- match.arg(cstype, c("symmetric", "upper", "lower"))
 
@@ -83,7 +87,7 @@ csdiffmeans <- function(x, cov_mat, coverage = 0.95, indices = NA, cstype = "sym
     # stepdown improvements?
     if (stepdown) {
       # any new rejections?
-      if (sum(I1) == sum(I0) | sum(I1) == 0) {
+      if (sum(I1) == sum(I0) || sum(I1) == 0) {
         anyrejections <- FALSE
       } else {
         I0 <- I1
@@ -113,7 +117,7 @@ calculate_difference_sds <- function(cov_mat) {
 initialize_I0 <- function(p, indices, stepdown, cstype) {
   I0 <- matrix(TRUE, p, p)
   I0[-indices, ] <- FALSE
-  if (stepdown & cstype == "symmetric") {
+  if (stepdown && cstype == "symmetric") {
     # for other cstypes, correction is unnecessary
     I0[, indices] <- TRUE
     cstype <- "lower"
@@ -139,7 +143,7 @@ initialize_I0 <- function(p, indices, stepdown, cstype) {
 #' r$requested_differences # matrix(c(2,3), ncol = 2)
 #' @noRd
 reduce_I <- function(I) {
-  needed_variables <- sapply(1:nrow(I), function(i) {
+  needed_variables <- sapply(seq_len(nrow(I)), function(i) {
     any(I[i, ]) || any(I[, i])
   })
   needed_I <- I[needed_variables, needed_variables]

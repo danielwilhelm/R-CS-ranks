@@ -33,8 +33,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   # This one has X ~ Z + W_-l, as well as X ~ W
   X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(object, projection_residual_matrix_stage_1)
 
-  # We'll use later sth like
-  # X - X_coefs_without_W_l[,-instrument_index]
+  # We'll use later sth like X_coefs_without_W_l[,-instrument_index]
   # For estimation of residuals of regression X~W
 
   # This one has W_l ~ (X ~ W_-l + Z) + W_-l (eqn 8), as well as Z ~ W
@@ -192,7 +191,7 @@ get_instrument_index_after_dropping_NAs <- function(object) {
   matrix_column_corresponds_to_ranked_term <- attr(model.matrix(object, "instruments"), "assign") %in% object[["rank_instruments_indices"]]
   instrument_index <- which(matrix_column_corresponds_to_ranked_term)
 
-  instrument_index <- which((1:length(stage_1_coefficients) == instrument_index)[!regressor_dropped])
+  instrument_index <- which((seq_along(stage_1_coefficients) == instrument_index)[!regressor_dropped])
   instrument_index
 }
 
@@ -203,7 +202,7 @@ get_regressor_index_after_dropping_NAs <- function(object) {
   matrix_column_corresponds_to_ranked_term <- attr(model.matrix(object, "regressors"), "assign") %in% object[["rank_terms_indices"]]
   regressor_term <- which(matrix_column_corresponds_to_ranked_term)
 
-  regressor_index <- which((1:length(stage_2_coefficients) == regressor_term)[!regressor_dropped])
+  regressor_index <- which((seq_along(stage_2_coefficients) == regressor_term)[!regressor_dropped])
   regressor_index
 }
 
@@ -231,14 +230,14 @@ calculate_projection_residual_matrix_stage_2 <- function(object, exogenous_resid
   # Where we start from base [Z; W_-l]
   # And go to [X_-l; W_-l]
   # After some linear algebra that I leave as an exercise for the reader
-  # d = c - c_k/a_k * (a - e_k)
+  # we get the result: d = c - c_k/a_k * (a - e_k)
   # where k is the index of Z in original base
   instrument_index <- get_instrument_index_after_dropping_NAs(object)
 
   X_coefs_without_W_l <- X_coefs_without_W_l[, -instrument_index, drop = FALSE]
 
   c_k_div_a_k <- exogenous_residual_matrix[instrument_index, -instrument_index] / X_coefs_without_W_l[instrument_index, ] # vector
-  is_instrument_index_row <- 1:nrow(X_coefs_without_W_l) == instrument_index
+  is_instrument_index_row <- seq_len(nrow(X_coefs_without_W_l)) == instrument_index
   a_minus_e_k <- X_coefs_without_W_l - is_instrument_index_row[row(X_coefs_without_W_l)] # l is column-wise
   update <- c_k_div_a_k[col(a_minus_e_k)] * a_minus_e_k * -1
 

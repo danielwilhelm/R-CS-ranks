@@ -133,7 +133,7 @@ ivregranks <- function(formula, data, subset, na.action, weights,
   corrected_formula <- Formula::as.Formula(main_model$formula)
   endogenous_target <- names(main_model$endogenous)
   formula_update <- as.formula(paste0(endogenous_target, "~."))
-  formula_fs <- update(main_model$terms$instruments, formula_update)
+  formula_fs <- update(main_model$terms$instruments, formula_update) # nolint: object_usage_linter
 
   # needed to correctly compute the vcov for the first-stage
   # TODO: call lm() if nothing is ranked
@@ -281,7 +281,7 @@ convert_formula_to_canonical_form <- function(formula) {
   if (has_dot(formula)) {
     f1 <- formula(formula, rhs = 1L)
     f2 <- formula(formula, lhs = 0L, rhs = 2L)
-    if (!has_dot(f1) & has_dot(f2)) {
+    if (!has_dot(f1) && has_dot(f2)) {
       formula <- Formula::as.Formula(
         f1,
         stats::update(formula(formula, lhs = 0L, rhs = 1L), f2)

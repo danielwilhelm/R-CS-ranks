@@ -62,7 +62,7 @@ process_csranks_multinom_args <- function(x, indices, na.rm) {
   assert_has_no_NAs(x, "x")
 
   if (any(x < 0)) {
-    wrong_index <- which(x < 0)[1]
+    wrong_index <- which(x < 0)[1] # nolint: object_usage_linter
     cli::cli_abort(c("{.var x} must be a vector of non negative integers.",
       "x" = "{.var x[{wrong_index}]} == {x[wrong_index]} is negative."
     ))
@@ -91,14 +91,17 @@ process_indices_argument <- function(indices, p) {
         "i" = "They must be also between {.var -length(x)} and {.var length(x)}."
       )
       if (any(indices == 0)) {
-        zero_index <- which(indices == 0)[1]
+        zero_index <- which(indices == 0)[1] # nolint: object_usage_linter
         msg["x"] <- "{.var indices[{zero_index}]} == 0."
       } else if (any(indices < 0) && any(indices > 0)) {
-        positive_index <- which(indices > 0)[1]
-        negative_index <- which(indices < 0)[1]
-        msg["x"] <- "{.var indices[{positive_index}]} == {indices[positive_index]} is positive, but {.var indices[{negative_index}]} == {indices[negative_index]} is negative."
+        positive_index <- which(indices > 0)[1] # nolint: object_usage_linter
+        negative_index <- which(indices < 0)[1] # nolint: object_usage_linter
+        msg["x"] <- paste0(
+          "{.var indices[{positive_index}]} == {indices[positive_index]} is positive, ",
+          "but {.var indices[{negative_index}]} == {indices[negative_index]} is negative."
+        )
       } else {
-        too_large_index <- which(abs(indices) > p)[1]
+        too_large_index <- which(abs(indices) > p)[1] # nolint: object_usage_linter
         msg["x"] <- "{.var indices[{too_large_index}]} == {indices[too_large_index]}, but {.var x} is of length {p}."
       }
       cli::cli_abort(msg)
@@ -184,15 +187,21 @@ check_grouping_variable <- function(object) {
 
 assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upper_name) {
   if (!all(lower <= middle)) {
-    wrong_index <- which(lower > middle)[1]
+    wrong_index <- which(lower > middle)[1] # nolint: object_usage_linter
     cli::cli_abort(c("{.var {middle_name}} must be between {.var {lower_name}} and {.var {upper_name}}.",
-      "x" = "{.var {lower_name}[{wrong_index}]} == {lower[wrong_index]} is larger than {.var {middle_name}[{wrong_index}]} == middle[wrong_index]}."
+      "x" = paste0(
+        "{.var {lower_name}[{wrong_index}]} == {lower[wrong_index]} is larger than ",
+        "{.var {middle_name}[{wrong_index}]} == middle[wrong_index]}."
+      )
     ))
   }
   if (!all(middle <= upper)) {
-    wrong_index <- which(middle > upper)[1]
+    wrong_index <- which(middle > upper)[1] # nolint: object_usage_linter
     cli::cli_abort(c("{.var {middle_name}} must be between {.var {lower_name}} and {.var {upper_name}}.",
-      "x" = "{.var {upper_name}[{wrong_index}]} == {upper[wrong_index]} is smaller than {.var {middle_name}[{wrong_index}]} == middle[wrong_index]}."
+      "x" = paste0(
+        "{.var {upper_name}[{wrong_index}]} == {upper[wrong_index]} is smaller than ",
+        "{.var {middle_name}[{wrong_index}]} == middle[wrong_index]}."
+      )
     ))
   }
 }
@@ -200,7 +209,7 @@ assert_is_between <- function(middle, lower, upper, middle_name, lower_name, upp
 adjust_indices_for_NAs <- function(original_indices, is_not_na) {
   # If we are deleting NAs from x, the indices point to different entries (populations) in x than before
   # We have to correct for that
-  all_indices <- 1:length(is_not_na)
+  all_indices <- seq_along(is_not_na)
   filtered_indices <- (all_indices %in% original_indices) & is_not_na
   (all_indices - cumsum(!is_not_na))[filtered_indices]
 }
@@ -220,7 +229,7 @@ assert_is_positive <- function(x, name, na_ok) {
   }
   if (any(x <= 0)) {
     msg <- c("{.var {name}} must be positive.")
-    negative_index <- which(x <= 0)[1]
+    negative_index <- which(x <= 0)[1]  # nolint: object_usage_linter
     msg["x"] <- "{.var {name}[{negative_index}]} == {x[negative_index]} <= 0."
     cli::cli_abort(msg)
   }
@@ -234,10 +243,10 @@ assert_is_single_probability <- function(x, name) {
       "i" = "It must be between zero and one."
     )
     if (any(x < 0)) {
-      negative_index <- which(x < 0)[1]
+      negative_index <- which(x < 0)[1]  # nolint: object_usage_linter
       msg["x"] <- "{.var {name}[{negative_index}]} == {x[negative_index]} is below 0."
     } else {
-      too_large_index <- which(x > 1)[1]
+      too_large_index <- which(x > 1)[1]  # nolint: object_usage_linter
       msg["x"] <- "{.var {name}[{too_large_index}]} == {x[too_large_index]} is above 1."
     }
     cli::cli_abort(msg)
@@ -254,7 +263,7 @@ assert_is_integer <- function(x, name, na_ok = FALSE) {
     }
     x <- x[!is.na(x)]
   }
-  deviation_from_int <- which.max(abs(x - round(x)))
+  deviation_from_int <- which.max(abs(x - round(x)))  # nolint: object_usage_linter
   max_deviation <- max(abs(x - round(x)))
 
   if (max_deviation > 1e-10) {
@@ -296,7 +305,7 @@ assert_equal_length <- function(..., names) {
   })
   is_equal <- lengths[1] == lengths
   if (!all(is_equal)) {
-    i <- which(!is_equal)[1]
+    i <- which(!is_equal)[1]  # nolint: object_usage_linter
     cli::cli_abort(c("{.var {names}} must be of equal length.",
       "x" = "{.var {names[i]}} is of length {lengths[i]}, but {.var {names[1]}} is of length {lengths[1]}."
     ))
@@ -348,16 +357,16 @@ assert_is_factor <- function(x, name) {
 
 assert_has_no_NAs <- function(x, name) {
   if (any(is.na(x))) {
-    na_indices <- utils::head(which(is.na(x)))
+    na_indices <- utils::head(which(is.na(x)))  # nolint: object_usage_linter
     cli::cli_abort("NA values found in {.var {name}} at positions {paste(na_indices, collapse=', ')}.")
   }
 }
 
 assert_is_vector <- function(x, name) {
-  AsIs_index <- which(class(x) == "AsIs")
+  asis_index <- which(class(x) == "AsIs")
   original_x_class <- class(x)
-  if (length(AsIs_index) > 0) {
-    class(x) <- class(x)[-AsIs_index]
+  if (length(asis_index) > 0) {
+    class(x) <- class(x)[-asis_index]
   }
   if (!is.atomic(x) || !is.vector(x) && !is.factor(x)) {
     cli::cli_abort(c("{.var {name}} must be a vector.",

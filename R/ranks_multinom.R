@@ -146,7 +146,7 @@ reject_or_accept <- function(df, multcorr, coverage) {
 #' Nplus[j] - smaller, lower, larger
 #' @noRd
 calculate_N_plus_minus <- function(df, cstype, indices) {
-  if (cstype == "upper" | cstype == "two-sided") {
+  if (cstype == "upper" || cstype == "two-sided") {
     rej_plus <- aggregate(df["rej"], by = df["j"], sum)
     ind_plus <- rej_plus$j %in% indices
     Nplus <- rej_plus$rej[ind_plus]
@@ -154,7 +154,7 @@ calculate_N_plus_minus <- function(df, cstype, indices) {
     Nplus <- 0 * indices
   }
 
-  if (cstype == "lower" | cstype == "two-sided") {
+  if (cstype == "lower" || cstype == "two-sided") {
     rej_minus <- aggregate(df["rej"], by = df["k"], sum)
     ind_minus <- rej_minus$k %in% indices
     Nminus <- rej_minus$rej[ind_minus]

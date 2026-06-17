@@ -4,9 +4,9 @@
 #' which to predict. If omitted, the fitted values are used.
 #' @export
 predict.ivregranks <- function(object, newdata, ...) {
-  # se.fit = FALSE, scale = NULL,
-  # df = Inf, interval = "none", level = 0.95, type = "response",
-  # terms = NULL, na.action = na.pass, pred.var = res.var/weights,
+  # se.fit = FALSE, scale = NULL,  # nolint: commented_code_linter
+  # df = Inf, interval = "none", level = 0.95, type = "response", # nolint: commented_code_linter
+  # terms = NULL, na.action = na.pass, pred.var = res.var/weights, # nolint: commented_code_linter
   # weights = 1,
   call <- match.call()
   illegal_argument_encountered <- !is.null(call$se.fit) ||

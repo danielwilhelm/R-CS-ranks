@@ -80,7 +80,7 @@ test_that("get_projection_residual_matrix works in grouped case", {
     ncol = ncol(XX)
   )
   expected_resids <- matrix(0, nrow = nrow(X), ncol = ncol(XX))
-  for (j in 1:ncol(X)) {
+  for (j in seq_len(ncol(X))) {
     jj <- j
     for (k in 1:n_groups) {
       g <- levels(mtcars2$G)[k]
