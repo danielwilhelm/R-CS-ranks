@@ -451,3 +451,11 @@ test_that("h3 works for regressor variance estimation", {
   H3 <- calculate_H3(res, projection_residual_matrix_stage_2_in_terms_stage_1, H1_mean)
   expect_equivalent(H3[, 3], h3)
 })
+
+test_that("vcov produces identical asymptotic variance estimate to simulations from dwilhelm's guys", {
+  load(test_path("testdata", "ivregranks_vcov_sims.rda"))
+  res <- ivregranks(r(Y) ~ r(X) | r(Z), data=df)
+  sigma2hat_ivregranks <- vcov(res)
+  expect_equal(var_est[2,2], sigma2hat_ivregranks[2,2])
+})
+
