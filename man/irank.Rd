@@ -43,23 +43,23 @@ of the value \code{x[j]} is equal to the empirical cdf of \code{x} evaluated at 
 }
 \examples{
 # simple example without ties:
-x <- c(3,8,-4,10,2)
-irank(x, increasing=TRUE)
-irank(x, increasing=FALSE)
+x <- c(3, 8, -4, 10, 2)
+irank(x, increasing = TRUE)
+irank(x, increasing = FALSE)
 
 # since there are no ties, the value of omega has no impact:
-irank(x, increasing=TRUE, omega=0)
-irank(x, increasing=TRUE, omega=0.5)
-irank(x, increasing=TRUE, omega=1)
+irank(x, increasing = TRUE, omega = 0)
+irank(x, increasing = TRUE, omega = 0.5)
+irank(x, increasing = TRUE, omega = 1)
 
 # simple example with ties:
-x <- c(3,4,7,7,10,11,15,15,15,15)
-irank(x, increasing=TRUE, omega=0) # smallest possible ranks
-irank(x, increasing=TRUE, omega=0.5) # mid-ranks
-irank(x, increasing=TRUE, omega=1) # largest possible ranks
+x <- c(3, 4, 7, 7, 10, 11, 15, 15, 15, 15)
+irank(x, increasing = TRUE, omega = 0) # smallest possible ranks
+irank(x, increasing = TRUE, omega = 0.5) # mid-ranks
+irank(x, increasing = TRUE, omega = 1) # largest possible ranks
 
 # simple example of fractional ranks without ties:
-x <- c(3,8,-4,10,2)
-frank(x, increasing=TRUE)
-frank(x, increasing=FALSE)
+x <- c(3, 8, -4, 10, 2)
+frank(x, increasing = TRUE)
+frank(x, increasing = FALSE)
 }

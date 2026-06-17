@@ -46,7 +46,7 @@ This particular choice of default parameters was made for compatibility with def
 \code{irank} and \code{frank}. \code{irank(x)} is always equal to \code{irank_against(x,x)} and \code{frank(x)} is always equal to \code{frank_against(x,x)}.
 }
 \examples{
-irank_against(1:10, c(4,4,4,3,1,10,7,7))
+irank_against(1:10, c(4, 4, 4, 3, 1, 10, 7, 7))
 }
 \seealso{
 \code{\link[=irank]{irank()}}, \code{\link[=ecdf]{ecdf()}}

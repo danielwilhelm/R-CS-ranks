@@ -236,8 +236,8 @@ rrfit <- lmranks(r(Y) ~ r(X))
 summary(rrfit)
 
 # naive version of the rank-rank regression:
-RY <- frank(Y, increasing=TRUE, omega=1)
-RX <- frank(X, increasing=TRUE, omega=1)
+RY <- frank(Y, increasing = TRUE, omega = 1)
+RX <- frank(X, increasing = TRUE, omega = 1)
 fit <- lm(RY ~ RX)
 summary(fit)
 # the coefficient estimates are the same as in the lmranks function, but
@@ -250,7 +250,7 @@ lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
 lmranks(r(mpg) ~ r(hp) + . - hp, data = mtcars)
 
 # rank-rank regression with clusters:
-G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
+G <- factor(rep(LETTERS[1:4], each = nrow(mtcars) / 4))
 lmr <- lmranks(r(mpg) ~ r(hp):G, data = mtcars)
 summary(lmr)
 model.matrix(lmr)

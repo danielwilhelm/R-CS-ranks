@@ -111,8 +111,8 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
 #' of the remaining columns.
 #'
 #' @return Matrix M s.t.
-#' M[i,j] = negative ith coefficient in jth projection if i != j
-#' M[i,j] = 1 if i == j
+#' `M[i,j]` = negative ith coefficient in jth projection if i != j
+#' `M[i,j]` = 1 if i == j
 #'
 #' Note, that X %*% M gives n x p matrix with residuals of jth projection in jth column.
 #'
@@ -160,13 +160,14 @@ calculate_H1 <- function(object, projection_residuals) {
 
 #' Calculate H2 component for covariance estimation
 #'
-#' Originally defined as h_2(x,y) = E[(I(y,Y)-rhoI(x,X)-Wbeta)(R_X(X) - Wgamma)]
+#' Originally defined as `h_2(x,y) = E[(I(y,Y)-rhoI(x,X)-Wbeta)(R_X(X) - Wgamma)]`
 #' Estymator in matrix notation:
-#' (I_Y-rhoI_X-(Wbeta)') %*% (R_X(X)-Wgamma) / n
+#' `(I_Y-rhoI_X-(Wbeta)') %*% (R_X(X)-Wgamma) / n`
 #' Equal to
-#' I_Y %*% (R_X(X)-Wgamma) / n -
-#' rho \* I_X %*% (R_X(X)-Wgamma) / n -
-#' (Wbeta)' %*% (R_X(X)-Wgamma) / n
+#' `I_Y %*% (R_X(X)-Wgamma) / n -`
+#' `rho \* I_X %*% (R_X(X)-Wgamma) / n -`
+#' `(Wbeta)' %*% (R_X(X)-Wgamma) / n`
+#'
 #' @noRd
 calculate_H2 <- function(object, projection_residuals, H1_mean = NULL) {
   if (is.null(H1_mean)) {
@@ -202,16 +203,16 @@ calculate_H2 <- function(object, projection_residuals, H1_mean = NULL) {
 
 #' Calculate H3 component for covariance estimation
 #'
-#' Originally defined as h_3(x) = E[(R_Y(Y)-rhoR_X(X)-Wbeta)(I_X(x,X) - Wgamma)];
+#' Originally defined as `h_3(x) = E[(R_Y(Y)-rhoR_X(X)-Wbeta)(I_X(x,X) - Wgamma)]`;
 #' The second component depends on which projection model is considered
 #'
 #' Estimator in matrix notation:
-#' h_3(x) = (R_Y(Y)-rhoR_X(X)-Wbeta)' %*% [I_(x,X); W] %*% R_S / n
+#' `h_3(x) = (R_Y(Y)-rhoR_X(X)-Wbeta)' %*% [I_(x,X); W] %*% R_S / n`
 #' Where R_S is the projection residual matrix.
 #'
 #' For a given x this higly resembles colMeans(H1).
 #' The difference H3(x) - colMeans(H1)is
-#'  (R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I_X(x,X) - RX)%*%R_S[r,] / n
+#' `(R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I_X(x,X) - RX)%*%R_S[r,] / n`
 #' (last element is a row vector from R_S matrix corresponding to ranked regressor)
 #'
 #' In the grouped case, the last element is a matrix with g rows, each corresponding

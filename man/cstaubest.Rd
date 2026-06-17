@@ -68,17 +68,17 @@ The function implements the projection confidence set for the tau-best developed
 # simple simulated example:
 n <- 100
 p <- 10
-X <- matrix(rep(1:p,n)/p, ncol=p, byrow=TRUE) + matrix(rnorm(n*p), 100, 10)
+X <- matrix(rep(1:p, n) / p, ncol = p, byrow = TRUE) + matrix(rnorm(n * p), 100, 10)
 thetahat <- colMeans(X)
 Sigmahat <- cov(X) / n
 
-# confidence set for the populations that may be among the top-3 
+# confidence set for the populations that may be among the top-3
 # (with probability approximately 0.95):
-cstaubest(thetahat, Sigmahat, tau=3)
+cstaubest(thetahat, Sigmahat, tau = 3)
 
-# confidence set for the populations that may be among the bottom-3 
+# confidence set for the populations that may be among the bottom-3
 # (with probability approximately 0.95):
-cstauworst(thetahat, Sigmahat, tau=3)
+cstauworst(thetahat, Sigmahat, tau = 3)
 
 }
 \references{

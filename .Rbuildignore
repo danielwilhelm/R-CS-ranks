@@ -11,3 +11,8 @@
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
 shiny-demo-v1.gif
+^_pkgdown\.yml$
+^pkgdown$
+^\.lintr$
+^\.clinerules$
+^backlog.md$

@@ -17,7 +17,6 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/danielwilhelm/R-CS-ranks, https://danielwilhelm.github.io/R-CS-ranks/
 BugReports: https://github.com/danielwilhelm/R-CS-ranks/issues
-RoxygenNote: 7.3.1
 Depends:
     R (>= 3.5.0)
 Imports: 
@@ -36,3 +35,4 @@ Suggests:
 VignetteBuilder: knitr
 Language: en-US
 Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0

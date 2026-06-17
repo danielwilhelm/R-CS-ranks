@@ -71,7 +71,7 @@ csranks_multinom_simul <- function(x, coverage = 0.95, cstype = "two-sided", mul
   convert_N_plus_minus_to_csrank(Nlist$Nminus, Nlist$Nplus, p)
 }
 
-#' @return logical matrix M. M[j,k] == TRUE means that we want to test hypothesis
+#' @return logical matrix M. `M[j,k] == TRUE` means that we want to test hypothesis
 #' that x_j <= x_k
 #' @noRd
 which_pairs_are_compared <- function(p, indices, cstype) {
@@ -139,11 +139,11 @@ reject_or_accept <- function(df, multcorr, coverage) {
 }
 
 #' @return list with Nminus and Nplus, numeric vectors
-#' Nminus[j] is the amount of populations, which have significantly larger
+#' `Nminus[j]` is the amount of populations, which have significantly larger
 #' ranking feature that population j
 #' Thus, it's the number of populations that will be confidently higher in ranking
 #' than j, so will have smaller rank
-#' Nplus[j] - smaller, lower, larger
+#' `Nplus[j]` - smaller, lower, larger
 #' @noRd
 calculate_N_plus_minus <- function(df, cstype, indices) {
   if (cstype == "upper" | cstype == "two-sided") {
