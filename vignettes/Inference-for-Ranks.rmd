@@ -36,19 +36,19 @@ head(pisa2018)
 The PISA study's math scores are stored in `math_score`. These test scores are estimated from a random sample of students from each country. The standard errors of the scores are stored in `math_se`. The following graph shows the raw math scores with 95% marginal confidence intervals:
 
 ```{r}
-ggplot(pisa2018, aes(x=reorder(jurisdiction,math_score,decreasing=TRUE), y=math_score)) + 
-    geom_errorbar(aes(ymin=math_score-2*math_se, ymax=math_score+2*math_se)) +
-    geom_point() + 
-    theme_minimal() +
-    labs(y="math score", x="", title="2018 PISA math score for OECD countries", subtitle="(with 95% marginal confidence intervals)") +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggplot(pisa2018, aes(x = reorder(jurisdiction, math_score, decreasing = TRUE), y = math_score)) +
+  geom_errorbar(aes(ymin = math_score - 2 * math_se, ymax = math_score + 2 * math_se)) +
+  geom_point() +
+  theme_minimal() +
+  labs(y = "math score", x = "", title = "2018 PISA math score for OECD countries", subtitle = "(with 95% marginal confidence intervals)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 The function `irank()` can be used to produce integer ranks based on these math scores:
 
 ```{r}
 math_rank <- irank(pisa2018$math_score)
-head(pisa2018[order(math_rank),])
+head(pisa2018[order(math_rank), ])
 ```
 
 Japan is ranked first (i.e., best), Korea is ranked second and so on. Since the math scores are **estimates** of countries' true achievements, the ranks assigned to these countries are also **estimates**, rather than the **true** ranks. Just like the test scores, the ranks therefore also contain statistical uncertainty. Various functions in the `csranks` package implement methods for the quantification of this uncertainty.
@@ -89,7 +89,7 @@ Now, suppose we are interested in a single country, say the United Kingdom. We w
 
 ```{r math_marg}
 uk_i <- which(pisa2018$jurisdiction == "United Kingdom")
-CS_marg <- csranks(pisa2018$math_score, math_cov_mat, simul=FALSE, indices = uk_i, coverage=0.95)
+CS_marg <- csranks(pisa2018$math_score, math_cov_mat, simul = FALSE, indices = uk_i, coverage = 0.95)
 CS_marg
 ```
 
@@ -103,17 +103,19 @@ Based on the estimated math scores, we would rank the United Kingdom at 13-th pl
 Finally, now suppose we are interested in the entire ranking of countries, for instance because we want to draw inferences across countries and compare their places in the ranking. Simultaneous confidence sets for the ranks of all countries allow one to do just that:
 
 ```{r math_simul, fig.width=7, fig.height=7}
-CS_simul <- csranks(pisa2018$math_score, math_cov_mat, simul=TRUE, coverage=0.95)
-plotsimul <- plot(CS_simul, popnames=pisa2018$jurisdiction, 
-     title="Ranking of OECD Countries by 2018 PISA Math Score", 
-     subtitle="(with 95% simultaneous confidence sets)")
+CS_simul <- csranks(pisa2018$math_score, math_cov_mat, simul = TRUE, coverage = 0.95)
+plotsimul <- plot(CS_simul,
+  popnames = pisa2018$jurisdiction,
+  title = "Ranking of OECD Countries by 2018 PISA Math Score",
+  subtitle = "(with 95% simultaneous confidence sets)"
+)
 plotsimul
 ```
 
 The graph can be saved as
 
 ```{r, eval = FALSE}
-ggplot2::ggsave("mathsimul.pdf", plot=plotsimul)
+ggplot2::ggsave("mathsimul.pdf", plot = plotsimul)
 ```
 
 The graph shows confidence sets for all 37 OECD countries. These are not marginal, but simultaneous confidence sets. The difference is that a marginal confidence set for a given country covers the true rank for that particular country with probability approximately 95%. On the other hand, the simultaneous confidence sets in the graph contain the entire true ranking with probability approximately 95%. That means they cover all 37 true ranks simultaneously with the desired probability.
@@ -123,10 +125,12 @@ Such confidence sets allow us to draw inferences across countries and compare th
 However, at lower levels of confidence, Germany's and Korea's confidence sets do not overlap, so that with such lower levels of confidence one could conclude that Korea performs significantly better than Germany:
 
 ```{r math_simul75, fig.width=7, fig.height=7}
-CS_simul75 <- csranks(pisa2018$math_score, math_cov_mat, simul=TRUE, coverage=0.75)
-plotsimul75 <- plot(CS_simul75, popnames=pisa2018$jurisdiction, 
-     title="Ranking of OECD Countries by 2018 PISA Math Score", 
-     subtitle="(with 75% simultaneous confidence sets)")
+CS_simul75 <- csranks(pisa2018$math_score, math_cov_mat, simul = TRUE, coverage = 0.75)
+plotsimul75 <- plot(CS_simul75,
+  popnames = pisa2018$jurisdiction,
+  title = "Ranking of OECD Countries by 2018 PISA Math Score",
+  subtitle = "(with 75% simultaneous confidence sets)"
+)
 plotsimul75
 ```
 
