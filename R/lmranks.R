@@ -284,9 +284,10 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE) {
 }
 
 #' Return grouping variable index
-#' @return integer i s.t. model.frame(object)[,i] gives the grouping variable.
+#' @return integer i s.t. `model.frame(object)[,i]` gives the grouping variable.
 #' # TODO: parse formula -> use does_interact_with...
 #' @noRd
+#' @noMd
 get_grouping_var_index <- function(object) {
   rank_terms_indices <- object$rank_terms_indices
   formula_terms <- stats::terms(stats::formula(object), specials = "r")

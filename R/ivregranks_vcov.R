@@ -156,9 +156,9 @@ substitute_coefs_change_base_to_stage_1 <- function(object, projection_residual_
 calculate_residuals_of_endogenous_in_exogenous_terms <- function(object, X_coefs_without_W_l) {
   regressor_dropped_ss <- is.na(coef(object, component = "stage2"))
   instrument_index <- get_instrument_index_after_dropping_NAs(object)
-  X <- model.matrix(object, component = "regressors")[, object[["endogenous"]], drop = FALSE]
+  X <- stats::model.matrix(object, component = "regressors")[, object[["endogenous"]], drop = FALSE]
   X <- X[, !regressor_dropped_ss[object[["endogenous"]]], drop = FALSE]
-  W <- model.matrix(object, component = "regressors")[, object[["exogenous"]], drop = FALSE]
+  W <- stats::model.matrix(object, component = "regressors")[, object[["exogenous"]], drop = FALSE]
   W <- W[, !regressor_dropped_ss[object[["exogenous"]]], drop = FALSE]
   # That causo non-conformable arrays here:
   X_based_on_W <- W %*% X_coefs_without_W_l[-instrument_index, instrument_index, drop = FALSE]
@@ -188,7 +188,7 @@ get_instrument_index_after_dropping_NAs <- function(object) {
   stage_1_coefficients <- coef(object, component = "stage1")
   regressor_dropped <- is.na(stage_1_coefficients)
 
-  matrix_column_corresponds_to_ranked_term <- attr(model.matrix(object, "instruments"), "assign") %in% object[["rank_instruments_indices"]]
+  matrix_column_corresponds_to_ranked_term <- attr(stats::model.matrix(object, "instruments"), "assign") %in% object[["rank_instruments_indices"]]
   instrument_index <- which(matrix_column_corresponds_to_ranked_term)
 
   instrument_index <- which((seq_along(stage_1_coefficients) == instrument_index)[!regressor_dropped])
@@ -199,7 +199,7 @@ get_regressor_index_after_dropping_NAs <- function(object) {
   stage_2_coefficients <- coef(object, component = "stage2")
   regressor_dropped <- is.na(stage_2_coefficients)
 
-  matrix_column_corresponds_to_ranked_term <- attr(model.matrix(object, "regressors"), "assign") %in% object[["rank_terms_indices"]]
+  matrix_column_corresponds_to_ranked_term <- attr(stats::model.matrix(object, "regressors"), "assign") %in% object[["rank_terms_indices"]]
   regressor_term <- which(matrix_column_corresponds_to_ranked_term)
 
   regressor_index <- which((seq_along(stage_2_coefficients) == regressor_term)[!regressor_dropped])
@@ -256,21 +256,23 @@ calculate_projection_residual_matrix_stage_2 <- function(object, exogenous_resid
 #'
 #' @return n x p matrix
 #' @noRd
+#' @exportS3Method
 calculate_H1.ivregranks <- function(object, projection_residuals, ...) {
   NextMethod()
 }
 
 #' Calculate H2 component for covariance estimation
 #'
-#' Originally defined as h_2(x,y) = E[(I(y,Y)-rhoI(x,X)-Wbeta)(R_Z(Z) - Wgamma)]
+#' Originally defined as `h_2(x,y) = E[(I(y,Y)-rhoI(x,X)-Wbeta)(R_Z(Z) - Wgamma)]`
 #' Estimator in matrix notation:
-#' (I_Y-rhoI_X-(Wbeta)') %*% (R_Z(Z)-Wgamma) / n
+#' `(I_Y-rhoI_X-(Wbeta)') %*% (R_Z(Z)-Wgamma) / n`
 #' Equal to
-#' I_Y %*% (R_Z(Z)-Wgamma) / n -
-#' rho \* I_X %*% (R_Z(Z)-Wgamma) / n -
-#' (Wbeta)' %*% (R_Z(Z)-Wgamma) / n
+#' `I_Y %*% (R_Z(Z)-Wgamma) / n -`
+#' `rho \* I_X %*% (R_Z(Z)-Wgamma) / n -`
+#' `(Wbeta)' %*% (R_Z(Z)-Wgamma) / n`
 #'
 #' @noRd
+#' @exportS3Method
 calculate_H2.ivregranks <- function(object, projection_residuals,
                                     H1_mean = NULL, ...) {
   rank_column_index <- get_ranked_indices(
@@ -289,19 +291,20 @@ calculate_H2.ivregranks <- function(object, projection_residuals,
 
 #' Calculate H3 component for covariance estimation
 #'
-#' Originally defined as h_3(x) = E[(R_Y(Y)-rhoR_X(X)-Wbeta)(I(z,Z) - Wgamma)];
+#' Originally defined as `h_3(x) = E[(R_Y(Y)-rhoR_X(X)-Wbeta)(I(z,Z) - Wgamma)]`;
 #' The second component depends on which projection model is considered
 #'
 #' Estimator in matrix notation:
-#' h_3(x) = (R_Y(Y)-rhoR_X(X)-Wbeta)' %*% [I_(z,Z); W] %*% R_S / n
+#' `h_3(x) = (R_Y(Y)-rhoR_X(X)-Wbeta)' %*% [I_(z,Z); W] %*% R_S / n`
 #' Where R_S is the projection residual matrix.
 #'
 #' For a given x this higly resembles colMeans(H1).
 #' The difference H3(x) - colMeans(H1)is
-#'  (R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I(z,Z) - RX)%*%R_S[r,] / n
+#' `(R_Y(Y)-rhoR_X(X)-Wbeta)'%*%(I(z,Z) - RX)%*%R_S[r,] / n`
 #' (last element is a row vector from R_S matrix corresponding to ranked regressor)
 #'
 #' @noRd
+#' @exportS3Method
 calculate_H3.ivregranks <- function(object, projection_residual_matrix,
                                     H1_mean, ...) {
   rank_column_index <- get_ranked_indices(object,

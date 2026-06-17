@@ -1,13 +1,8 @@
 # csranks (development version)
-TODO:
-Consider using @keyword internal for functions that are unit-tested but not exposed to user.
-Steer closer to testing public behaviours instead of every single function.
-To decide: ivreg returns a regular lm object when all variables are exogenous.
-Maybe we could do so in our case as well, instead of raising an error? Better UX.
-Switch rownames(attr(terms, factors)) -> as.character(attr(terms, variables))[-1]
-
-* Fixed a bug which caused object_fs to have a wrong target (endogenous variable).
-* Implemented vcov.ivregranks.
+* Fixed a bug which caused `object_fs` to have a wrong target (endogenous variable).
+* Implemented `vcov.ivregranks`.
+* Implemented `ivregranks` - an extension of `ivreg::ivreg` for instrumental variable
+regression for ranked variables.
 
 # csranks 1.2.3
 * Fixed S3 inheritance for the `proj` method of `lmranks`. Added it to `lmranks` documentation page.

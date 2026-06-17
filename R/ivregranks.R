@@ -132,8 +132,8 @@ ivregranks <- function(formula, data, subset, na.action, weights,
 
   corrected_formula <- Formula::as.Formula(main_model$formula)
   endogenous_target <- names(main_model$endogenous)
-  formula_update <- as.formula(paste0(endogenous_target, "~."))
-  formula_fs <- update(main_model$terms$instruments, formula_update) # nolint: object_usage_linter
+  formula_update <- stats::as.formula(paste0(endogenous_target, "~."))
+  formula_fs <- stats::update(main_model$terms$instruments, formula_update) # nolint: object_usage_linter
 
   # needed to correctly compute the vcov for the first-stage
   # TODO: call lm() if nothing is ranked
@@ -158,18 +158,18 @@ ivregranks <- function(formula, data, subset, na.action, weights,
 #' @param formula a Formula::Formula in canonical form.
 #' @noRd
 get_exogenous_variable_names <- function(formula, data) {
-  stage_2_terms <- terms(formula, lhs = 0, rhs = 1, data = data)
+  stage_2_terms <-stats::terms(formula, lhs = 0, rhs = 1, data = data)
   stage_2_variables <- rownames(attr(stage_2_terms, "factors"))
-  stage_1_terms <- terms(formula, lhs = 0, rhs = 2, data = data)
+  stage_1_terms <- stats::terms(formula, lhs = 0, rhs = 2, data = data)
   stage_1_variables <- rownames(attr(stage_1_terms, "factors"))
 
   return(setdiff(stage_2_variables, stage_1_variables))
 }
 
 get_instrument_variable_names <- function(formula, data) {
-  stage_2_terms <- terms(formula, lhs = 0, rhs = 1, data = data)
+  stage_2_terms <- stats::terms(formula, lhs = 0, rhs = 1, data = data)
   stage_2_variables <- rownames(attr(stage_2_terms, "factors"))
-  stage_1_terms <- terms(formula, lhs = 0, rhs = 2, data = data)
+  stage_1_terms <- stats::terms(formula, lhs = 0, rhs = 2, data = data)
   stage_1_variables <- rownames(attr(stage_1_terms, "factors"))
 
   return(setdiff(stage_1_variables, stage_2_variables))
@@ -295,8 +295,8 @@ convert_formula_to_canonical_form <- function(formula) {
 get_instruments_formula <- function(formula, data) {
   instruments_formula <- formula(formula, rhs = 2)
   endogeneous_variables <- get_exogenous_variable_names(formula, data)
-  formula_update <- as.formula(paste0(paste(endogeneous_variables, collapse = "+"), "~."))
-  update(instruments_formula, formula_update)
+  formula_update <- stats::as.formula(paste0(paste(endogeneous_variables, collapse = "+"), "~."))
+  stats::update(instruments_formula, formula_update)
 }
 
 #' @noRd

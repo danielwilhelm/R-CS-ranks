@@ -7,6 +7,7 @@ calculate_H1 <- function(object, projection_residuals, ...) {
 }
 
 #' @noRd
+#' @exportS3Method
 calculate_H1.default <- function(object, projection_residuals, ...) {
   original_resids <- resid(object)
   projection_residuals * original_resids
@@ -20,6 +21,7 @@ calculate_H2 <- function(object, projection_residuals, H1_mean = NULL, ...) {
 }
 
 #' @noRd
+#' @exportS3Method
 calculate_H2.default <- function(object, projection_residuals,
                                  H1_mean = NULL, ...) {
   l <- ..1
@@ -68,6 +70,7 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean, ...) {
 }
 
 #' @noRd
+#' @exportS3Method
 calculate_H3.default <- function(object, projection_residual_matrix,
                                  H1_mean, ...) {
   l <- ..1
@@ -240,11 +243,11 @@ escape_special_characters <- function(v) {
 #' @param mat A matrix s.t. nrow(mat) == length(v)
 #' @param omega single number
 #' Inequality indicator: A matrix I_v, s.t.
-#' I_v[i,j] = 1 if v[i] < v[j];
-#' I_v[i,j] = omega if v[i] == v[j]; and
-#' I_v[i,j] = 0 if v[i] > v[j].
+#' `I_v[i,j] = 1 if v[i] < v[j]`;
+#' `I_v[i,j] = omega if v[i] == v[j]`; and
+#' `I_v[i,j] = 0 if v[i] > v[j]`.
 #'
-#' @return I_v %*% mat
+#' @return `I_v %*% mat`
 #'
 #' The trick is we do not have to do this naively (first calc I_v, then multiply).
 #' And we don't want to, cause
@@ -269,6 +272,7 @@ escape_special_characters <- function(v) {
 #' 1) permute the v and rows of mat with sorting (decrasingly) permutation of v
 #' 2) proceed as in former case
 #' 3) permute the rows of the result with *inverse* of sorting permutation of v
+#' @noMd
 #' @noRd
 ineq_indicator_matmult <- function(v, mat, omega) {
   v_order <- order(v, decreasing = TRUE)
