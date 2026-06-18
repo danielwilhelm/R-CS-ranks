@@ -66,7 +66,7 @@
 #' \item{omega}{an entry corresponding to the \code{omega} argument.}
 #'
 #' @references Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions".
-#' \href{http://arxiv.org/pdf/2310.15512}{arXiv preprint arXiv:2310.15512}
+#' \href{https://arxiv.org/pdf/2310.15512}{arXiv preprint arXiv:2310.15512}
 #'
 #' @seealso \code{\link[ivreg]{ivreg.fit}}, \code{\link[csranks]{lmranks}}
 #'
