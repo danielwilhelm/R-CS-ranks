@@ -171,3 +171,19 @@ test_that("frank_against v argument works", {
     expected_irank
   )
 })
+
+test_that("frank_against's weights argument works", {
+  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
+  x <- c(0, 1, 2, 3, 4, 5, 7, 8, 10, 11)
+  weights <- c(1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5) # sum of weights: 6
+
+  expected <- c(
+    0, 0.5 * 0.5, 0.5, 0.5 + 1 * 0.5,
+    1.5 + 3 * 0.5, 4.5, 4.5 + 1 * 0.5, 5.5, 5.5 + 0.5 * 0.5, 6
+  ) / 6
+
+  expect_equal(
+    frank_against(x, v, weights = weights, increasing = TRUE, omega = 0.5),
+    expected
+  )
+})
