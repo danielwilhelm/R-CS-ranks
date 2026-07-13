@@ -7,7 +7,10 @@
 #' of the model to be fitted. Exactly like the formula for linear model except that
 #' variables to be ranked can be indicated by \code{r()}. See Details and Examples below.
 #' @param subset currently not supported.
-#' @param weights currently not supported.
+#' @param weights an optional vector of weights to be used in the fitting
+#' process.  Should be ‘NULL’ or a numeric vector.  If non-NULL,
+#' weighted least squares is used with weights ‘weights’ (that
+#' is, minimizing ‘sum(w*e^2)’); otherwise ordinary least squares is used.
 #' @param na.action currently not supported. User is expected to handle NA values prior to the use of this function.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
@@ -162,8 +165,17 @@ lmranks <- function(formula, data, subset,
                     method = "qr", model = TRUE, x = FALSE, qr = TRUE, y = FALSE,
                     singular.ok = TRUE, contrasts = NULL, offset = offset,
                     omega = 1, ...) {
+  original_call <- match.call()
+
+  if (!is.null(original_call$weights)) {
+    if (missing(data)) data <- data.frame()
+    weights_evaluated <- eval(original_call$weights, data, enclos = environment(formula))
+  } else {
+    weights_evaluated <- NULL
+  }
+
   # From this environment lm will take the definition of r()
-  rank_env <- create_env_to_interpret_r_mark(omega)
+  rank_env <- create_env_to_interpret_r_mark(omega, weights_evaluated)
   # It will mask "r" objects from higher frames inside lm, but not modify them
   # It is also inheriting from parent.frame, so evaluations of all other expressions
   # will be taken from there
@@ -172,7 +184,6 @@ lmranks <- function(formula, data, subset,
   rank_terms_indices <- l$rank_terms_indices
   ranked_response <- l$ranked_response
   corrected_formula <- l$formula
-  original_call <- match.call() # for the final output
   if (length(rank_terms_indices) == 0 && !ranked_response) {
     cli::cli_warn("{.var lmranks} called with no ranked terms. Using regular lm...")
     lm_call <- prepare_lm_call(original_call, check_lm_args = FALSE)
@@ -313,9 +324,6 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE) {
     return(lm_call)
   }
 
-  if (!is.null(lm_call$weights)) {
-    cli::cli_abort("{.var weights} argument is not yet supported. ")
-  }
   if (!is.null(lm_call$na.action)) {
     cli::cli_abort("{.var na.action} argument is not yet supported. ")
   }
@@ -364,12 +372,13 @@ prepare_lm_call <- function(lm_call, check_lm_args = TRUE) {
 #' [environment()]
 #' [csranks::frank_against()]
 #' @noRd
-create_env_to_interpret_r_mark <- function(omega) {
+create_env_to_interpret_r_mark <- function(omega, weights = NULL) {
   rank_env <- new.env(parent = parent.frame(2))
   r <- function(x, increasing = TRUE) x
   body(r) <- bquote({
     predict <- get(".r_predict", envir = environment(r), inherits = FALSE)
     cache <- get(".r_cache", envir = environment(r), inherits = FALSE)
+    weights <- get(".weights", envir = environment(r), inherits = FALSE)
     was_na <- is.na(x)
     var_name <- paste0(as.character(substitute(x)), collapse = "")
     if (!predict) {
@@ -379,13 +388,14 @@ create_env_to_interpret_r_mark <- function(omega) {
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     }
     v <- cache[[var_name]]
-    out <- csranks::frank_against(x, v, increasing = increasing, omega = .(omega), na.rm = FALSE)
+    out <- csranks::frank_against(x, v, increasing = increasing, omega = .(omega), na.rm = FALSE, weights = weights)
     out
   })
   environment(r) <- rank_env
   assign("r", r, envir = rank_env)
   assign(".r_cache", list(), envir = rank_env)
   assign(".r_predict", FALSE, envir = rank_env)
+  assign(".weights", weights, envir = rank_env)
   return(rank_env)
 }
 
