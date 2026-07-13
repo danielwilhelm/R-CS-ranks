@@ -159,28 +159,28 @@ test_that("`v` argument is handled correctly in process_irank_against_args", {
   omega <- 0.4
   expect_error(process_irank_against_args(c(x, NA),
     v = NULL, omega = omega, increasing = TRUE,
-    na.rm = FALSE
+    na.rm = FALSE, weights = NULL
   ))
   expect_equal(
     process_irank_against_args(c(x, NA),
       v = x, omega = omega, increasing = TRUE,
-      na.rm = FALSE
+      na.rm = FALSE, weights = NULL
     ),
-    list(x = c(x, NA), v = x)
+    list(x = c(x, NA), v = x, weights = NULL)
   )
   expect_equal(
     process_irank_against_args(c(x, NA),
       v = NULL, omega = omega, increasing = TRUE,
-      na.rm = TRUE
+      na.rm = TRUE, weights = NULL
     ),
-    list(x = x, v = x)
+    list(x = x, v = x, weights = NULL)
   )
   expect_equal(
     process_irank_against_args(x,
       v = NULL, omega = omega, increasing = FALSE,
-      na.rm = TRUE
+      na.rm = TRUE, weights = NULL
     ),
-    list(x = -x, v = -x)
+    list(x = -x, v = -x, weights = NULL)
   )
 })
 
