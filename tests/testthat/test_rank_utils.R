@@ -10,11 +10,6 @@ test_that("count_lequal_lesser works for sorted x", {
     count_lequal_lesser(x, v),
     expected
   )
-  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
-  expect_equal(
-    count_lequal_lesser(x, v),
-    expected
-  )
 })
 
 test_that("count_lequal_lesser works for unsorted x", {
@@ -24,11 +19,6 @@ test_that("count_lequal_lesser works for unsorted x", {
     n_lequal = c(5, 8, 7, 1, 7, 1, 2, 5, 8, 0),
     n_lesser = c(5, 7, 7, 0, 5, 1, 1, 2, 8, 0)
   )
-  expect_equal(
-    count_lequal_lesser(x, v),
-    expected
-  )
-  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
   expect_equal(
     count_lequal_lesser(x, v),
     expected
@@ -52,7 +42,7 @@ test_that("frank_against returns error for matrix input", {
   ))
   expect_error(process_irank_against_args(matrix(1:12, ncol = 3),
     omega = 0.4, increasing = TRUE,
-    na.rm = FALSE
+    na.rm = FALSE, weights = NULL
   ))
 })
 

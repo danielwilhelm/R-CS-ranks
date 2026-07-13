@@ -138,7 +138,7 @@ check_plotranking_args <- function(ranks, L, U, popnames, title, subtitle,
   assert_is_single_logical(horizontal)
 }
 
-process_irank_against_args <- function(x, v, omega, increasing, na.rm) {
+process_irank_against_args <- function(x, v, omega, increasing, na.rm, weights) {
   assert_is_numeric_vector(x, "x")
   if (is.null(v)) {
     v <- x
@@ -148,10 +148,20 @@ process_irank_against_args <- function(x, v, omega, increasing, na.rm) {
   assert_is_single_logical(na.rm, "na.rm")
   assert_is_single_probability(omega, "omega")
   assert_is_single_logical(increasing, "increasing")
+  if (!is.null(weights)) {
+    assert_is_positive(weights, "weights", na_ok = TRUE, zero_ok = TRUE)
+  }
   if (!na.rm) {
     assert_has_no_NAs(v, "v")
+    assert_has_no_NAs(weights, "weights")
   } else {
-    v <- v[!is.na(v)]
+    has_na <- is.na(v)
+    if (!is.null(weights)) {
+      has_na <- has_na | is.na(weights)
+    }
+    v <- v[!has_na]
+    weights <- weights[!has_na]
+
     x <- x[!is.na(x)]
   }
   if (!increasing) {
@@ -159,7 +169,8 @@ process_irank_against_args <- function(x, v, omega, increasing, na.rm) {
     x <- -x
   }
 
-  return(list(x = x, v = v))
+  output <- list(x = x, v = v, weights = weights)
+  output
 }
 
 check_grouping_variable <- function(object) {
@@ -211,14 +222,14 @@ assert_is_single_positive_integer <- function(x, name, na_ok = FALSE) {
   assert_is_positive(x, name, na_ok)
 }
 
-assert_is_positive <- function(x, name, na_ok) {
+assert_is_positive <- function(x, name, na_ok, zero_ok = FALSE) {
   if (na_ok) {
     if (all(is.na(x))) {
       return()
     }
     x <- x[!is.na(x)]
   }
-  if (any(x <= 0)) {
+  if (any(x < 0) || !zero_ok && any(x == 0)) {
     msg <- c("{.var {name}} must be positive.")
     negative_index <- which(x <= 0)[1]
     msg["x"] <- "{.var {name}[{negative_index}]} == {x[negative_index]} <= 0."
