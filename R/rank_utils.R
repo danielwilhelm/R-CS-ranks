@@ -169,7 +169,7 @@ frank <- function(x, omega = 0, increasing = FALSE, na.rm = FALSE, weights = NUL
 frank_against <- function(x, v, omega = 0, increasing = FALSE, na.rm = FALSE, weights = NULL) {
   l <- process_irank_against_args(x = x, v = v, omega = omega, increasing = increasing, na.rm = na.rm, weights = weights)
   divisor <- get_maximum_rank(l$v, l$weights)
-  out <- irank_against(x, v, omega, increasing, na.rm)
+  out <- irank_against(x, v, omega, increasing, na.rm, weights = weights)
   return(out / divisor)
 }
 
