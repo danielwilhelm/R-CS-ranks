@@ -262,9 +262,6 @@ test_that("prepare_lm_call catches unsupported arguments", {
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, subset=x>0)")
   expect_error(prepare_lm_call(input_call), "subset")
 
-  input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, weights=w)")
-  expect_error(prepare_lm_call(input_call), "weights")
-
   input_call <- str2lang("lmranks(r(y) ~ r(x) + W, data=data, na.action=na.omit)")
   expect_error(prepare_lm_call(input_call), "na.action")
 })
@@ -332,8 +329,22 @@ test_that("r() works and weights argument is passed further correctly", {
   W <- matrix(c(1, 4, 3, 2, 5, 8, 7, 6), ncol = 1)
   weights <- c(1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5) # sum of weights: 6
 
-  expected_y <- c(5 * 4.5 / 6, 5 * 4.5 / 6, 5 * 4.5 / 6, 2 * 1.5 / 6, 1 * 0.5 / 6, 1.0, 7 * 5.5 / 6, 7 * 5.5 / 6)
+  expected_y <- c(4.5 / 6, 4.5 / 6, 4.5 / 6, 1.5 / 6, 0.5 / 6, 1.0, 5.5 / 6, 5.5 / 6)
   rank_m <- lmranks(r(Y) ~ r(X) + W, omega = 1, y = TRUE, weights = weights)
+  names(rank_m$y) <- NULL
+  expect_equal(rank_m$y, expected_y)
+})
+
+test_that("r() works and weights argument is inferred from env further correctly", {
+  Y <- c(4, 4, 4, 3, 1, 10, 7, 7)
+  X <- 1:8
+  W <- matrix(c(1, 4, 3, 2, 5, 8, 7, 6), ncol = 1)
+  weights <- c(1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5) # sum of weights: 6
+
+  df <- data.frame(Y = Y, X = X, W = W, weights_renamed = weights)
+
+  expected_y <- c(4.5 / 6, 4.5 / 6, 4.5 / 6, 1.5 / 6, 0.5 / 6, 1.0, 5.5 / 6, 5.5 / 6)
+  rank_m <- lmranks(r(Y) ~ r(X) + W, data = df, omega = 1, y = TRUE, weights = weights_renamed)
   names(rank_m$y) <- NULL
   expect_equal(rank_m$y, expected_y)
 })
