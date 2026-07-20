@@ -51,7 +51,10 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
 
 \item{subset}{currently not supported.}
 
-\item{weights}{currently not supported.}
+\item{weights}{an optional vector of weights to be used in the fitting
+process.  Should be \code{NULL} or a numeric vector.  If non-NULL,
+weighted least squares is used with weights \code{weights} (that
+is, minimizing \code{sum(w*e^2)}); otherwise ordinary least squares is used.}
 
 \item{na.action}{currently not supported. User is expected to handle NA values prior to the use of this function.}
 

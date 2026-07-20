@@ -8,9 +8,9 @@
 #' variables to be ranked can be indicated by \code{r()}. See Details and Examples below.
 #' @param subset currently not supported.
 #' @param weights an optional vector of weights to be used in the fitting
-#' process.  Should be ‘NULL’ or a numeric vector.  If non-NULL,
-#' weighted least squares is used with weights ‘weights’ (that
-#' is, minimizing ‘sum(w*e^2)’); otherwise ordinary least squares is used.
+#' process.  Should be `NULL` or a numeric vector.  If non-NULL,
+#' weighted least squares is used with weights `weights` (that
+#' is, minimizing `sum(w*e^2)`); otherwise ordinary least squares is used.
 #' @param na.action currently not supported. User is expected to handle NA values prior to the use of this function.
 #' @inheritParams stats::lm
 #' @param model,y,qr logicals. If TRUE the corresponding components of the fit (the model frame, the response, the QR decomposition) are returned.
