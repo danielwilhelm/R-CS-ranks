@@ -90,7 +90,8 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
 
   H3 <- calculate_H3(object, projection_residual_matrix, H1_mean)
 
-  projection_variances <- colMeans(projection_residuals^2)
+  projection_variances <- colMeans(apply_normalized_weights_to_matrix(object, projection_residuals^2))
+
   psi <- t(t(H1 + H2 + H3) / projection_variances)
 
   sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
@@ -103,6 +104,14 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
     ]
   }
   return(sigmahat)
+}
+
+apply_normalized_weights_to_matrix <- function(object, matrix_object) {
+  w <- stats::weights(object)
+  if (is.null(w)) {
+    return(matrix_object)
+  }
+  w * matrix_object / mean(w)
 }
 
 #' Calculate matrix giving projection residuals
@@ -118,14 +127,21 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
 #'
 #' Turns out, that M is closely related to V=(X^T %*% X)⁻¹:
 #' M = V / diag(V), division row-wise. Proof via block matrix inverse.
+#'
+#' Fun fact: this also holds for weighted regression.
+#' There, model$qr is QR decomposition of matrix X^TWX
+#' And the interpretation with coeffiecients holds if other projections are weighted identically
+#' Fortunately, they are :)
 #' @noRd
 get_projection_residual_matrix <- function(object) {
   regressor_dropped <- is.na(coef(object))
-  if (any(regressor_dropped)) {
+  if (any(regressor_dropped) || is.null(object$qr)) {
     X <- stats::model.matrix(object)[, !regressor_dropped]
+    weights_value <- stats::weights(object)
+    if (!is.null(weights_value)) {
+      X <- sqrt(weights_value) * X
+    }
     R <- qr.R(qr(X))
-  } else if (is.null(object$qr)) {
-    R <- qr.R(qr(stats::model.matrix(object)))
   } else {
     R <- qr.R(object$qr)
   }
@@ -155,7 +171,8 @@ get_projection_residual_matrix <- function(object) {
 
 calculate_H1 <- function(object, projection_residuals) {
   original_resids <- resid(object)
-  projection_residuals * original_resids
+  output <- projection_residuals * original_resids
+  apply_normalized_weights_to_matrix(object, output)
 }
 
 #' Calculate H2 component for covariance estimation
@@ -178,6 +195,9 @@ calculate_H2 <- function(object, projection_residuals, H1_mean = NULL) {
   RX <- l$RX
   global_RX <- l$global_RX
   RY <- stats::model.response(stats::model.frame(object))
+
+  projection_residuals <- apply_normalized_weights_to_matrix(object, projection_residuals)
+
   if (length(rank_column_index) > 0) {
     I_X_times_proj_resids <- ineq_indicator_matmult(global_RX, projection_residuals, omega = object$omega)
     RX_times_proj_resids <- as.vector(global_RX %*% projection_residuals)
@@ -198,7 +218,8 @@ calculate_H2 <- function(object, projection_residuals, H1_mean = NULL) {
 
   H2_minus_H1_mean <- (delta_Y_times_proj_resids - delta_X_times_proj_resids) /
     stats::nobs(object)
-  t(t(H2_minus_H1_mean) + H1_mean)
+  output <- t(t(H2_minus_H1_mean) + H1_mean)
+  apply_normalized_weights_to_matrix(object, output)
 }
 
 #' Calculate H3 component for covariance estimation
@@ -231,6 +252,8 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean) {
   X_projection_coef <- projection_residual_matrix[rank_column_index, , drop = FALSE] # g columns
   original_resids <- get_original_resid_times_grouping_indicators(object)
 
+  original_resids <- apply_normalized_weights_to_matrix(object, original_resids)
+
   I_X_times_orig_resids <- ineq_indicator_matmult(global_RX,
     original_resids,
     omega = object$omega
@@ -240,7 +263,8 @@ calculate_H3 <- function(object, projection_residual_matrix, H1_mean) {
   H3_minus_H1_mean <- t(delta_X_times_orig_resids) %*% X_projection_coef /
     stats::nobs(object)
 
-  t(t(H3_minus_H1_mean) + H1_mean)
+  output <- t(t(H3_minus_H1_mean) + H1_mean)
+  apply_normalized_weights_to_matrix(object, output)
 }
 
 #' Extract regressors from a model object and separate rank- from usual ones

@@ -4,15 +4,14 @@ set.seed(100)
 n <- 1000
 X <- rnorm(n)
 W <- matrix(rnorm(n * 2), n, 2)
-Y <- X + rowSums(W) + rnorm(n, 0, 0.5)
-
-
-# compute ranks
-RY <- frank(Y, increasing = TRUE)
-RX <- frank(X, increasing = TRUE)
+Y <- X + rowSums(W) + rnorm(n, 1, 0.5)
 
 weights <- runif(n, max = 2)
-normalized_weights <- weights / sum(weights)
+normalized_weights <- weights / mean(weights)
+
+# compute ranks
+RY <- frank(Y, increasing = TRUE, weights = weights, omega = 1)
+RX <- frank(X, increasing = TRUE, weights = weights, omega = 1)
 
 # ------- compute asymptotic variance "by hand"
 
