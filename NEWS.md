@@ -1,4 +1,6 @@
 # csranks (development version)
+* Added `weights` argument to `lmranks` command.
+* Implemented covariance matrix estimation for weighted regression with ranks.
 
 # csranks 1.2.3
 * Fixed S3 inheritance for the `proj` method of `lmranks`. Added it to `lmranks` documentation page.
