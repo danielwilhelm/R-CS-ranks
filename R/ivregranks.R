@@ -158,7 +158,7 @@ ivregranks <- function(formula, data, subset, na.action, weights,
 #' @param formula a Formula::Formula in canonical form.
 #' @noRd
 get_exogenous_variable_names <- function(formula, data) {
-  stage_2_terms <-stats::terms(formula, lhs = 0, rhs = 1, data = data)
+  stage_2_terms <- stats::terms(formula, lhs = 0, rhs = 1, data = data)
   stage_2_variables <- rownames(attr(stage_2_terms, "factors"))
   stage_1_terms <- stats::terms(formula, lhs = 0, rhs = 2, data = data)
   stage_1_variables <- rownames(attr(stage_1_terms, "factors"))

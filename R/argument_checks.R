@@ -229,7 +229,7 @@ assert_is_positive <- function(x, name, na_ok) {
   }
   if (any(x <= 0)) {
     msg <- c("{.var {name}} must be positive.")
-    negative_index <- which(x <= 0)[1]  # nolint: object_usage_linter
+    negative_index <- which(x <= 0)[1] # nolint: object_usage_linter
     msg["x"] <- "{.var {name}[{negative_index}]} == {x[negative_index]} <= 0."
     cli::cli_abort(msg)
   }
@@ -243,10 +243,10 @@ assert_is_single_probability <- function(x, name) {
       "i" = "It must be between zero and one."
     )
     if (any(x < 0)) {
-      negative_index <- which(x < 0)[1]  # nolint: object_usage_linter
+      negative_index <- which(x < 0)[1] # nolint: object_usage_linter
       msg["x"] <- "{.var {name}[{negative_index}]} == {x[negative_index]} is below 0."
     } else {
-      too_large_index <- which(x > 1)[1]  # nolint: object_usage_linter
+      too_large_index <- which(x > 1)[1] # nolint: object_usage_linter
       msg["x"] <- "{.var {name}[{too_large_index}]} == {x[too_large_index]} is above 1."
     }
     cli::cli_abort(msg)
@@ -263,7 +263,7 @@ assert_is_integer <- function(x, name, na_ok = FALSE) {
     }
     x <- x[!is.na(x)]
   }
-  deviation_from_int <- which.max(abs(x - round(x)))  # nolint: object_usage_linter
+  deviation_from_int <- which.max(abs(x - round(x))) # nolint: object_usage_linter
   max_deviation <- max(abs(x - round(x)))
 
   if (max_deviation > 1e-10) {
@@ -305,7 +305,7 @@ assert_equal_length <- function(..., names) {
   })
   is_equal <- lengths[1] == lengths
   if (!all(is_equal)) {
-    i <- which(!is_equal)[1]  # nolint: object_usage_linter
+    i <- which(!is_equal)[1] # nolint: object_usage_linter
     cli::cli_abort(c("{.var {names}} must be of equal length.",
       "x" = "{.var {names[i]}} is of length {lengths[i]}, but {.var {names[1]}} is of length {lengths[1]}."
     ))
@@ -357,7 +357,7 @@ assert_is_factor <- function(x, name) {
 
 assert_has_no_NAs <- function(x, name) {
   if (any(is.na(x))) {
-    na_indices <- utils::head(which(is.na(x)))  # nolint: object_usage_linter
+    na_indices <- utils::head(which(is.na(x))) # nolint: object_usage_linter
     cli::cli_abort("NA values found in {.var {name}} at positions {paste(na_indices, collapse=', ')}.")
   }
 }
