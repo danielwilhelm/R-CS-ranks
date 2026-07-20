@@ -355,9 +355,9 @@ get_original_resid_times_grouping_indicators <- function(object) {
 #' @param mat A matrix s.t. nrow(mat) == length(v)
 #' @param omega single number
 #' Inequality indicator: A matrix I_v, s.t.
-#' I_v[i,j] = 1 if v[i] < v[j];
-#' I_v[i,j] = omega if v[i] == v[j]; and
-#' I_v[i,j] = 0 if v[i] > v[j].
+#' `I_v[i,j] = 1 if v[i] < v[j]`;
+#' `I_v[i,j] = omega if v[i] == v[j]`; and
+#' `I_v[i,j] = 0 if v[i] > v[j]`.
 #'
 #' @return I_v %*% mat
 #'
@@ -369,15 +369,15 @@ get_original_resid_times_grouping_indicators <- function(object) {
 #' Start with simple case: v is ordered decreasingly and has no repeating elements.
 #' Then I_v is an lower triangular matrix with ones below the diagonal,
 #' omegas on diagonal and zeroes above.
-#' I_v %*% mat is equivalent to taking cumsum() columnwise,
+#' `I_v %*% mat` is equivalent to taking cumsum() columnwise,
 #' and then correcting for omegas on the diagonal:
-#' for C in columns of mat:
-#'    C=cumsum(omega*C + (1-omega)*c(0, C[-n]))
+#' `for C in columns of mat:`
+#' `  C=cumsum(omega*C + (1-omega)*c(0, C[-n]))`
 #'
 #' Now for a single column instead of doing O(n²) operations, we do O(n).
 #'
 #' For more general case(v ordered, with duplicates), we can use the definition of I:
-#' I(a,b) = omega*i(a<=b) + (1-omega)*i(a<b)
+#' `I(a,b) = omega*i(a<=b) + (1-omega)*i(a<b)`
 #' And prepare the `mat` by summing entries corresponding to equal values in v.
 #'
 #' Finally, if v is not ordered, all we have to do is

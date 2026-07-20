@@ -390,7 +390,7 @@ create_env_to_interpret_r_mark <- function(omega) {
 }
 
 #' Return grouping variable index
-#' @return integer i s.t. model.frame(object)[,i] gives the grouping variable.
+#' @return integer i s.t. `model.frame(object)[,i]` gives the grouping variable.
 #' @noRd
 
 get_grouping_var_index <- function(object) {
