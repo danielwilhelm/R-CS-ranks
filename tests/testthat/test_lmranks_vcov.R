@@ -83,6 +83,33 @@ test_that("get_projection_residual_matrix works", {
   expect_equivalent(expected_resids, X %*% actual)
 })
 
+
+test_that("get_projection_residual_matrix works for weighted case", {
+  X <- as.matrix(mtcars)
+  set.seed(2026)
+  weights <- runif(nrow(mtcars), max = 2)
+  expected <- diag(1, nrow = ncol(X), ncol = ncol(X))
+  expected_resids <- matrix(nrow = nrow(X), ncol = ncol(X))
+  for (j in 1:ncol(X)) {
+    X_minusj <- X[, -j]
+    Y <- X[, j]
+    m <- lm(Y ~ X_minusj - 1, weights = weights)
+
+    expected[-j, j] <- -coef(m)
+    expected_resids[, j] <- resid(m)
+  }
+
+  object <- lmranks(r(weights) ~ . - 1, data = mtcars, weights = weights)
+  actual <- get_projection_residual_matrix(object)
+  expect_equivalent(expected, actual)
+  expect_equivalent(expected_resids, X %*% actual)
+
+  object$qr <- NULL
+  actual <- get_projection_residual_matrix(object)
+  expect_equivalent(expected, actual)
+  expect_equivalent(expected_resids, X %*% actual)
+})
+
 test_that("get_projection_residual_matrix works for singular matrix", {
   data(mtcars)
   X <- as.matrix(mtcars[, -1])
@@ -404,4 +431,33 @@ test_that("vcov produces correct asymptotic variance estimate of rank-rank slope
   res <- lmranks(r(Y) ~ r(X) + W, weights = weights)
   sigma2hat.lmranks <- vcov(res)[2, 2] * n
   expect_equal(sigma2hat, sigma2hat.lmranks)
+})
+
+test_that("h1 works for ranked regressor with weights", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_weighted.rda"))
+  res <- lmranks(r(Y) ~ r(X) + W, weights = weights)
+  proj_residuals <- model.matrix(res) %*% get_projection_residual_matrix(res)
+
+  h1_lmranks <- calculate_H1(res, proj_residuals)
+  expect_equivalent(h1_lmranks[, 2], h1)
+})
+
+test_that("h2 works for ranked regressor with weights", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_weighted.rda"))
+  res <- lmranks(r(Y) ~ r(X) + W, weights = weights)
+  proj_residuals <- model.matrix(res) %*% get_projection_residual_matrix(res)
+
+  h2_lmranks <- calculate_H2(res, proj_residuals)
+  expect_equal(h2_lmranks[, 2], h2)
+})
+
+test_that("h3 works for ranked regressor with weights", {
+  load(test_path("testdata", "lmranks_cov_sigmahat_weighted.rda"))
+  res <- lmranks(r(Y) ~ r(X) + W, weights = weights)
+  proj_residual_matrix <- get_projection_residual_matrix(res)
+  H1 <- calculate_H1(res, model.matrix(res) %*% proj_residual_matrix)
+  H1_mean <- colMeans(H1)
+  h3_lmranks <- calculate_H3(res, proj_residual_matrix, H1_mean)
+
+  expect_equal(h3_lmranks[, 2], h3)
 })
