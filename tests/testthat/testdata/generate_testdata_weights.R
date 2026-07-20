@@ -16,7 +16,7 @@ RX <- frank(X, increasing = TRUE, weights = weights, omega = 1)
 # ------- compute asymptotic variance "by hand"
 
 Ifn <- function(u, v) {
-    return(u <= v)
+  return(u <= v)
 }
 
 # first stage
@@ -51,5 +51,5 @@ sigma2hat <- mean((h1 + h2 + h3)^2) / mean(nuhat^2 * normalized_weights)^2
 
 # save the result
 save(sigma2hat, Y, W, X, n, h1, h2, h3, weights,
-    file = file.path("tests", "testthat", "testdata", "lmranks_cov_sigmahat_weighted.rda")
+  file = file.path("tests", "testthat", "testdata", "lmranks_cov_sigmahat_weighted.rda")
 )
