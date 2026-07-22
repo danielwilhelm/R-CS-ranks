@@ -133,10 +133,11 @@ main_model <- ivreg(RY ~ RX + W | RZ + W)
 RX_fitted_values <- model.matrix(main_model, "projected")[, "RX"]
 
 stage_1_model <- lm(RX ~ RZ + W)
+RX_fitted <- predict(stage_1_model)
 
-projection_model_1 <- ivreg(W ~ RX | RZ)
-theta_1 <- coef(projection_model_1)["RX"]
-v_hat_1 <- W - predict(projection_model_1, data.frame(RZ = RZ, RX = RX_fitted_values))
+projection_model_1 <- lm(W ~ RX_fitted)
+theta_1 <- coef(projection_model_1)["RX_fitted"]
+v_hat_1 <- W - predict(projection_model_1, data.frame(RX_fitted = RX_fitted_values))
 
 rhohat <- coef(main_model)["RX"]
 betahat_W <- coef(main_model)["W"]
