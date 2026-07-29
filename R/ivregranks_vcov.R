@@ -31,6 +31,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   projection_residual_matrix_stage_2 <- get_projection_residual_matrix_ivregranks(object, "stage2")
 
   # This one has W_l ~ Z + W_-l as well as Z ~ W
+  # TODO: we only need Z ~ W from here, its sufficient to not invert entire thing but do intelligent solve(A,b)
   projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object, "stage1")
 
   # We don't care about projection of projection of RX^ on W, but rather Z ~ W
@@ -54,9 +55,8 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
   H3 <- calculate_H3(object, projection_residual_matrix_stage_2_in_terms_stage_1, H1_mean)
 
-  X_on_W_coefs <- update_endogenous_coefficients_when_dropping_instrument(object, projection_residual_matrix_stage_1)
-  X <- stats::model.matrix(object, "regressors")[, object$endogenous]
-  X_on_W_residuals <- X - Z[, -instrument_index, drop = FALSE] %*% X_on_W_coefs
+  X_on_W_residuals <- calculate_zeta_hat(object, projection_residual_matrix_stage_1)
+
   projection_variances <- get_projection_variances(object, X_on_W_residuals, projection_residuals_fs)
 
   psi <- t(t(H1 + H2 + H3) / projection_variances)
@@ -102,33 +102,26 @@ get_projection_residual_matrix_ivregranks <- function(object, component) {
   calculate_projection_residual_matrix(R, regressor_dropped[!regressor_dropped], sum(!regressor_dropped))
 }
 
-#' Calculate coefficients of stage 1 regression with IVs
-#' when dropping the regressors, each separately
+#' Compute zeta_hat = R_X - W'gamma_hat for the rho-component's variance
 #'
-#' @param object an `ivregranks` object
-#' @param stage_1_projection_residual_coefficients - A matrix of size pxp, where p is the
-#' number of instrumental variables + number of exogenous variables.
-#' ith column of the matrix relates to coefficients of regression of ith such variable in terms of everybody else,
-#' s.t. the ith row is 1 and the rest are negative coefficients of respective variables.
+#' zeta_hat is obtained as pi_hat * xi_hat + nu_hat, where
+#' nu_hat = R_X - R^{X,fit} is the first-stage residual (orthogonal to W by
+#' construction) and xi_hat is the (already computed, unaffected-by-the-bug)
+#' residual of R_Z on W.
 #'
-#' @return A vector of length p matrix with regression coefficients of model RX ~ W (note absence of Z).
 #' @noRd
-update_endogenous_coefficients_when_dropping_instrument <- function(
-  object, stage_1_projection_residual_coeffiecients
-) {
-  # And now the FWL theorem will convince us that we can retrieve
-  # the coefficients of regression X ~ W by:
-  # 'substituting' the linear formula for Z from other exogeneous regressors
-  # into respective coefficient.
-  stage_1_coefficients <- coef(object, component = "stage1")
-  regressor_dropped <- is.na(stage_1_coefficients)
+calculate_zeta_hat <- function(object, projection_residual_matrix) {
   instrument_index <- get_instrument_index_after_dropping_NAs(object)
+  stage_1_coefs <- coef(object, "stage1")
+  regressor_dropped <- is.na(stage_1_coefs)
+  stage_1_coefs <- stage_1_coefs[!regressor_dropped]
+  Z <- model.matrix(object, "instruments")[, !regressor_dropped]
 
-  stage_1_coefficients_cleaned <- stage_1_coefficients[!regressor_dropped]
+  pi_hat <- stage_1_coefs[instrument_index]
+  nu_hat <- resid(object, "stage1")
 
-  substitute <- stage_1_projection_residual_coeffiecients[-instrument_index, instrument_index] * stage_1_coefficients_cleaned[instrument_index] * -1
-
-  stage_1_coefficients_cleaned[-instrument_index] + substitute
+  xi_hat <- Z %*% projection_residual_matrix[, instrument_index]
+  pi_hat * xi_hat + nu_hat
 }
 
 substitute_coefs_change_base_to_stage_1 <- function(object, projection_residual_matrix_stage_2) {

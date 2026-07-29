@@ -98,20 +98,6 @@ test_that("get_projection_residual_matrix_ivregranks works", {
   expect_equal(actual, expected)
 })
 
-test_that("update_endogenous_coefficients_when_dropping_instrument works", {
-  data(mtcars)
-  model <- ivregranks(r(mpg) ~ r(hp) + cyl + drat | r(disp) + cyl + drat, data = mtcars)
-  projection_matrix <- get_projection_residual_matrix_ivregranks(model, "stage1")
-
-  # expectation
-  proj_no_instrument <- lmranks(r(hp) ~ cyl + drat, data = mtcars)
-
-  expected <- coef(proj_no_instrument)
-
-  actual <- update_endogenous_coefficients_when_dropping_instrument(model, projection_matrix)
-
-  expect_equal(actual, expected)
-})
 
 test_that("substitute_coefs_change_base_to_stage_1 works", {
   data(mtcars)
