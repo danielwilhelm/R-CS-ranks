@@ -75,80 +75,48 @@ test_that("vcov works for singular model matrix, complete=FALSE", {
 ### Low-level tests ###
 #######################
 
-test_that("update_coefficients_when_dropping_regressors works", {
+test_that("get_projection_residual_matrix_ivregranks works", {
   data(mtcars)
   model <- ivregranks(r(mpg) ~ r(hp) + cyl + drat | r(disp) + cyl + drat, data = mtcars)
-  projection_matrix <- get_projection_residual_matrix_ivregranks(model)
+  intercept <- rep(1, nrow(mtcars))
 
   # expectation
-  proj_1 <- lmranks(r(hp) ~ r(disp) + cyl + drat - 1, data = mtcars)
-  proj_no_instrument <- lmranks(r(hp) ~ cyl + drat, data = mtcars)
-  proj_2 <- lmranks(r(hp) ~ r(disp) + drat, data = mtcars)
-  proj_3 <- lmranks(r(hp) ~ r(disp) + cyl, data = mtcars)
+  proj_1 <- lmranks(intercept ~ r(disp) + cyl + drat - 1, data = mtcars)
+  proj_of_instrument <- lmranks(r(disp) ~ cyl + drat, data = mtcars)
+  proj_2 <- lmranks(cyl ~ r(disp) + drat, data = mtcars)
+  proj_3 <- lmranks(drat ~ r(disp) + cyl, data = mtcars)
 
   expected <- matrix(c(
-    0, coef(proj_1),
-    coef(proj_no_instrument)[1], 0, coef(proj_no_instrument)[2:3],
-    coef(proj_2)[1:2], 0, coef(proj_2)[3],
-    coef(proj_3), 0
+    1, -coef(proj_1),
+    -coef(proj_of_instrument)[1], 1, -coef(proj_of_instrument)[2:3],
+    -coef(proj_2)[1:2], 1, -coef(proj_2)[3],
+    -coef(proj_3), 1
   ), ncol = 4, byrow = FALSE)
 
-  actual <- update_coefficients_when_dropping_regressors(model, projection_matrix)
+  actual <- get_projection_residual_matrix_ivregranks(model, "stage1")
 
   expect_equal(actual, expected)
 })
 
-test_that("calculate_projection_residual_matrix_ivregranks works", {
+test_that("update_endogenous_coefficients_when_dropping_instrument works", {
   data(mtcars)
-  model <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
+  model <- ivregranks(r(mpg) ~ r(hp) + cyl + drat | r(disp) + cyl + drat, data = mtcars)
+  projection_matrix <- get_projection_residual_matrix_ivregranks(model, "stage1")
 
   # expectation
+  proj_no_instrument <- lmranks(r(hp) ~ cyl + drat, data = mtcars)
 
-  X_proj_1 <- lmranks(r(hp) ~ r(disp) + cyl - 1, data = mtcars)
-  X_proj_2 <- lmranks(r(hp) ~ r(disp), data = mtcars)
+  expected <- coef(proj_no_instrument)
 
-  Z_proj <- lmranks(r(disp) ~ cyl, data = mtcars)
-  intercept <- rep(1, nrow(mtcars))
-  cyl_proj <- lm(cyl ~ X_proj_2$fitted.values, data = mtcars)
-  intercept_proj <- lm(intercept ~ X_proj_1$fitted.values + cyl - 1, data = mtcars)
+  actual <- update_endogenous_coefficients_when_dropping_instrument(model, projection_matrix)
 
-  expected <- matrix(c(
-    1, -coef(intercept_proj),
-    -coef(Z_proj)[1], 1, -coef(Z_proj)[2],
-    -coef(cyl_proj), 1
-  ), ncol = 3, byrow = FALSE)
-
-  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(model)
-  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(model, projection_residual_matrix_stage_1)
-  actual <- calculate_projection_residual_matrix_stage_2(model, projection_residual_matrix_stage_1, X_coefs_without_W_l)
-
-  expect_equal(actual, expected)
-})
-
-test_that("update_coefficients_when_dropping_regressors works", {
-  data(mtcars)
-  model <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
-  proj_resid_stage_1 <- get_projection_residual_matrix_ivregranks(model)
-
-  # Expectation
-  proj_1 <- lmranks(r(hp) ~ r(disp) + cyl - 1, data = mtcars)
-  proj_2 <- lmranks(r(hp) ~ cyl, data = mtcars)
-  proj_3 <- lmranks(r(hp) ~ r(disp), data = mtcars)
-
-  expected <- matrix(c(
-    0, coef(proj_1),
-    coef(proj_2)[1], 0, coef(proj_2)[2],
-    coef(proj_3), 0
-  ), byrow = FALSE, nrow = 3)
-
-  actual <- update_coefficients_when_dropping_regressors(model, proj_resid_stage_1)
   expect_equal(actual, expected)
 })
 
 test_that("substitute_coefs_change_base_to_stage_1 works", {
   data(mtcars)
   model <- ivregranks(r(mpg) ~ cyl + r(hp) | cyl + r(disp), data = mtcars)
-  proj_resid <- get_projection_residual_matrix_ivregranks(model)
+  proj_resid <- get_projection_residual_matrix_ivregranks(model, "stage1")
   instrument_index <- 3
 
   # The actual inserted matrix into substitute_coefs_change_base_to_stage_1 is different,
@@ -162,20 +130,6 @@ test_that("substitute_coefs_change_base_to_stage_1 works", {
   expect_equivalent(substituted_proj_resid[, instrument_index], proj_resid[, instrument_index])
 })
 
-test_that("calculate_residuals_of_endogenous_in_exogenous_terms works", {
-  data(mtcars)
-  model <- ivregranks(r(mpg) ~ r(hp) + cyl | r(disp) + cyl, data = mtcars)
-
-  proj_model <- lmranks(r(hp) ~ cyl, data = mtcars)
-  expected <- resid(proj_model)
-
-  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(model)
-  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(model, projection_residual_matrix_stage_1)
-
-  actual <- calculate_residuals_of_endogenous_in_exogenous_terms(model, X_coefs_without_W_l)
-
-  expect_equivalent(actual, expected)
-})
 
 test_that("get_projection_variances works", {
   data(mtcars)
@@ -393,62 +347,66 @@ test_that("vcov produces correct asymptotic variance estimate of regressor varia
 
 test_that("h1 works for regressor variance estimation", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_regressor_1.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  object <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
 
   regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
-  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(res)
-  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(res, projection_residual_matrix_stage_1)
-  projection_residual_matrix_stage_2 <- calculate_projection_residual_matrix_stage_2(res, projection_residual_matrix_stage_1, X_coefs_without_W_l)
+  projection_residual_matrix_stage_2 <- get_projection_residual_matrix_ivregranks(object, "stage2")
+  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object, "stage1")
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+  projection_residual_matrix_stage_2[, instrument_index] <- projection_residual_matrix_stage_1[, instrument_index]
   projection_residual_matrix_stage_2_in_terms_stage_1 <- substitute_coefs_change_base_to_stage_1(
-    res,
+    object,
     projection_residual_matrix_stage_2
   )
-  Z <- stats::model.matrix(res, component = "instruments")[, !regressor_dropped_fs]
+
+  Z <- stats::model.matrix(object, component = "instruments")[, !regressor_dropped_fs, drop = FALSE]
   projection_residuals_fs <- Z %*% projection_residual_matrix_stage_2_in_terms_stage_1
 
-  h1_ivregranks <- calculate_H1(res, projection_residuals_fs)
+  h1_ivregranks <- calculate_H1(object, projection_residuals_fs)
   expect_equivalent(h1_ivregranks[, 3], h1)
 })
 
 test_that("h2 works for regressor variance estimation", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_regressor_1.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  object <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
 
-  regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
-  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(res)
-  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(res, projection_residual_matrix_stage_1)
-  projection_residual_matrix_stage_2 <- calculate_projection_residual_matrix_stage_2(res, projection_residual_matrix_stage_1, X_coefs_without_W_l)
+  regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
+  projection_residual_matrix_stage_2 <- get_projection_residual_matrix_ivregranks(object, "stage2")
+  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object, "stage1")
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+  projection_residual_matrix_stage_2[, instrument_index] <- projection_residual_matrix_stage_1[, instrument_index]
   projection_residual_matrix_stage_2_in_terms_stage_1 <- substitute_coefs_change_base_to_stage_1(
-    res,
+    object,
     projection_residual_matrix_stage_2
   )
-  Z <- stats::model.matrix(res, component = "instruments")[, !regressor_dropped_fs]
+  Z <- stats::model.matrix(object, component = "instruments")[, !regressor_dropped_fs]
   projection_residuals_fs <- Z %*% projection_residual_matrix_stage_2_in_terms_stage_1
 
-  H1 <- calculate_H1(res, projection_residuals_fs)
+  H1 <- calculate_H1(object, projection_residuals_fs)
   H1_mean <- colMeans(H1)
-  H2 <- calculate_H2(res, projection_residuals_fs, H1_mean)
+  H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
   expect_equivalent(H2[, 3], h2)
 })
 
 test_that("h3 works for regressor variance estimation", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_regressor_1.rda"))
-  res <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
+  object <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
 
-  regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
-  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(res)
-  X_coefs_without_W_l <- update_coefficients_when_dropping_regressors(res, projection_residual_matrix_stage_1)
-  projection_residual_matrix_stage_2 <- calculate_projection_residual_matrix_stage_2(res, projection_residual_matrix_stage_1, X_coefs_without_W_l)
+  regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
+  projection_residual_matrix_stage_2 <- get_projection_residual_matrix_ivregranks(object, "stage2")
+  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object, "stage1")
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+  projection_residual_matrix_stage_2[, instrument_index] <- projection_residual_matrix_stage_1[, instrument_index]
   projection_residual_matrix_stage_2_in_terms_stage_1 <- substitute_coefs_change_base_to_stage_1(
-    res,
+    object,
     projection_residual_matrix_stage_2
   )
-  Z <- stats::model.matrix(res, component = "instruments")[, !regressor_dropped_fs]
+  Z <- stats::model.matrix(object, component = "instruments")[, !regressor_dropped_fs]
   projection_residuals_fs <- Z %*% projection_residual_matrix_stage_2_in_terms_stage_1
 
-  H1 <- calculate_H1(res, projection_residuals_fs)
+  H1 <- calculate_H1(object, projection_residuals_fs)
   H1_mean <- colMeans(H1)
-  H3 <- calculate_H3(res, projection_residual_matrix_stage_2_in_terms_stage_1, H1_mean)
+  H3 <- calculate_H3(object, projection_residual_matrix_stage_2_in_terms_stage_1, H1_mean)
   expect_equivalent(H3[, 3], h3)
 })
 
