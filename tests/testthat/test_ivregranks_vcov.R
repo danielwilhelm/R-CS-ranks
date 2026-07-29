@@ -335,7 +335,7 @@ test_that("h1 works for regressor variance estimation", {
   load(test_path("testdata", "ivregranks_cov_sigmahat_regressor_1.rda"))
   object <- ivregranks(r(Y) ~ r(X) + W | r(Z) + W)
 
-  regressor_dropped_fs <- is.na(coef(res, component = "stage1"))
+  regressor_dropped_fs <- is.na(coef(object, component = "stage1"))
   projection_residual_matrix_stage_2 <- get_projection_residual_matrix_ivregranks(object, "stage2")
   projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object, "stage1")
   instrument_index <- get_instrument_index_after_dropping_NAs(object)

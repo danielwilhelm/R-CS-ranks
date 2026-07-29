@@ -36,8 +36,8 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 
   # We don't care about projection of projection of RX^ on W, but rather Z ~ W
   instrument_index <- get_instrument_index_after_dropping_NAs(object)
-  projection_residual_matrix_stage_2[, instrument_index] <- projection_residual_matrix_stage_1[, instrument_index]
-
+  Z_projected_on_W_residual_coefficients <- projection_residual_matrix_stage_1[, instrument_index]
+  projection_residual_matrix_stage_2[, instrument_index] <- Z_projected_on_W_residual_coefficients
   # Change for downstream logic reuse
   # Used to calculate residuals of regressions W_l ~ X^ + W_-l
   # from W and Z
@@ -55,7 +55,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   H2 <- calculate_H2(object, projection_residuals_fs, H1_mean)
   H3 <- calculate_H3(object, projection_residual_matrix_stage_2_in_terms_stage_1, H1_mean)
 
-  X_on_W_residuals <- calculate_zeta_hat(object, projection_residual_matrix_stage_1)
+  X_on_W_residuals <- calculate_zeta_hat(object, Z_projected_on_W_residual_coefficients)
 
   projection_variances <- get_projection_variances(object, X_on_W_residuals, projection_residuals_fs)
 
@@ -110,17 +110,17 @@ get_projection_residual_matrix_ivregranks <- function(object, component) {
 #' residual of R_Z on W.
 #'
 #' @noRd
-calculate_zeta_hat <- function(object, projection_residual_matrix) {
+calculate_zeta_hat <- function(object, projection_residual_vector) {
   instrument_index <- get_instrument_index_after_dropping_NAs(object)
   stage_1_coefs <- coef(object, "stage1")
   regressor_dropped <- is.na(stage_1_coefs)
   stage_1_coefs <- stage_1_coefs[!regressor_dropped]
-  Z <- model.matrix(object, "instruments")[, !regressor_dropped]
+  Z <- model.matrix(object, "instruments")[, !regressor_dropped, drop = FALSE]
 
   pi_hat <- stage_1_coefs[instrument_index]
   nu_hat <- resid(object, "stage1")
 
-  xi_hat <- Z %*% projection_residual_matrix[, instrument_index]
+  xi_hat <- Z %*% projection_residual_vector
   pi_hat * xi_hat + nu_hat
 }
 
