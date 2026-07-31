@@ -134,7 +134,7 @@ calculate_zeta_hat <- function(object, projection_residual_vector) {
   stage_1_coefs <- coef(object, "stage1")
   regressor_dropped <- is.na(stage_1_coefs)
   stage_1_coefs <- stage_1_coefs[!regressor_dropped]
-  Z <- model.matrix(object, "instruments")[, !regressor_dropped, drop = FALSE]
+  Z <- stats::model.matrix(object, "instruments")[, !regressor_dropped, drop = FALSE]
 
   pi_hat <- stage_1_coefs[instrument_index]
   nu_hat <- resid(object, "stage1")
