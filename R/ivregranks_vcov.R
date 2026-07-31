@@ -30,13 +30,8 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
   # This one has W_l ~ RX^ + W_-l as well as RX^ ~ W
   projection_residual_matrix_stage_2 <- get_projection_residual_matrix_ivregranks(object, "stage2")
 
-  # This one has W_l ~ Z + W_-l as well as Z ~ W
-  # TODO: we only need Z ~ W from here, its sufficient to not invert entire thing but do intelligent solve(A,b)
-  projection_residual_matrix_stage_1 <- get_projection_residual_matrix_ivregranks(object, "stage1")
-
-  # We don't care about projection of projection of RX^ on W, but rather Z ~ W
   instrument_index <- get_instrument_index_after_dropping_NAs(object)
-  Z_projected_on_W_residual_coefficients <- projection_residual_matrix_stage_1[, instrument_index]
+  Z_projected_on_W_residual_coefficients <- get_instrument_projection_residual_ivregranks(object)
   projection_residual_matrix_stage_2[, instrument_index] <- Z_projected_on_W_residual_coefficients
   # Change for downstream logic reuse
   # Used to calculate residuals of regressions W_l ~ X^ + W_-l
@@ -70,7 +65,7 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 
 #' @title Get projection residual matrix for ivregranks
 #' @description In calculation of covariance matrix of parameters in ivregranks,
-#' we're interested in projections of exogenous variables (W) onto other exogenous variables, as well as on fitted values RX^ or instrument Z.
+#' we're interested in projections of exogenous variables (W) onto other exogenous variables, as well as on fitted values RX^.
 #' We really don't want to calculate the coefficients and residuals for these projections from scratch,
 #' because that involves fitting p linear models (p - number of exogenous variables).
 #' So we use the QR decomposition already calculated for purpose of second stage of main SLSS regression.
@@ -85,21 +80,45 @@ vcov.ivregranks <- function(object, component = c("stage2", "stage1"),
 #'
 #' @seealso get_projection_residual_matrix - a counterpart for lmranks.
 #' @noRd
-get_projection_residual_matrix_ivregranks <- function(object, component) {
+get_projection_residual_matrix_ivregranks <- function(object, component = "stage2") {
+  stage_coefficients <- coef(object, component = component)
+  regressor_dropped <- is.na(stage_coefficients)
+  r_mat <- get_r_matrix_from_qr_decomposition(object, component)
+  calculate_projection_residual_matrix(r_mat, regressor_dropped[!regressor_dropped], sum(!regressor_dropped))
+}
+
+get_r_matrix_from_qr_decomposition <- function(object, component) {
   stage_to_matrix <- c("stage1" = "instruments", "stage2" = "projected")
   stage_to_qr_field <- c("stage1" = "qr1", "stage2" = "qr")
   matrix_component <- stage_to_matrix[component]
   qr_field <- stage_to_qr_field[component]
   stage_coefficients <- coef(object, component = component)
   regressor_dropped <- is.na(stage_coefficients)
-  Z <- stats::model.matrix(object, component = matrix_component)[, !regressor_dropped]
   if (any(regressor_dropped) || is.null(object[[qr_field]])) {
+    Z <- stats::model.matrix(object, component = matrix_component)[, !regressor_dropped]
     R <- qr.R(qr(Z))
   } else {
     R <- qr.R(object[[qr_field]])
   }
+  R
+}
 
-  calculate_projection_residual_matrix(R, regressor_dropped[!regressor_dropped], sum(!regressor_dropped))
+get_instrument_projection_residual_ivregranks <- function(object) {
+  R <- get_r_matrix_from_qr_decomposition(object, "stage1")
+  instrument_index <- get_instrument_index_after_dropping_NAs(object)
+
+  n <- ncol(R)
+  j <- instrument_index
+
+  e_j <- numeric(n)
+  e_j[j] <- 1
+
+  y <- backsolve(R, e_j, transpose = TRUE) # solve R^T y = e_j  (lower triangular)
+  col_j <- backsolve(R, y) # solve R x = y      (upper triangular)
+
+  out <- col_j / col_j[instrument_index]
+
+  out
 }
 
 #' Compute zeta_hat = R_X - W'gamma_hat for the rho-component's variance
