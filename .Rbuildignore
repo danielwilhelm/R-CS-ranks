@@ -16,3 +16,4 @@ shiny-demo-v1.gif
 ^\.lintr$
 ^\.clinerules$
 ^backlog.md$
+^revdep$
