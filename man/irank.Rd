@@ -5,9 +5,9 @@
 \alias{frank}
 \title{Compute ranks}
 \usage{
-irank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
+irank(x, omega = 0, increasing = FALSE, na.rm = FALSE, weights = NULL)
 
-frank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
+frank(x, omega = 0, increasing = FALSE, na.rm = FALSE, weights = NULL)
 }
 \arguments{
 \item{x}{vector of values to be ranked}
@@ -17,6 +17,8 @@ frank(x, omega = 0, increasing = FALSE, na.rm = FALSE)
 \item{increasing}{logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.}
 
 \item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.}
+
+\item{weights}{an optional vector of weights to be used in the ranking process. Should be \code{NULL} or a numeric vector.}
 }
 \value{
 Numeric vector of the same length as \code{x} containing the integer (for \code{irank}) or fractional (for \code{frank}) ranks.
@@ -36,6 +38,9 @@ many possible ranks that can be assigned to a tied value.
 
 When \code{increasing=TRUE}, then \code{omega=0} leads to the smallest possible and \code{omega=1} to the largest possible rank of a tied value. Values of \code{omega} between
 0 and 1 lead to values of the rank between the largest and smallest.
+
+Gotcha: the definition of weighted ranks drops a constant (1-\code{omega}). This means that \code{irank} (and other functions from the family) called with equal weights will have different outcome from \code{irank} called with \code{weights=NULL}.
+The values will be shifted by a constant 1-\code{omega}.
 
 \code{frank} takes the ranking returned by \code{irank} and divides the result by \code{length(x)}. The result is a ranking with
 ranks in the interval [0,1]. An important special case occurs for \code{increasing=TRUE} and \code{omega=1}: in this case, the rank

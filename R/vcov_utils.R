@@ -10,7 +10,8 @@ calculate_H1 <- function(object, projection_residuals, ...) {
 #' @exportS3Method
 calculate_H1.default <- function(object, projection_residuals, ...) {
   original_resids <- resid(object)
-  projection_residuals * original_resids
+  output <- projection_residuals * original_resids
+  apply_normalized_weights_to_matrix(object, output)
 }
 
 #' Calculate H2 component for covariance estimation
@@ -32,6 +33,9 @@ calculate_H2.default <- function(object, projection_residuals,
   }
   rank_column_index <- l$rank_column_index
   global_RX <- l$global_RX
+
+  projection_residuals <- apply_normalized_weights_to_matrix(object, projection_residuals)
+
   if (length(rank_column_index) > 0) {
     I_X_times_proj_resids <- ineq_indicator_matmult(global_RX,
       projection_residuals,
@@ -59,7 +63,8 @@ calculate_H2.default <- function(object, projection_residuals,
   H2_minuse_H1_mean <- (delta_Y_times_proj_resids - delta_X_times_proj_resids) /
     stats::nobs(object)
 
-  return(t(t(H2_minuse_H1_mean) + H1_mean))
+  output <- t(t(H2_minuse_H1_mean) + H1_mean)
+  apply_normalized_weights_to_matrix(object, output)
 }
 
 #' Calculate H3 component for covariance estimation
@@ -84,6 +89,7 @@ calculate_H3.default <- function(object, projection_residual_matrix,
     drop = FALSE
   ] # g columns
   original_resids <- get_original_resid_times_grouping_indicators(object)
+  original_resids <- apply_normalized_weights_to_matrix(object, original_resids)
   I_X_times_orig_resids <- ineq_indicator_matmult(global_RX, original_resids,
     omega = object$omega
   ) # size n x g
@@ -92,7 +98,8 @@ calculate_H3.default <- function(object, projection_residual_matrix,
   H3_minus_H1_mean <- t(delta_X_times_orig_resids) %*% X_projection_coef /
     stats::nobs(object)
 
-  return(t(t(H3_minus_H1_mean) + H1_mean))
+  output <- t(t(H3_minus_H1_mean) + H1_mean)
+  apply_normalized_weights_to_matrix(object, output)
 }
 
 #' Extract regressors from a model object and separate rank- from usual ones

@@ -5,9 +5,23 @@
 \alias{frank_against}
 \title{Compute integer ranks in another reference vector}
 \usage{
-irank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
+irank_against(
+  x,
+  v,
+  omega = 0,
+  increasing = FALSE,
+  na.rm = FALSE,
+  weights = NULL
+)
 
-frank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
+frank_against(
+  x,
+  v,
+  omega = 0,
+  increasing = FALSE,
+  na.rm = FALSE,
+  weights = NULL
+)
 }
 \arguments{
 \item{x}{numeric query vector.}
@@ -19,6 +33,8 @@ frank_against(x, v, omega = 0, increasing = FALSE, na.rm = FALSE)
 \item{increasing}{logical; if \code{FALSE} (default), then large elements in \code{x} receive a small rank. Otherwise, large elements in \code{x} receive a large rank.}
 
 \item{na.rm}{logical; if \code{TRUE}, then \code{NA}'s are removed from \code{x}. Default: \code{FALSE}.}
+
+\item{weights}{an optional vector of weights to be used in the ranking process. Should be \code{NULL} or a numeric vector.}
 }
 \value{
 Numeric vector of the same length as \code{x} containing the integer (for \code{irank_against}) or fractional (for \code{frank_against}) ranks.

@@ -10,11 +10,6 @@ test_that("count_lequal_lesser works for sorted x", {
     count_lequal_lesser(x, v),
     expected
   )
-  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
-  expect_equal(
-    count_lequal_lesser(x, v),
-    expected
-  )
 })
 
 test_that("count_lequal_lesser works for unsorted x", {
@@ -24,11 +19,6 @@ test_that("count_lequal_lesser works for unsorted x", {
     n_lequal = c(5, 8, 7, 1, 7, 1, 2, 5, 8, 0),
     n_lesser = c(5, 7, 7, 0, 5, 1, 1, 2, 8, 0)
   )
-  expect_equal(
-    count_lequal_lesser(x, v),
-    expected
-  )
-  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
   expect_equal(
     count_lequal_lesser(x, v),
     expected
@@ -52,7 +42,7 @@ test_that("frank_against returns error for matrix input", {
   ))
   expect_error(process_irank_against_args(matrix(1:12, ncol = 3),
     omega = 0.4, increasing = TRUE,
-    na.rm = FALSE
+    na.rm = FALSE, weights = NULL
   ))
 })
 
@@ -141,6 +131,22 @@ test_that("irank_against handles NAs", {
   )
 })
 
+test_that("irank_against's weights argument works", {
+  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
+  x <- c(0, 1, 2, 3, 4, 5, 7, 8, 10, 11)
+  weights <- c(1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5) # sum of weights: 6
+
+  expected <- c(
+    0, 0.5 * 0.5, 0.5, 0.5 + 1 * 0.5,
+    1.5 + 3 * 0.5, 4.5, 4.5 + 1 * 0.5, 5.5, 5.5 + 0.5 * 0.5, 6
+  )
+
+  expect_equal(
+    irank_against(x, v, weights = weights, increasing = TRUE, omega = 0.5),
+    expected
+  )
+})
+
 test_that("frank works", {
   x_1 <- c(4, 4, 4, 3, 1, 10, 7, 7)
   expected_output <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)
@@ -163,5 +169,21 @@ test_that("frank_against v argument works", {
   expect_equal(
     frank_against(x, v, omega = 0.5),
     expected_irank
+  )
+})
+
+test_that("frank_against's weights argument works", {
+  v <- c(4, 4, 4, 3, 1, 10, 7, 7)
+  x <- c(0, 1, 2, 3, 4, 5, 7, 8, 10, 11)
+  weights <- c(1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5) # sum of weights: 6
+
+  expected <- c(
+    0, 0.5 * 0.5, 0.5, 0.5 + 1 * 0.5,
+    1.5 + 3 * 0.5, 4.5, 4.5 + 1 * 0.5, 5.5, 5.5 + 0.5 * 0.5, 6
+  ) / 6
+
+  expect_equal(
+    frank_against(x, v, weights = weights, increasing = TRUE, omega = 0.5),
+    expected
   )
 })

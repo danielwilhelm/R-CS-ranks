@@ -90,7 +90,8 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
 
   H3 <- calculate_H3(object, projection_residual_matrix, H1_mean)
 
-  projection_variances <- colMeans(projection_residuals^2)
+  projection_variances <- colMeans(apply_normalized_weights_to_matrix(object, projection_residuals^2))
+
   psi <- t(t(H1 + H2 + H3) / projection_variances)
 
   sigmahat <- (t(psi) %*% psi) / (nrow(psi)^2)
@@ -103,6 +104,14 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
     ]
   }
   return(sigmahat)
+}
+
+apply_normalized_weights_to_matrix <- function(object, matrix_object) {
+  w <- stats::weights(object)
+  if (is.null(w)) {
+    return(matrix_object)
+  }
+  w * matrix_object / mean(w)
 }
 
 #' Calculate matrix giving projection residuals
@@ -118,15 +127,22 @@ vcov.lmranks <- function(object, complete = TRUE, ...) {
 #'
 #' Turns out, that M is closely related to V=(X^T %*% X)⁻¹:
 #' M = V / diag(V), division row-wise. Proof via block matrix inverse.
+#'
+#' Fun fact: this also holds for weighted regression.
+#' There, model$qr is QR decomposition of matrix X^TWX
+#' And the interpretation with coeffiecients holds if other projections are weighted identically
+#' Fortunately, they are :)
 #' @noRd
 get_projection_residual_matrix <- function(object) {
   regressor_dropped <- is.na(coef(object))
   n_coef <- length(coef(object))
-  if (any(regressor_dropped)) {
+  if (any(regressor_dropped) || is.null(object$qr)) {
     X <- stats::model.matrix(object)[, !regressor_dropped]
+    weights_value <- stats::weights(object)
+    if (!is.null(weights_value)) {
+      X <- sqrt(weights_value) * X
+    }
     R <- qr.R(qr(X))
-  } else if (is.null(object$qr)) {
-    R <- qr.R(qr(stats::model.matrix(object)))
   } else {
     R <- qr.R(object$qr)
   }

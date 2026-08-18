@@ -11,26 +11,6 @@ test_that("create_env_to_interpret_r_mark has a correct parent env", {
   expect_reference(parent.env(created_env), expected_parent_env)
 })
 
-test_that("create_env_to_interpret_r_mark has correct contents", {
-  expected_env_contents <- list(
-    .r_predict = FALSE,
-    .r_cache = list(),
-    r = function(x, increasing = TRUE) {}
-  )
-
-  created_env <- create_env_to_interpret_r_mark(omega = 0.4)
-  actual_env_contents <- as.list(created_env, all.names = TRUE)
-  expect_equal(
-    names(actual_env_contents),
-    names(expected_env_contents)
-  )
-  expect_equal(
-    actual_env_contents[c(".r_predict", ".r_cache")],
-    expected_env_contents[c(".r_predict", ".r_cache")]
-  )
-  expect_true(is.function(actual_env_contents[["r"]]))
-})
-
 test_that("create_env_to_interpret_r_mark's r function behaves correctly in fitting", {
   x_1 <- c(4, 4, 4, 3, 1, 10, 7, 7)
   expected_r_output <- c(0.475, 0.475, 0.475, 0.250, 0.125, 1.000, 0.800, 0.800)

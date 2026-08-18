@@ -36,12 +36,13 @@
 #' [environment()]
 #' [csranks::frank_against()]
 #' @noRd
-create_env_to_interpret_r_mark <- function(omega) {
+create_env_to_interpret_r_mark <- function(omega, weights = NULL) {
   rank_env <- new.env(parent = parent.frame(2))
   r <- function(x, increasing = TRUE) x
   body(r) <- bquote({
     predict <- get(".r_predict", envir = environment(r), inherits = FALSE)
     cache <- get(".r_cache", envir = environment(r), inherits = FALSE)
+    weights <- get(".weights", envir = environment(r), inherits = FALSE)
     was_na <- is.na(x)
     var_name <- paste0(as.character(substitute(x)), collapse = "")
     if (!predict) {
@@ -51,12 +52,13 @@ create_env_to_interpret_r_mark <- function(omega) {
       cli::cli_warn("New variable at predict time. Ranks will be calculated from scratch.")
     }
     v <- cache[[var_name]]
-    out <- csranks::frank_against(x, v, increasing = increasing, omega = .(omega), na.rm = FALSE)
+    out <- csranks::frank_against(x, v, increasing = increasing, omega = .(omega), na.rm = FALSE, weights = weights)
     out
   })
   environment(r) <- rank_env
   assign("r", r, envir = rank_env)
   assign(".r_cache", list(), envir = rank_env)
   assign(".r_predict", FALSE, envir = rank_env)
+  assign(".weights", weights, envir = rank_env)
   return(rank_env)
 }
