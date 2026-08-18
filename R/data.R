@@ -2,12 +2,12 @@
 #'
 #' Datasets containing average scores on math, reading, and science
 #' together with standard errors for all OECD countries. These are
-#' from the 2018 and 2022 editions of 
+#' from the 2018 and 2022 editions of
 #' Program for International Student Assessment (PISA)
 #' study by the Organization for Economic Cooperation and Development (OECD).
 #' The average scores are over all 15-year-old students in the study.
 #'
-#' @format 
+#' @format
 #' \describe{
 #'   \item{jurisdiction}{country, from which data was collected}
 #'   \item{math_score}{average score in math}
@@ -28,9 +28,9 @@
 #'
 #' @description
 #' `r lifecycle::badge('deprecated')`
-#' 
+#'
 #' New code should use `data(pisa2018)` instead.
-#' 
+#'
 #' Dataset containing average scores on math, reading, and science
 #' together with standard errors for all OECD countries. These are
 #' from the 2018 Program for International Student Assessment (PISA)
@@ -53,7 +53,7 @@
 #' Income of parents and children
 #'
 #' An artificial dataset containing income of children and their parents together
-#' with some information about them. 
+#' with some information about them.
 #'
 #' @format A data frame with 3894 rows and 4 variables:
 #' \describe{

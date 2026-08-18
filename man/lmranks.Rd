@@ -51,7 +51,10 @@ variables to be ranked can be indicated by \code{r()}. See Details and Examples 
 
 \item{subset}{currently not supported.}
 
-\item{weights}{currently not supported.}
+\item{weights}{an optional vector of weights to be used in the fitting
+process.  Should be \code{NULL} or a numeric vector.  If non-NULL,
+weighted least squares is used with weights \code{weights} (that
+is, minimizing \code{sum(w*e^2)}); otherwise ordinary least squares is used.}
 
 \item{na.action}{currently not supported. User is expected to handle NA values prior to the use of this function.}
 
@@ -236,8 +239,8 @@ rrfit <- lmranks(r(Y) ~ r(X))
 summary(rrfit)
 
 # naive version of the rank-rank regression:
-RY <- frank(Y, increasing=TRUE, omega=1)
-RX <- frank(X, increasing=TRUE, omega=1)
+RY <- frank(Y, increasing = TRUE, omega = 1)
+RX <- frank(X, increasing = TRUE, omega = 1)
 fit <- lm(RY ~ RX)
 summary(fit)
 # the coefficient estimates are the same as in the lmranks function, but
@@ -250,7 +253,7 @@ lmranks(r(mpg) ~ r(hp) + ., data = mtcars)
 lmranks(r(mpg) ~ r(hp) + . - hp, data = mtcars)
 
 # rank-rank regression with clusters:
-G <- factor(rep(LETTERS[1:4], each=nrow(mtcars) / 4))
+G <- factor(rep(LETTERS[1:4], each = nrow(mtcars) / 4))
 lmr <- lmranks(r(mpg) ~ r(hp):G, data = mtcars)
 summary(lmr)
 model.matrix(lmr)
@@ -260,7 +263,7 @@ lmranks(r(mpg) ~ (r(hp) + .):G, data = mtcars)
 }
 \references{
 Chetverikov and Wilhelm (2023), "Inference for Rank-Rank Regressions".
-\href{http://arxiv.org/pdf/2310.15512}{arXiv preprint arXiv:2310.15512}
+\href{https://arxiv.org/pdf/2310.15512}{arXiv preprint arXiv:2310.15512}
 }
 \seealso{
 \code{\link{lm}} for details about other arguments; \code{\link{frank}}.

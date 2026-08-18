@@ -2,8 +2,9 @@
 
 0 errors | 0 warnings | 0 notes
 
-* This is a resubmission of the 1.2.3 version of the package.
-* The NOTE on CRAN Results for version 1.2.2 and first submission of 1.2.3 was probably caused by an unnecessary file in tests directory.
-* The NOTE about convention for linking arxiv in DOCUMENTATION was fixed.
+* This is a first submission of the 1.3.0 version of the package.
 * There could be a NOTE about invalidity of url https://dwilhelm.shinyapps.io/R-CS-ranks-demo/
 which could return code 202. This is a false positive.
+* There could be a NOTE about invalidity of url https://doi.org/10.1093/restud/rdad006
+which could return code 403. This is a false positive.
+* No reverse dependencies.

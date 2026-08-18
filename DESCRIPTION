@@ -1,38 +1,45 @@
-Package: csranks
 Type: Package
+Package: csranks
 Title: Statistical Tools for Ranks
-Version: 1.2.3.9000
+Version: 1.2.3.9004
 Authors@R: c(
-    person("Daniel", "Wilhelm", ,"d.wilhelm@lmu.de", role = c("aut", "cre")),
-    person("Pawel", "Morgen", ,"seriousmorgen@protonmail.com", role = "aut")
+    person("Daniel", "Wilhelm", , "d.wilhelm@lmu.de", role = c("aut", "cre")),
+    person("Pawel", "Morgen", , "seriousmorgen@protonmail.com", role = "aut")
   )
-Description: Account for uncertainty when working with ranks. 
-    Estimate standard errors consistently in linear regression with ranked variables.
-    Construct confidence sets of various kinds for positions of populations in a ranking 
-    based on values of a certain feature and their estimation errors. 
-    Theory based on Mogstad, Romano, Shaikh, and Wilhelm (2023)<doi:10.1093/restud/rdad006> and
-    Chetverikov and Wilhelm (2023) <doi:10.48550/arXiv.2310.15512>.
+Description: Account for uncertainty when working with ranks.  Estimate
+    standard errors consistently in linear regression with ranked
+    variables.  Construct confidence sets of various kinds for positions
+    of populations in a ranking based on values of a certain feature and
+    their estimation errors.  Theory based on Mogstad, Romano, Shaikh, and
+    Wilhelm (2023)<doi:10.1093/restud/rdad006> and Chetverikov and Wilhelm
+    (2023) <doi:10.48550/arXiv.2310.15512>.
 License: GPL (>= 3)
-Encoding: UTF-8
-LazyData: true
-URL: https://github.com/danielwilhelm/R-CS-ranks, https://danielwilhelm.github.io/R-CS-ranks/
+URL: https://github.com/danielwilhelm/R-CS-ranks,
+    https://danielwilhelm.github.io/R-CS-ranks/
 BugReports: https://github.com/danielwilhelm/R-CS-ranks/issues
-RoxygenNote: 7.3.1
 Depends:
     R (>= 3.5.0)
 Imports: 
-    stats,
-    ggplot2,
-    scales,
-    MASS,
     cli,
-    lifecycle
+    Formula,
+    ggplot2,
+    glue,
+    ivreg,
+    lifecycle,
+    MASS,
+    rlang,
+    scales,
+    stats
 Suggests:
-    spelling, 
-    testthat (>= 2.1.0),
     grid,
     knitr,
-    rmarkdown
-VignetteBuilder: knitr
+    rmarkdown,
+    spelling,
+    testthat (>= 2.1.0)
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
 Language: en-US
+LazyData: true
 Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0
