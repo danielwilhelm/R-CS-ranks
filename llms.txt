@@ -1,0 +1,92 @@
+# csranks
+
+The `R` package `csranks` provides statistical tools for estimation and
+inference involving ranks (the position in a ranking). Two central
+functions are `csranks` for confidence sets for ranks and `lmranks` for
+regressions involving ranks, e.g. rank-rank regressions that are popular
+in applied work in economics.
+
+The functions are based on recent work developing these procedures and
+their theoretical properties. The confidence sets for ranks are based on
+[Mogstad, Romano, Shaikh, and Wilhelm
+(2023)](https://doi.org/10.1093/restud/rdad006) and [Bazylik, Mogstad,
+Romano, Shaikh, and Wilhelm
+(2022)](https://dwilhelm.userweb.mwn.de/papers/cwp4021.pdf). The
+inference methods for regressions involving ranks are developed in
+[Chetverikov and Wilhelm (2023)](https://arxiv.org/pdf/2310.15512).
+
+## Installation
+
+You can install the released version of `csranks` from CRAN with:
+
+``` r
+
+install.packages("csranks")
+```
+
+You can install the development version of `csranks` from
+[GitHub](https://github.com/) with:
+
+``` r
+
+# install.packages("remotes")
+remotes::install_github("danielwilhelm/R-CS-ranks")
+```
+
+## Demo
+
+If you want to play around with the confidence sets for ranks, feel free
+to try out [demo available
+here](https://dwilhelm.shinyapps.io/R-CS-ranks-demo/).
+
+Here is a sneak peek:
+
+![](https://github.com/danielwilhelm/R-CS-ranks/raw/master/inst/shiny-demo-v1.gif)
+
+# Package index
+
+## Inference on ranks
+
+- [`irank()`](irank.md) [`frank()`](irank.md) : Compute ranks
+- [`irank_against()`](irank_against.md)
+  [`frank_against()`](irank_against.md) : Compute integer ranks in
+  another reference vector
+- [`csranks()`](csranks.md) : Confidence sets for ranks
+- [`csranks_multinom()`](csranks_multinom.md) : Confidence sets for
+  ranks based on multinomial data
+- [`cstaubest()`](cstaubest.md) [`cstauworst()`](cstaubest.md) :
+  Confidence sets for the tau-best
+- [`plot(`*`<csranks>`*`)`](plotranking.md)
+  [`plotranking()`](plotranking.md) : Plot ranking with confidence sets
+
+## Inference for regressions involving ranks
+
+- [`lmranks()`](lmranks.md) [`plot(`*`<lmranks>`*`)`](lmranks.md)
+  [`proj(`*`<lmranks>`*`)`](lmranks.md)
+  [`predict(`*`<lmranks>`*`)`](lmranks.md)
+  [`summary(`*`<lmranks>`*`)`](lmranks.md)
+  [`vcov(`*`<lmranks>`*`)`](lmranks.md) : Regressions Involving Ranks
+- [`ivregranks()`](ivregranks.md)
+  [`plot(`*`<ivregranks>`*`)`](ivregranks.md)
+  [`predict(`*`<ivregranks>`*`)`](ivregranks.md)
+  [`summary(`*`<ivregranks>`*`)`](ivregranks.md)
+  [`print(`*`<summary.ivregranks>`*`)`](ivregranks.md)
+  [`confint(`*`<ivregranks>`*`)`](ivregranks.md)
+  [`vcov(`*`<ivregranks>`*`)`](ivregranks.md) : Instrumental-Variable
+  Regression by 2SLS Estimation Involving Ranks
+
+## Datasets
+
+- [`pisa`](pisa.md) **\[deprecated\]** : Cross-country comparison of
+  students' achievement
+- [`pisa2018`](pisa2018.md) [`pisa2022`](pisa2018.md) : Cross-country
+  comparison of students' achievement
+- [`parent_child_income`](parent_child_income.md) : Income of parents
+  and children
+
+# Articles
+
+### All vignettes
+
+- [Inference for Ranks](Inference-for-Ranks.md):
+- [Inference for Rank-Rank Regressions](Rank-Rank-Reg.md):
