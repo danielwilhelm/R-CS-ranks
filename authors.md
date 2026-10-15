@@ -10,7 +10,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/danielwilhelm/R-CS-ranks/blob/v1.3.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/danielwilhelm/R-CS-ranks/blob/master/inst/CITATION)
 
 Wilhelm D, Morgen P (2023). *csranks: Statistical Tools for Ranks*.
 https://github.com/danielwilhelm/R-CS-ranks,
