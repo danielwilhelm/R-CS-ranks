@@ -4,7 +4,7 @@ x <- seq(1, 3, length = n)
 sd <- diag(rep(0.02, n))
 ranks <- irank(x)
 CS <- csranks(x, sd)
-CS_ind <- csranks(x, sd, indices=c(5,6,7))
+CS_ind <- csranks(x, sd, indices = c(5, 6, 7))
 popnames <- rev(LETTERS[1:n])
 
 test_that("default plotranking returns a ggplot object", {

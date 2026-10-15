@@ -3,6 +3,7 @@ authors:
   Daniel Wilhelm:
     href: "http://www.ucl.ac.uk/~uctpdwi/"
 template:
+  bootstrap: 5
   params:
     ganalytics: UA-2631182-3
 reference:
@@ -19,6 +20,7 @@ reference:
   - title: "Inference for regressions involving ranks"
   - contents:
     - lmranks
+    - ivregranks
   - title: "Datasets"
   - contents:
     - pisa

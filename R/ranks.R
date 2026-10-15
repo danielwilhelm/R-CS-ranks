@@ -25,44 +25,43 @@
 #' # simple simulated example:
 #' n <- 100
 #' p <- 10
-#' X <- matrix(rep(1:p,n)/p, ncol=p, byrow=TRUE) + matrix(rnorm(n*p), 100, 10)
+#' X <- matrix(rep(1:p, n) / p, ncol = p, byrow = TRUE) + matrix(rnorm(n * p), 100, 10)
 #' thetahat <- colMeans(X)
 #' Sigmahat <- cov(X) / n
 #' csranks(thetahat, Sigmahat)
-#' 
+#'
 #' # PISA example:
 #' data(pisa2018)
 #' math_score <- pisa2018$math_score
 #' math_se <- pisa2018$math_se
 #' math_cov_mat <- diag(math_se^2)
-#' 
+#'
 #' # marginal confidence set for each country:
-#' csranks(math_score, math_cov_mat, simul=FALSE)
-#' 
+#' csranks(math_score, math_cov_mat, simul = FALSE)
+#'
 #' # simultaneous confidence set for all countries:
-#' csranks(math_score, math_cov_mat, simul=TRUE)
-
+#' csranks(math_score, math_cov_mat, simul = TRUE)
 
 #' @section Details:
-#' Suppose \eqn{j=1,\ldots,p} populations (e.g., schools, hospitals, political parties, countries) are to be ranked according to 
-#' some measure \eqn{\theta=(\theta_1,\ldots,\theta_p)}. We do not observe the true values \eqn{\theta_1,\ldots,\theta_p}. Instead, for each population, 
+#' Suppose \eqn{j=1,\ldots,p} populations (e.g., schools, hospitals, political parties, countries) are to be ranked according to
+#' some measure \eqn{\theta=(\theta_1,\ldots,\theta_p)}. We do not observe the true values \eqn{\theta_1,\ldots,\theta_p}. Instead, for each population,
 #' we have data from which we have estimated these measures, \eqn{\hat{\theta}=(\hat{\theta}_1,\ldots,\hat{\theta}_p)}. The values \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p}
 #' are estimates of the true values \eqn{\theta_1,\ldots,\theta_p} and thus contain statistical uncertainty. In consequence, a ranking of the populations by
 #' the values \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} contains statistical uncertainty and is not necessarily equal to the true ranking of \eqn{\theta_1,\ldots,\theta_p}.
-#' 
-#' The function computes confidence sets for the rank of one, several or all of the populations (\code{indices} indicates which of the \eqn{1,\ldots,p} populations are of interest). \code{x} is a vector containing the estimates 
-#' \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} and \code{Sigma} is an estimate of the covariance matrix of \code{x}. The method assumes that the estimates are asymptotically normal and the sample sizes of the datasets 
+#'
+#' The function computes confidence sets for the rank of one, several or all of the populations (\code{indices} indicates which of the \eqn{1,\ldots,p} populations are of interest). \code{x} is a vector containing the estimates
+#' \eqn{\hat{\theta}_1,\ldots,\hat{\theta}_p} and \code{Sigma} is an estimate of the covariance matrix of \code{x}. The method assumes that the estimates are asymptotically normal and the sample sizes of the datasets
 #' are large enough so that \eqn{\hat{\theta}-\theta} is approximately distributed as \eqn{N(0,\Sigma)}. The argument \code{Sigma} should contain an estimate of the covariance matrix \eqn{\Sigma}. For instance, if for each population \eqn{j}
 #' \deqn{\sqrt{n_j} (\hat{\theta}_j-\theta_j) \to_d N(0, \sigma_j^2)}
 #' and the datasets for each population are drawn independently of each other, then \code{Sigma} is a diagonal matrix \deqn{diag(\hat{\sigma}_1^2/n_1,\ldots,\hat{\sigma}_p^2/n_p)}
 #' containing estimates of the asymptotic variances divided by the sample size. More generally, the estimates in \code{x} may be dependent, but then \code{Sigma}
-#' must be an estimate of its covariance matrix including off-diagonal terms. 
-#' 
+#' must be an estimate of its covariance matrix including off-diagonal terms.
+#'
 #' Marginal confidence sets (\code{simul=FALSE}) are such that the confidence set for a population \eqn{j} contains the true rank of that population \eqn{j} with probability approximately
 #' equal to the nominal coverage level. Simultaneous confidence sets (\code{simul=TRUE}) on the other hand are such that the confidence sets for populations indicated in \code{indices} cover the true ranks
 #' of all of these populations simultaneously with probability approximately equal to the nominal coverage level. For instance, in the PISA example below, a marginal confidence set of a country \eqn{j} covers the true
 #' rank of country \eqn{j} with probability approximately equal to 0.95. A simultaneous confidence set for all countries covers the true ranks of all countries simultaneously with probability approximately equal to 0.95.
-#' 
+#'
 #' The function implements the procedures developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023). The procedure is based on
 #' on testing a large family of hypotheses for pairwise comparisons. Stepwise methods can be used to improve the power of the procedure by, potentially,
 #' rejecting more hypotheses without violating the desired coverage property of the resulting confidence set. These are employed when
@@ -77,24 +76,32 @@
 #' @export
 csranks <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, simul = TRUE, indices = NA, na.rm = FALSE, seed = NA) {
   # initializations
-  check_csranks_args(coverage=coverage, cstype=cstype, stepdown=stepdown, R=R,
-                     simul=simul, seed=seed)
+  check_csranks_args(
+    coverage = coverage, cstype = cstype, stepdown = stepdown, R = R,
+    simul = simul, seed = seed
+  )
   l <- process_csranks_args(x, Sigma, indices, na.rm)
-  x <- l$x; Sigma <- l$Sigma; indices <- l$indices
+  x <- l$x
+  Sigma <- l$Sigma
+  indices <- l$indices
   x_ranks <- irank(x)[indices]
   if (simul) {
     confidence_set <- csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)
   } else {
     confidence_set <- csranks_marg(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)
   }
-  structure(list(L = confidence_set$L,
-            rank = x_ranks,
-            U = confidence_set$U),
-            class = "csranks")
+  structure(
+    list(
+      L = confidence_set$L,
+      rank = x_ranks,
+      U = confidence_set$U
+    ),
+    class = "csranks"
+  )
 }
 
-#' Simultaneous confidence sets for ranks 
-#' 
+#' Simultaneous confidence sets for ranks
+#'
 #' This function is called by \code{csranks} when \code{simul=TRUE}.
 #'
 #' @noRd
@@ -114,12 +121,12 @@ csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepd
   # compute Nminus and Nplus
   # AKA the number of populations, for which the feature value
   # is larger / smaller in a statistically significant way
-  if (stepdown & cstype == "two-sided") {
-      Nplus <- rowSums(L[indices, , drop=FALSE] > 0, na.rm = TRUE)
-      Nminus <- colSums(L[, indices, drop=FALSE] > 0, na.rm = TRUE)
+  if (stepdown && cstype == "two-sided") {
+    Nplus <- rowSums(L[indices, , drop = FALSE] > 0, na.rm = TRUE)
+    Nminus <- colSums(L[, indices, drop = FALSE] > 0, na.rm = TRUE)
   } else {
-      Nplus <- rowSums(L[indices, , drop=FALSE] > 0, na.rm = TRUE)
-      Nminus <- rowSums(U[indices, , drop=FALSE] < 0, na.rm = TRUE)
+    Nplus <- rowSums(L[indices, , drop = FALSE] > 0, na.rm = TRUE)
+    Nminus <- rowSums(U[indices, , drop = FALSE] < 0, na.rm = TRUE)
   }
 
   # return lower and upper confidence bounds for the ranks
@@ -127,20 +134,20 @@ csranks_simul <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepd
 }
 
 #' This function is called by \code{csranks} when \code{simul=FALSE}.
-#' 
+#'
 #' Marginal confidence sets for ranks
-#' 
+#'
 #' @noRd
 csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdown = TRUE, R = 1000, indices = NA, na.rm = FALSE, seed = NA) {
   indices <- process_indices_argument(indices, length(x))
-  
+
   # compute marginal CS for each population indicated by indices
-  LU <- sapply(indices, function(i){
+  LU <- sapply(indices, function(i) {
     CS <- csranks_simul(x, Sigma, coverage = coverage, cstype = cstype, stepdown = stepdown, R = R, indices = i, seed = seed)
     c(L = CS$L, U = CS$U)
   })
 
-  return(list(L = as.integer(LU["L",]), U = as.integer(LU["U",])))
+  return(list(L = as.integer(LU["L", ]), U = as.integer(LU["U", ])))
 }
 
 
@@ -154,7 +161,7 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
 
 #' @section Details:
 #' The function computes a confidence set containing indicators for the elements in \code{x} whose rank is less than or equal to \code{tau} with probability approximately equal to the nominal coverage (\code{coverage}).
-#' 
+#'
 #' The function implements the projection confidence set for the tau-best developed and described in more detail in Mogstad, Romano, Shaikh, and Wilhelm (2023).
 
 #' @references Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
@@ -163,27 +170,31 @@ csranks_marg <- function(x, Sigma, coverage = 0.95, cstype = "two-sided", stepdo
 #' # simple simulated example:
 #' n <- 100
 #' p <- 10
-#' X <- matrix(rep(1:p,n)/p, ncol=p, byrow=TRUE) + matrix(rnorm(n*p), 100, 10)
+#' X <- matrix(rep(1:p, n) / p, ncol = p, byrow = TRUE) + matrix(rnorm(n * p), 100, 10)
 #' thetahat <- colMeans(X)
 #' Sigmahat <- cov(X) / n
-#' 
-#' # confidence set for the populations that may be among the top-3 
+#'
+#' # confidence set for the populations that may be among the top-3
 #' # (with probability approximately 0.95):
-#' cstaubest(thetahat, Sigmahat, tau=3)
-#' 
-#' # confidence set for the populations that may be among the bottom-3 
+#' cstaubest(thetahat, Sigmahat, tau = 3)
+#'
+#' # confidence set for the populations that may be among the bottom-3
 #' # (with probability approximately 0.95):
-#' cstauworst(thetahat, Sigmahat, tau=3)
+#' cstauworst(thetahat, Sigmahat, tau = 3)
 #'
 #' @inherit csranks references
 #' @export
 cstaubest <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
-  check_csranks_args(coverage=coverage, stepdown=stepdown, R=R, seed=seed, 
-                     simul=TRUE, cstype="lower")
+  check_csranks_args(
+    coverage = coverage, stepdown = stepdown, R = R, seed = seed,
+    simul = TRUE, cstype = "lower"
+  )
   check_tau(tau, length(x))
   l <- process_csranks_args(x, Sigma, NA, na.rm)
-  x <- l$x; Sigma <- l$Sigma; indices <- l$indices
-  
+  x <- l$x
+  Sigma <- l$Sigma
+  indices <- l$indices
+
   # return indices whose lower bound on the rank is <= tau
   L <- csranks_simul(x, Sigma, coverage = coverage, cstype = "lower", stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)$L
   return(L <= tau)
@@ -196,11 +207,15 @@ cstaubest <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1
 #'
 #' @export
 cstauworst <- function(x, Sigma, tau = 2, coverage = 0.95, stepdown = TRUE, R = 1000, na.rm = FALSE, seed = NA) {
-  check_csranks_args(coverage=coverage, stepdown=stepdown, R=R, seed=seed, 
-                     simul=TRUE, cstype="lower")
+  check_csranks_args(
+    coverage = coverage, stepdown = stepdown, R = R, seed = seed,
+    simul = TRUE, cstype = "lower"
+  )
   check_tau(tau, length(x))
   l <- process_csranks_args(x, Sigma, NA, na.rm)
-  x <- l$x; Sigma <- l$Sigma; indices <- l$indices
+  x <- l$x
+  Sigma <- l$Sigma
+  indices <- l$indices
   # return indices whose lower bound on the rank is <= tau
   U <- csranks_simul(x, Sigma, coverage = coverage, cstype = "upper", stepdown = stepdown, R = R, indices = indices, na.rm = na.rm, seed = seed)$U
   p <- length(x)

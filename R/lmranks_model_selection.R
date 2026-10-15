@@ -1,10 +1,10 @@
 #' @export
-logLik.lmranks <- function(object, ...){
+logLik.lmranks <- function(object, ...) {
   cli::cli_abort("This method does not return correct results.")
 }
 
 #' @export
-anova.lmranks <- function(object, ...){
+anova.lmranks <- function(object, ...) {
   cli::cli_abort("This method is not implemented.")
 }
 
@@ -12,7 +12,7 @@ anova.lmranks <- function(object, ...){
 #' @importFrom stats proj
 #' @inheritParams stats::proj
 #' @export
-proj.lmranks <- function(object, onedf = FALSE, ...){
+proj.lmranks <- function(object, onedf = FALSE, ...) {
   object$df.residual <- stats::nobs(object) - length(coef(object))
   out <- NextMethod()
   object$df.residual <- NA
@@ -21,23 +21,26 @@ proj.lmranks <- function(object, onedf = FALSE, ...){
 }
 
 #' @export
-extractAIC.lmranks <- function(fit, scale, k, ...){
+extractAIC.lmranks <- function(fit, scale, k, ...) {
   cli::cli_warn(c("NAs returned.",
-                 "i" = "The notion of effective degrees of freedom for rank models is not clear."))
+    "i" = "The notion of effective degrees of freedom for rank models is not clear."
+  ))
   c(NA, NA)
 }
 
 #' @export
-add1.lmranks <- function(object, scope, ...){
+add1.lmranks <- function(object, scope, ...) {
   cli::cli_warn(c("NAs returned.",
-                 "i" = "The notion of effective degrees of freedom for rank models is not clear."))
+    "i" = "The notion of effective degrees of freedom for rank models is not clear."
+  ))
   NextMethod()
 }
 
 #' @export
-drop1.lmranks <- function(object, scope, ...){
+drop1.lmranks <- function(object, scope, ...) {
   cli::cli_warn(c("NAs returned.",
-                 "i" = "The notion of effective degrees of freedom for rank models is not clear."))
+    "i" = "The notion of effective degrees of freedom for rank models is not clear."
+  ))
   NextMethod()
 }
 

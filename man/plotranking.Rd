@@ -59,7 +59,7 @@ V <- diag(rep(0.04, 10))
 CS <- csranks(x, V)
 grid::current.viewport()
 plot(CS)
-# Equivalent: 
+# Equivalent:
 plotranking(CS$rank, CS$L, CS$U)
 
 # plotranking returns a ggplot object. It can be customized further:

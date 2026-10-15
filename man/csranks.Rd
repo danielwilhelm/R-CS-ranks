@@ -84,7 +84,7 @@ The procedure uses a parametric bootstrap procedure based on the above approxima
 # simple simulated example:
 n <- 100
 p <- 10
-X <- matrix(rep(1:p,n)/p, ncol=p, byrow=TRUE) + matrix(rnorm(n*p), 100, 10)
+X <- matrix(rep(1:p, n) / p, ncol = p, byrow = TRUE) + matrix(rnorm(n * p), 100, 10)
 thetahat <- colMeans(X)
 Sigmahat <- cov(X) / n
 csranks(thetahat, Sigmahat)
@@ -96,10 +96,10 @@ math_se <- pisa2018$math_se
 math_cov_mat <- diag(math_se^2)
 
 # marginal confidence set for each country:
-csranks(math_score, math_cov_mat, simul=FALSE)
+csranks(math_score, math_cov_mat, simul = FALSE)
 
 # simultaneous confidence set for all countries:
-csranks(math_score, math_cov_mat, simul=TRUE)
+csranks(math_score, math_cov_mat, simul = TRUE)
 }
 \references{
 Mogstad, Romano, Shaikh, and Wilhelm (2023), "Inference for Ranks with Applications to Mobility across Neighborhoods and Academic Achievements across Countries", forthcoming at Review of Economic Studies
